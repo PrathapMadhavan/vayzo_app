@@ -1,0 +1,2644 @@
+
+
+
+VAYZO
+
+Phase 1 Database Schema &amp; Development Specification
+
+Cursor / Codex Development Reference
+Property
+Value
+Product
+VAYZO
+Phase
+Phase 1
+Database
+MySQL 8.x
+Backend
+Laravel REST API
+Customer App
+React Native
+Partner App
+React Native
+Admin Web
+React.js
+Primary Launch
+Melur
+Product Owner
+Kannan MP
+Technical Lead
+Prathap M
+Primary Tagline
+You Ask. We Get It.
+
+
+
+1. Purpose
+This document is the database implementation contract for VAYZO Phase 1. It is written so a developer using Cursor or Codex can create the Laravel migrations, models, relationships, indexes, seeders and API persistence layer without inventing the core schema.
+Do not change table names, enum meanings, primary relationship rules or request lifecycle states without Technical Lead approval.
+
+
+2. Phase 1 Business Scope
+
+
+Food Delivery
+
+
+Buy &amp; Get It — customer can request items from one or multiple local shops; a partner purchases and delivers them.
+
+
+Local Bike Ride Booking
+
+
+Local Car Booking
+
+
+Customer text request and voice-to-text request.
+
+
+Customer wallet/payment and partner earnings.
+
+
+Super Admin operations, pricing, service areas, support and reporting.
+Out of scope: bus/train ticket booking, recharge, bill payment, flight/hotel booking and a large catalogue-first grocery marketplace.
+
+
+3. Database Design Principles
+
+
+Use InnoDB and utf8mb4 for all application tables.
+
+
+Use BIGINT UNSIGNED AUTO_INCREMENT primary keys for internal IDs unless a table is explicitly a lookup/config table.
+
+
+Use UUID/ULID public identifiers where API exposure is required; never expose sequential internal IDs as the public request/order reference.
+
+
+All business tables should have created_at and updated_at. Use deleted_at only where soft deletion is explicitly useful.
+
+
+Store money as DECIMAL(12,2), never FLOAT or DOUBLE.
+
+
+Store latitude/longitude as DECIMAL(10,7).
+
+
+Store timestamps in UTC at the database/application layer and convert to the user's local timezone for display.
+
+
+Use foreign keys for core relational integrity.
+
+
+Use status-history tables for important state transitions; do not rely only on the current status column.
+
+
+Do not store raw payment card details.
+
+
+Store uploaded files as storage keys/URLs and metadata, not binary files in MySQL.
+
+
+Never store a customer's raw password if OTP-only authentication is used.
+
+
+4. Naming Standards
+Item
+Convention
+Tables
+snake_case, plural: users, requests, request_items
+Columns
+snake_case
+Primary key
+id
+Foreign key
+&lt;table_singular&gt;_id
+Public identifier
+public_id / uuid / ulid
+Boolean
+is_* or has_*
+Money
+*_amount DECIMAL(12,2)
+Timestamp
+*_at
+Status
+status
+Soft delete
+deleted_at
+
+
+5. High-Level ER Model
+Core relationship:
+users → customer_profiles / partner_profiles → requests → request_pickups / request_items / request_status_history → assignments → partner → payments / earnings
+Food relationship:
+restaurants → restaurant_categories → restaurant_products → food_orders → food_order_items
+Ride relationship:
+requests → rides → ride_locations
+Finance relationship:
+users → wallets → wallet_transactions; requests → payments; partners → partner_earnings → partner_payouts
+Support relationship:
+users → support_tickets → support_messages
+
+
+6. Core Tables
+
+
+6.1 users
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+Internal ID
+public_id
+CHAR(26)
+NO
+UNIQUE
+ULID exposed through APIs
+role
+VARCHAR(30)
+NO
+INDEX
+customer, partner, admin
+mobile
+VARCHAR(20)
+NO
+UNIQUE
+Normalized mobile number
+email
+VARCHAR(191)
+YES
+INDEX
+Optional
+name
+VARCHAR(120)
+NO
+
+Display name
+status
+VARCHAR(30)
+NO
+INDEX
+active, blocked, pending
+last_login_at
+DATETIME
+YES
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+deleted_at
+TIMESTAMP
+YES
+
+Soft delete if needed
+Password is intentionally omitted for OTP-first authentication. If password authentication is later added, use password_hash only.
+
+
+6.2 customer_profiles
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+user_id
+BIGINT UNSIGNED
+NO
+FK UNIQUE
+users.id
+profile_photo
+VARCHAR(500)
+YES
+
+Storage key
+date_of_birth
+DATE
+YES
+
+
+gender
+VARCHAR(20)
+YES
+
+Optional
+default_address_id
+BIGINT UNSIGNED
+YES
+FK
+addresses.id; nullable
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+6.3 partner_profiles
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+user_id
+BIGINT UNSIGNED
+NO
+FK UNIQUE
+users.id
+partner_code
+VARCHAR(30)
+NO
+UNIQUE
+Human-readable partner code
+verification_status
+VARCHAR(30)
+NO
+INDEX
+pending, approved, rejected, suspended
+online_status
+VARCHAR(20)
+NO
+INDEX
+online, offline
+rating_avg
+DECIMAL(3,2)
+NO
+
+Default 0
+rating_count
+INT UNSIGNED
+NO
+
+Default 0
+joined_at
+DATETIME
+YES
+
+
+approved_at
+DATETIME
+YES
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+7. Address &amp; Location Tables
+
+
+7.1 addresses
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+user_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+Owner
+label
+VARCHAR(30)
+YES
+
+Home, Work, Other
+contact_name
+VARCHAR(120)
+YES
+
+
+contact_mobile
+VARCHAR(20)
+YES
+
+
+address_line1
+VARCHAR(255)
+NO
+
+
+address_line2
+VARCHAR(255)
+YES
+
+
+landmark
+VARCHAR(255)
+YES
+
+
+city
+VARCHAR(100)
+NO
+
+
+district
+VARCHAR(100)
+YES
+
+
+state
+VARCHAR(100)
+YES
+
+
+pincode
+VARCHAR(10)
+YES
+
+
+latitude
+DECIMAL(10,7)
+NO
+
+
+longitude
+DECIMAL(10,7)
+NO
+
+
+is_default
+BOOLEAN
+NO
+
+Default false
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+deleted_at
+TIMESTAMP
+YES
+
+
+
+
+7.2 service_areas
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+name
+VARCHAR(120)
+NO
+INDEX
+Melur etc.
+city
+VARCHAR(100)
+YES
+
+
+district
+VARCHAR(100)
+YES
+
+
+state
+VARCHAR(100)
+YES
+
+
+center_latitude
+DECIMAL(10,7)
+NO
+
+
+center_longitude
+DECIMAL(10,7)
+NO
+
+
+radius_km
+DECIMAL(8,2)
+NO
+
+
+status
+VARCHAR(20)
+NO
+INDEX
+active, inactive
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+8. Partner KYC / Vehicle / Bank
+
+
+8.1 partner_service_types
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+partner_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+partner_profiles.id
+service_type
+VARCHAR(30)
+NO
+INDEX
+food_delivery, buy_get, bike_ride, car_ride
+status
+VARCHAR(20)
+NO
+
+pending, approved, rejected
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+Unique constraint: partner_id + service_type.
+
+
+8.2 partner_documents
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+partner_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+document_type
+VARCHAR(40)
+NO
+INDEX
+id_proof, driving_license, rc, insurance, permit
+document_number
+VARCHAR(100)
+YES
+
+Encrypt/mask as appropriate
+file_key
+VARCHAR(500)
+NO
+
+Storage key
+verification_status
+VARCHAR(20)
+NO
+
+pending, approved, rejected
+rejection_reason
+TEXT
+YES
+
+
+verified_by
+BIGINT UNSIGNED
+YES
+FK
+admin user
+verified_at
+DATETIME
+YES
+
+
+expires_at
+DATE
+YES
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+8.3 partner_vehicles
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+partner_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+vehicle_type
+VARCHAR(20)
+NO
+INDEX
+bike, car
+make
+VARCHAR(80)
+YES
+
+
+model
+VARCHAR(80)
+YES
+
+
+registration_number
+VARCHAR(30)
+NO
+UNIQUE
+
+color
+VARCHAR(40)
+YES
+
+
+status
+VARCHAR(20)
+NO
+
+active, inactive
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+8.4 partner_bank_accounts
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+partner_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+account_holder_name
+VARCHAR(120)
+NO
+
+
+account_number
+VARCHAR(100)
+NO
+
+Encrypt at application layer if required
+ifsc_code
+VARCHAR(20)
+NO
+
+
+bank_name
+VARCHAR(120)
+YES
+
+
+is_primary
+BOOLEAN
+NO
+
+
+status
+VARCHAR(20)
+NO
+
+active, inactive
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+9. Restaurant / Food Tables
+
+
+9.1 restaurants
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+public_id
+CHAR(26)
+NO
+UNIQUE
+
+name
+VARCHAR(160)
+NO
+INDEX
+
+mobile
+VARCHAR(20)
+YES
+
+
+address_id
+BIGINT UNSIGNED
+YES
+FK
+
+latitude
+DECIMAL(10,7)
+YES
+
+
+longitude
+DECIMAL(10,7)
+YES
+
+
+commission_percent
+DECIMAL(5,2)
+NO
+
+
+status
+VARCHAR(20)
+NO
+INDEX
+pending, active, inactive, blocked
+opening_time
+TIME
+YES
+
+
+closing_time
+TIME
+YES
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+deleted_at
+TIMESTAMP
+YES
+
+
+
+
+9.2 restaurant_categories
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+restaurant_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+name
+VARCHAR(120)
+NO
+
+
+sort_order
+INT
+NO
+
+
+status
+VARCHAR(20)
+NO
+
+active, inactive
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+9.3 restaurant_products
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+restaurant_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+category_id
+BIGINT UNSIGNED
+YES
+FK
+
+name
+VARCHAR(160)
+NO
+
+
+description
+TEXT
+YES
+
+
+image_key
+VARCHAR(500)
+YES
+
+
+price
+DECIMAL(12,2)
+NO
+
+
+is_available
+BOOLEAN
+NO
+
+
+sort_order
+INT
+NO
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+deleted_at
+TIMESTAMP
+YES
+
+
+
+
+10. Core Request Model
+All four Phase 1 services use a common requests table. This is a mandatory architectural decision for Phase 1.
+
+
+10.1 requests
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+public_id
+CHAR(26)
+NO
+UNIQUE
+Public request ID
+request_number
+VARCHAR(30)
+NO
+UNIQUE
+Human-friendly WV request number
+customer_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+users.id
+service_type
+VARCHAR(30)
+NO
+INDEX
+food, buy_get, bike_ride, car_ride
+status
+VARCHAR(40)
+NO
+INDEX
+Current request status
+request_text
+TEXT
+YES
+
+Original/transcribed customer request
+voice_file_key
+VARCHAR(500)
+YES
+
+Optional temporary/retained voice file
+pickup_address_id
+BIGINT UNSIGNED
+YES
+FK
+For simple pickup
+destination_address_id
+BIGINT UNSIGNED
+YES
+FK
+For delivery/ride
+distance_km
+DECIMAL(10,2)
+YES
+
+
+estimated_amount
+DECIMAL(12,2)
+YES
+
+
+final_amount
+DECIMAL(12,2)
+YES
+
+
+notes
+TEXT
+YES
+
+
+cancelled_by
+VARCHAR(20)
+YES
+
+customer, partner, admin, system
+cancellation_reason
+TEXT
+YES
+
+
+requested_at
+DATETIME
+NO
+INDEX
+
+accepted_at
+DATETIME
+YES
+
+
+completed_at
+DATETIME
+YES
+
+
+cancelled_at
+DATETIME
+YES
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+Do not create separate top-level order tables for each service unless there is a demonstrated need. requests is the source of truth for the lifecycle.
+
+
+10.2 request_items
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+request_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+item_type
+VARCHAR(30)
+NO
+
+food_item, purchase_item
+restaurant_product_id
+BIGINT UNSIGNED
+YES
+FK
+Used for catalogue food
+item_name
+VARCHAR(255)
+NO
+
+Snapshot name
+quantity
+DECIMAL(10,2)
+NO
+
+
+unit
+VARCHAR(30)
+YES
+
+piece, litre, kg etc.
+estimated_unit_price
+DECIMAL(12,2)
+YES
+
+
+actual_unit_price
+DECIMAL(12,2)
+YES
+
+
+estimated_total
+DECIMAL(12,2)
+YES
+
+
+actual_total
+DECIMAL(12,2)
+YES
+
+
+special_instructions
+TEXT
+YES
+
+
+status
+VARCHAR(30)
+NO
+
+requested, purchased, unavailable, cancelled
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+10.3 request_pickups
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+request_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+sequence_no
+INT UNSIGNED
+NO
+
+1,2,3...
+pickup_type
+VARCHAR(30)
+NO
+
+restaurant, shop, customer
+place_name
+VARCHAR(160)
+NO
+
+Snapshot display name
+address_text
+VARCHAR(500)
+YES
+
+
+latitude
+DECIMAL(10,7)
+YES
+
+
+longitude
+DECIMAL(10,7)
+YES
+
+
+contact_mobile
+VARCHAR(20)
+YES
+
+
+status
+VARCHAR(30)
+NO
+
+pending, assigned, arrived, completed, skipped
+arrived_at
+DATETIME
+YES
+
+
+completed_at
+DATETIME
+YES
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+Unique constraint: request_id + sequence_no.
+
+
+10.4 request_status_history
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+request_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+status
+VARCHAR(40)
+NO
+INDEX
+
+changed_by_user_id
+BIGINT UNSIGNED
+YES
+FK
+
+latitude
+DECIMAL(10,7)
+YES
+
+Optional status location
+longitude
+DECIMAL(10,7)
+YES
+
+
+note
+TEXT
+YES
+
+
+created_at
+TIMESTAMP
+NO
+INDEX
+
+Every meaningful request transition must insert a history row.
+
+
+10.5 request_assignments
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+request_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+partner_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+partner_profiles.id
+assignment_status
+VARCHAR(20)
+NO
+INDEX
+offered, accepted, rejected, expired, cancelled, completed
+offered_at
+DATETIME
+NO
+
+
+responded_at
+DATETIME
+YES
+
+
+rejection_reason
+TEXT
+YES
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+11. Buy &amp; Get Specific Tables
+
+
+11.1 purchase_bills
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+request_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+request_pickup_id
+BIGINT UNSIGNED
+YES
+FK
+Shop/pickup
+partner_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+bill_number
+VARCHAR(100)
+YES
+
+
+bill_file_key
+VARCHAR(500)
+NO
+
+
+bill_amount
+DECIMAL(12,2)
+NO
+
+
+notes
+TEXT
+YES
+
+
+uploaded_at
+DATETIME
+NO
+
+
+verified_at
+DATETIME
+YES
+
+
+verified_by
+BIGINT UNSIGNED
+YES
+FK
+Admin
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+12. Food Order Tables
+
+
+12.1 food_orders
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+request_id
+BIGINT UNSIGNED
+NO
+FK UNIQUE
+Must map to requests.service_type=food
+restaurant_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+subtotal
+DECIMAL(12,2)
+NO
+
+
+delivery_fee
+DECIMAL(12,2)
+NO
+
+
+service_fee
+DECIMAL(12,2)
+NO
+
+
+discount_amount
+DECIMAL(12,2)
+NO
+
+
+total_amount
+DECIMAL(12,2)
+NO
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+12.2 food_order_items
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+food_order_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+restaurant_product_id
+BIGINT UNSIGNED
+NO
+FK
+
+product_name
+VARCHAR(160)
+NO
+
+Snapshot
+unit_price
+DECIMAL(12,2)
+NO
+
+Snapshot
+quantity
+INT UNSIGNED
+NO
+
+
+line_total
+DECIMAL(12,2)
+NO
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+13. Ride Tables
+
+
+13.1 rides
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+request_id
+BIGINT UNSIGNED
+NO
+FK UNIQUE
+Must map to bike_ride/car_ride
+partner_id
+BIGINT UNSIGNED
+YES
+FK INDEX
+Assigned partner
+vehicle_id
+BIGINT UNSIGNED
+YES
+FK
+
+pickup_latitude
+DECIMAL(10,7)
+NO
+
+
+pickup_longitude
+DECIMAL(10,7)
+NO
+
+
+destination_latitude
+DECIMAL(10,7)
+NO
+
+
+destination_longitude
+DECIMAL(10,7)
+NO
+
+
+estimated_fare
+DECIMAL(12,2)
+YES
+
+
+final_fare
+DECIMAL(12,2)
+YES
+
+
+started_at
+DATETIME
+YES
+
+
+completed_at
+DATETIME
+YES
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+13.2 ride_locations
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+ride_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+partner_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+latitude
+DECIMAL(10,7)
+NO
+
+
+longitude
+DECIMAL(10,7)
+NO
+
+
+speed_kmh
+DECIMAL(8,2)
+YES
+
+
+heading
+DECIMAL(8,2)
+YES
+
+
+recorded_at
+DATETIME
+NO
+INDEX
+
+Do not write GPS points every second unless required. Use a configurable interval such as 5–15 seconds and/or significant-distance changes.
+
+
+14. Finance &amp; Wallet
+
+
+14.1 wallets
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+user_id
+BIGINT UNSIGNED
+NO
+FK UNIQUE
+Customer wallet initially
+balance
+DECIMAL(12,2)
+NO
+
+Cached balance; ledger remains source of truth
+currency
+CHAR(3)
+NO
+
+INR
+status
+VARCHAR(20)
+NO
+
+active, blocked
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+14.2 wallet_transactions
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+wallet_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+transaction_type
+VARCHAR(30)
+NO
+INDEX
+credit, debit, refund, adjustment
+reference_type
+VARCHAR(40)
+YES
+
+request, payment, refund, admin_adjustment
+reference_id
+BIGINT UNSIGNED
+YES
+
+
+amount
+DECIMAL(12,2)
+NO
+
+Positive transaction amount
+balance_before
+DECIMAL(12,2)
+NO
+
+
+balance_after
+DECIMAL(12,2)
+NO
+
+
+description
+VARCHAR(255)
+YES
+
+
+created_at
+TIMESTAMP
+NO
+INDEX
+
+
+
+14.3 payments
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+public_id
+CHAR(26)
+NO
+UNIQUE
+
+user_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+request_id
+BIGINT UNSIGNED
+YES
+FK INDEX
+
+gateway
+VARCHAR(40)
+YES
+
+
+gateway_order_id
+VARCHAR(191)
+YES
+INDEX
+
+gateway_payment_id
+VARCHAR(191)
+YES
+INDEX
+
+amount
+DECIMAL(12,2)
+NO
+
+
+currency
+CHAR(3)
+NO
+
+INR
+status
+VARCHAR(30)
+NO
+INDEX
+created, pending, paid, failed, refunded
+paid_at
+DATETIME
+YES
+
+
+failure_reason
+TEXT
+YES
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+14.4 partner_earnings
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+partner_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+request_id
+BIGINT UNSIGNED
+YES
+FK INDEX
+
+gross_amount
+DECIMAL(12,2)
+NO
+
+
+commission_amount
+DECIMAL(12,2)
+NO
+
+
+incentive_amount
+DECIMAL(12,2)
+NO
+
+
+adjustment_amount
+DECIMAL(12,2)
+NO
+
+
+net_amount
+DECIMAL(12,2)
+NO
+
+
+status
+VARCHAR(20)
+NO
+
+pending, available, paid, reversed
+earned_at
+DATETIME
+NO
+INDEX
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+14.5 partner_payouts
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+partner_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+amount
+DECIMAL(12,2)
+NO
+
+
+status
+VARCHAR(20)
+NO
+INDEX
+requested, processing, paid, failed, cancelled
+reference_number
+VARCHAR(100)
+YES
+INDEX
+
+requested_at
+DATETIME
+NO
+
+
+processed_at
+DATETIME
+YES
+
+
+failure_reason
+TEXT
+YES
+
+
+processed_by
+BIGINT UNSIGNED
+YES
+FK
+Admin
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+15. Ratings &amp; Reviews
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+request_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+customer_id
+BIGINT UNSIGNED
+NO
+FK
+
+partner_id
+BIGINT UNSIGNED
+YES
+FK
+
+restaurant_id
+BIGINT UNSIGNED
+YES
+FK
+
+rating
+TINYINT UNSIGNED
+NO
+
+1–5
+review
+TEXT
+YES
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+Use a business rule preventing duplicate customer ratings for the same request and target.
+
+
+16. Notifications
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+user_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+type
+VARCHAR(60)
+NO
+INDEX
+
+title
+VARCHAR(180)
+NO
+
+
+body
+TEXT
+NO
+
+
+data_json
+JSON
+YES
+
+Deep-link/context data
+read_at
+DATETIME
+YES
+INDEX
+
+created_at
+TIMESTAMP
+NO
+INDEX
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+17. Support
+
+
+17.1 support_tickets
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+public_id
+CHAR(26)
+NO
+UNIQUE
+
+user_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+request_id
+BIGINT UNSIGNED
+YES
+FK INDEX
+
+category
+VARCHAR(50)
+NO
+INDEX
+
+subject
+VARCHAR(200)
+NO
+
+
+status
+VARCHAR(30)
+NO
+INDEX
+open, assigned, pending, resolved, closed
+priority
+VARCHAR(20)
+NO
+
+low, medium, high, urgent
+assigned_admin_id
+BIGINT UNSIGNED
+YES
+FK
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+17.2 support_messages
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+ticket_id
+BIGINT UNSIGNED
+NO
+FK INDEX
+
+sender_user_id
+BIGINT UNSIGNED
+YES
+FK
+
+sender_admin_id
+BIGINT UNSIGNED
+YES
+FK
+
+message
+TEXT
+NO
+
+
+attachment_key
+VARCHAR(500)
+YES
+
+
+created_at
+TIMESTAMP
+NO
+INDEX
+
+
+
+18. Admin &amp; RBAC
+
+
+18.1 admin_users
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+user_id
+BIGINT UNSIGNED
+NO
+FK UNIQUE
+users.id
+status
+VARCHAR(20)
+NO
+
+active, inactive
+last_login_at
+DATETIME
+YES
+
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+18.2 roles
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+name
+VARCHAR(80)
+NO
+UNIQUE
+
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+
+
+18.3 permissions
+Column
+Type
+Null
+Key
+Notes
+id
+BIGINT UNSIGNED
+NO
+PK
+
+name
+VARCHAR(120)
+NO
+UNIQUE
+Example: partners.approve
+created_at
+TIMESTAMP
+NO
+
+
+updated_at
+TIMESTAMP
+NO
+
+
+Use role-permission pivot tables and admin-role pivot tables. Laravel authorization policies should remain the application-level enforcement layer.
+
+
+19. Configuration Tables
+Table
+Purpose
+service_pricing_rules
+Delivery/ride minimums, per-km rates, service fees and other pricing rules
+commission_rules
+Partner/restaurant commission configuration
+coupons
+Promotional codes
+coupon_usages
+Customer coupon usage
+app_settings
+Key/value application settings
+If the project uses Spatie Permission, use its standard role/permission tables instead of custom RBAC tables. Do not maintain two permission systems.
+
+
+20. Recommended Indexes
+
+
+users: unique(public_id), unique(mobile), index(role,status).
+
+
+customer_profiles: unique(user_id).
+
+
+partner_profiles: unique(user_id), index(verification_status, online_status).
+
+
+partner_service_types: unique(partner_id, service_type).
+
+
+addresses: index(user_id, is_default).
+
+
+restaurants: index(status, name).
+
+
+restaurant_products: index(restaurant_id, category_id, is_available).
+
+
+requests: unique(public_id), unique(request_number), index(customer_id, status), index(service_type, status), index(status, created_at).
+
+
+request_items: index(request_id, status).
+
+
+request_pickups: unique(request_id, sequence_no), index(request_id, status).
+
+
+request_status_history: index(request_id, created_at).
+
+
+request_assignments: index(request_id, assignment_status), index(partner_id, assignment_status).
+
+
+rides: unique(request_id), index(partner_id, started_at).
+
+
+ride_locations: index(ride_id, recorded_at).
+
+
+payments: index(user_id, status), index(request_id), index(gateway_payment_id).
+
+
+wallet_transactions: index(wallet_id, created_at).
+
+
+partner_earnings: index(partner_id, status, earned_at).
+
+
+partner_payouts: index(partner_id, status, requested_at).
+
+
+notifications: index(user_id, read_at, created_at).
+
+
+support_tickets: index(user_id, status), index(assigned_admin_id, status).
+
+
+21. Foreign Key Rules
+
+
+Core ownership relationships should use ON DELETE CASCADE only when child data has no independent business value.
+
+
+Financial, payment, request and audit history must not be physically deleted through cascade.
+
+
+Prefer RESTRICT/NO ACTION for financial and operational history.
+
+
+Use SET NULL for optional admin/user references such as verified_by or processed_by when the admin account can be deactivated.
+
+
+Soft-delete master records such as restaurants, products and addresses where historical records must remain readable.
+
+
+22. Request Status Dictionary
+Status
+Meaning
+requested
+Customer submitted request
+searching_partner
+System is finding an eligible partner
+partner_assigned
+Partner was selected/offered
+accepted
+Partner accepted
+going_to_pickup
+Partner travelling to pickup
+arrived_pickup
+Partner arrived
+purchasing
+Partner purchasing items; Buy &amp; Get
+picked_up
+Food/items picked up
+going_to_customer
+Partner travelling to customer
+arrived_customer
+Partner arrived at customer
+delivered
+Items handed over
+completed
+Request financially/operationally completed
+cancelled
+Request cancelled
+failed
+System/operational failure
+
+
+23. Buy &amp; Get Data Example
+Example request:
+Customer asks: 4 idly from Murugan Kadai + 1 litre milk from Sangeetha Kadai, delivered to home.
+Table
+Example
+requests
+service_type=buy_get, request_text=&lt;original request&gt;
+request_pickups
+sequence 1 = Murugan Kadai; sequence 2 = Sangeetha Kadai
+request_items
+4 idly linked to pickup 1; 1L milk linked to pickup 2
+request_assignments
+partner assigned
+purchase_bills
+one bill per shop/purchase where applicable
+request_status_history
+complete lifecycle
+payments
+customer payment
+partner_earnings
+partner service earning
+Implementation note: request_items should be extended with request_pickup_id BIGINT UNSIGNED when item-to-shop mapping is required. This is recommended for Buy &amp; Get.
+
+
+24. Laravel Implementation Rules for Cursor/Codex
+
+
+Create migrations in dependency order: users → profiles → addresses → partner tables → restaurants → requests → service-specific tables → finance → support → notifications.
+
+
+Use Laravel model relationships for all foreign keys.
+
+
+Use Form Request classes for validation.
+
+
+Use API Resources/DTOs for response shaping; do not return raw Eloquent models everywhere.
+
+
+Use service classes for request creation, partner assignment, purchase completion, payment and payout logic.
+
+
+Use database transactions for request creation, wallet ledger updates, payment state changes and partner earnings.
+
+
+Use events/jobs for notifications and non-blocking background operations.
+
+
+Use enums/constants in PHP for service_type and status values; keep DB values stable.
+
+
+Use policies/gates for customer/partner/admin ownership and access control.
+
+
+Write feature tests for request creation, assignment, Buy &amp; Get multi-pickup, food order, ride lifecycle and finance.
+
+
+25. Migration Order
+
+
+users
+
+
+customer_profiles
+
+
+partner_profiles
+
+
+addresses
+
+
+service_areas
+
+
+partner_service_types
+
+
+partner_documents
+
+
+partner_vehicles
+
+
+partner_bank_accounts
+
+
+restaurants
+
+
+restaurant_categories
+
+
+restaurant_products
+
+
+requests
+
+
+request_items
+
+
+request_pickups
+
+
+request_status_history
+
+
+request_assignments
+
+
+purchase_bills
+
+
+food_orders
+
+
+food_order_items
+
+
+rides
+
+
+ride_locations
+
+
+wallets
+
+
+wallet_transactions
+
+
+payments
+
+
+partner_earnings
+
+
+partner_payouts
+
+
+ratings/reviews
+
+
+notifications
+
+
+support_tickets
+
+
+support_messages
+
+
+admin/RBAC tables
+
+
+pricing/configuration tables
+
+
+26. Seed Data Requirements
+
+
+Admin user with Super Admin role.
+
+
+Initial service area: Melur.
+
+
+Service types: food, buy_get, bike_ride, car_ride.
+
+
+Basic request status definitions.
+
+
+Initial pricing rules configured through seeders or admin settings.
+
+
+At least one test restaurant and menu dataset for local development.
+
+
+Development test partner and customer accounts must be clearly marked as test data.
+
+
+27. API / DB Security Rules
+
+
+Never trust client-provided customer_id or partner_id; derive identity from authenticated token.
+
+
+Verify that a partner is eligible for the requested service before assignment.
+
+
+Verify ownership before a customer can view/update a request.
+
+
+Verify assignment before a partner can update a request.
+
+
+Admin-only operations must be protected by role/permission middleware.
+
+
+Validate all uploaded bill/document files.
+
+
+Do not expose internal database IDs where a public ULID is available.
+
+
+Use idempotency keys for payment creation and other retry-sensitive operations.
+
+
+Keep payment gateway webhook handling idempotent.
+
+
+28. Acceptance Checklist for Database Layer
+
+
+All migrations run successfully on a clean MySQL database.
+
+
+All foreign keys and indexes are created.
+
+
+Laravel models and relationships match the schema.
+
+
+Customer can create a request.
+
+
+Partner can be assigned to a request.
+
+
+Request status history is recorded.
+
+
+Buy &amp; Get supports multiple pickup locations.
+
+
+Bills can be linked to a pickup/request.
+
+
+Food order can be linked to a request.
+
+
+Bike/car ride can be linked to a request.
+
+
+Wallet ledger balances correctly.
+
+
+Payment records are idempotent.
+
+
+Partner earnings and payouts are traceable.
+
+
+Admin actions can be audited where required.
+
+
+Seeders create a usable development environment.
+
+
+29. Developer Instruction — Cursor / Codex
+IMPORTANT
+Treat this document as the source-of-truth database contract for VAYZO Phase 1. Before generating migrations, inspect the existing Laravel project structure. If a conflict exists, do not silently redesign the schema. Report the conflict and ask the Technical Lead for a decision. Generate migrations, models, factories, seeders and tests in small verifiable steps.
+Do not implement future services (bus/train tickets, recharge, etc.) in Phase 1 database migrations unless explicitly requested.
+
+
+30. Sign-off
+Role
+Name
+Status
+Product Owner
+Kannan MP
+Pending Approval
+Technical Lead
+Prathap M
+Pending Approval
+

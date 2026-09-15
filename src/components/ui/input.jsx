@@ -1,4 +1,4 @@
-function Input({ label, error, id, className = "", ...props }) {
+function Input({ label, error, id, className = "", prefix, suffix, ...props }) {
   return (
     <div className="w-full">
       {label && (
@@ -10,20 +10,33 @@ function Input({ label, error, id, className = "", ...props }) {
         </label>
       )}
 
-      <input
-        id={id}
-        className={[
-          "w-full rounded-lg border bg-surface px-3.5 py-2.5",
-          "text-sm text-foreground outline-none",
-          "placeholder:text-subtle",
-          "transition-colors",
-          error
-            ? "border-danger focus:border-danger"
-            : "border-border focus:border-primary",
-          className,
-        ].join(" ")}
-        {...props}
-      />
+      <div className={[
+        "relative flex items-center w-full rounded-lg border bg-surface transition-colors focus-within:border-primary overflow-hidden",
+        error ? "border-danger focus-within:border-danger" : "border-border"
+      ].filter(Boolean).join(" ")}>
+        {prefix && (
+          <div className="flex h-full items-center">
+            {prefix}
+          </div>
+        )}
+        <input
+          id={id}
+          className={[
+            "w-full bg-transparent py-2.5",
+            !prefix ? "pl-3.5" : "",
+            !suffix ? "pr-3.5" : "",
+            "text-sm text-foreground outline-none",
+            "placeholder:text-subtle",
+            className,
+          ].filter(Boolean).join(" ")}
+          {...props}
+        />
+        {suffix && (
+          <div className="flex h-full items-center">
+            {suffix}
+          </div>
+        )}
+      </div>
 
       {error && <p className="mt-1.5 text-xs text-danger">{error}</p>}
     </div>

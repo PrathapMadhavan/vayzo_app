@@ -20,82 +20,83 @@ import {
 export const navigationItems = [
   {
     label: "Dashboard",
-    path: "/admin/dashboard",
+    path: "/dashboard",
     icon: LayoutDashboard,
   },
   {
-    label: "Users",
-    path: "/admin/users",
+    label: "Customers",
+    path: "/users",
     icon: Users,
   },
   {
     label: "Delivery Partners",
-    path: "/admin/delivery-partners",
+    path: "/delivery",
     icon: Truck,
   },
   {
     label: "Orders",
-    path: "/admin/orders",
+    path: "/orders",
     icon: ShoppingCart,
   },
-  {
-    label: "Transactions",
-    path: "/admin/transactions",
-    icon: ArrowLeftRight,
-  },
+
   {
     label: "Earnings",
-    path: "/admin/earnings",
+    path: "/earnings",
     icon: Wallet,
   },
   {
     label: "Locations",
-    path: "/admin/locations",
+    path: "/locations",
     icon: MapPin,
   },
   {
     label: "Categories",
-    path: "/admin/categories",
+    path: "/categories",
     icon: Tags,
   },
   {
     label: "Restaurants",
-    path: "/admin/restaurants",
+    path: "/restaurants",
     icon: Store,
   },
   {
     label: "Offers & Coupons",
-    path: "/admin/offers",
+    path: "/offers",
     icon: Ticket,
   },
   {
     label: "Complaints",
-    path: "/admin/complaints",
+    path: "/complaints",
     icon: MessageSquareWarning,
   },
   {
     label: "Notifications",
-    path: "/admin/notifications",
+    path: "/notifications",
     icon: Bell,
   },
   {
+    label: "Transactions",
+    path: "/transactions",
+    icon: ArrowLeftRight,
+  },
+  {
     label: "Reports",
-    path: "/admin/reports",
+    path: "/reports",
     icon: FileBarChart,
   },
   {
     label: "Settings",
-    path: "/admin/settings",
+    path: "/settings",
     icon: Settings,
   },
   {
     label: "Admin Users",
-    path: "/admin/admin-users",
+    path: "/admin-users",
     icon: ShieldUser,
   },
   {
     label: "Activity Logs",
-    path: "/admin/activity-logs",
+    path: "/activity-logs",
     icon: Activity,
   },
 ];

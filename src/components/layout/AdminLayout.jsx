@@ -9,15 +9,13 @@ function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <Header onMenuClick={() => setIsSidebarOpen(true)} />
-
-        <main className="min-w-0 flex-1">
+        <main className="main-scroll min-h-0 min-w-0 flex-1 overflow-y-auto">
           <Outlet />
-        </main> 
+        </main>
       </div>
     </div>
   );
