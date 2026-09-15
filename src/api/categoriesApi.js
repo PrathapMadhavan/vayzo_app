@@ -1,33 +1,35 @@
 import { apiRequest } from "./apiClient";
 
+const ENDPOINT = "/api/v1/admin/categories";
+
 export async function getCategories() {
-  return apiRequest("/categories", {}, "Failed to fetch categories");
+  return apiRequest(ENDPOINT, {}, "Failed to fetch categories");
 }
 
 export async function getCategoryById(id) {
-  return apiRequest(`/categories/${id}`, {}, "Failed to fetch category");
+  return apiRequest(`${ENDPOINT}/${id}`, {}, "Failed to fetch category");
 }
 
 export async function getCategoriesByParentId(parentId) {
-  return apiRequest(`/categories?parentId=${parentId}`, {}, "Failed to fetch child categories");
+  return apiRequest(`${ENDPOINT}?parentId=${parentId}`, {}, "Failed to fetch child categories");
 }
 
 export async function createCategory(categoryData) {
-  return apiRequest("/categories", {
+  return apiRequest(ENDPOINT, {
     method: "POST",
     body: JSON.stringify(categoryData),
   }, "Failed to create category");
 }
 
 export async function updateCategory(id, categoryData) {
-  return apiRequest(`/categories/${id}`, {
+  return apiRequest(`${ENDPOINT}/${id}`, {
     method: "PUT",
     body: JSON.stringify(categoryData),
   }, "Failed to update category");
 }
 
 export async function deleteCategory(id) {
-  return apiRequest(`/categories/${id}`, {
+  return apiRequest(`${ENDPOINT}/${id}`, {
     method: "DELETE",
   }, "Failed to delete category");
 }

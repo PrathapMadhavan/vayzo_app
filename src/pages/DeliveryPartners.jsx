@@ -334,7 +334,8 @@ function DeliveryPartners() {
               paginatedPartners.map((partner, index) => (
                 <tr
                   key={partner.partnerId}
-                  className="border-b border-border last:border-0 transition-colors hover:bg-background"
+                  onClick={() => navigate(`/delivery/${partner.partnerId}`)}
+                  className="border-b border-border last:border-0 transition-colors hover:bg-background cursor-pointer"
                 >
                   <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
                     {String((currentPage - 1) * itemsPerPage + index + 1).padStart(2, "0")}

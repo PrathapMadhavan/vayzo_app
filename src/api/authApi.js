@@ -1,19 +1,18 @@
-import { mockAdmin, mockAdminCredentials } from "../mock/vayzoApiMock";
 import { apiRequest } from "./apiClient";
 
+const ADMIN_ENDPOINT = "/adminUsers";
+
 export async function login(email, password) {
-  // Simulate delay
-  await new Promise((res) => setTimeout(res, 500));
-  if (
-    email === mockAdminCredentials.email &&
-    password === mockAdminCredentials.password
-  ) {
-    return {
-      success: true,
-      user: mockAdmin,
-    };
+  try {
+    const response = await apiRequest(`/api/v1/admin/auth/login`, {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+    return response; 
+    // expected: { success: true, message: "...", data: { accessToken, tokenType, user } }
+  } catch (err) {
+    throw new Error(err.message || "Invalid email or password");
   }
-  throw new Error("Invalid email or password");
 }
 
 export async function requestLoginOtp(contact) {
@@ -21,51 +20,47 @@ export async function requestLoginOtp(contact) {
     throw new Error("Contact is required");
   }
 
-  const mockOtp = "123456"; // Predictable test OTP
-
-  // Clean up any existing OTP for this contact
-  const existing = await apiRequest(`/otpSessions?contact=${contact}`);
-  const sessions = Array.isArray(existing) ? existing : [];
-  for (const session of sessions) {
-    await apiRequest(`/otpSessions/${session.id}`, { method: "DELETE" });
+  // Use the new mock server auth endpoint
+  try {
+    const response = await apiRequest("/api/v1/admin/auth/send-otp", {
+      method: "POST",
+      body: JSON.stringify({ mobileNumber: contact }),
+    });
+    return response; // { success: true, message: "..." }
+  } catch (err) {
+    throw new Error(err.message || "Admin account not found. Please check your mobile number.");
   }
-
-  // Create new OTP session in json-server
-  await apiRequest("/otpSessions", {
-    method: "POST",
-    body: JSON.stringify({ contact, otp: mockOtp, createdAt: Date.now() }),
-  }, "Failed to send OTP");
-
-  return { success: true, message: "OTP sent successfully" };
 }
 
 export async function verifyLoginOtp(contact, otp) {
-  const data = await apiRequest(`/otpSessions?contact=${contact}&otp=${otp}`);
-  const sessions = Array.isArray(data) ? data : [];
-
-  if (sessions.length > 0) {
-    // Delete the verified session
-    await apiRequest(`/otpSessions/${sessions[0].id}`, { method: "DELETE" });
-    return { success: true, user: mockAdmin, message: "OTP verified" };
+  if (!contact || !otp) {
+    throw new Error("Contact and OTP are required");
   }
 
-  throw new Error("Invalid OTP");
-}
-
-export async function resetPassword(contact, newPassword) {
-  await new Promise((res) => setTimeout(res, 500));
-  // In a real app this updates the user DB
-  return { success: true, message: "Password reset successfully" };
+  try {
+    const response = await apiRequest("/api/v1/admin/auth/verify-otp", {
+      method: "POST",
+      body: JSON.stringify({ mobileNumber: contact, otp }),
+    });
+    return response; 
+    // { success: true, data: { accessToken, tokenType, user } }
+  } catch (err) {
+    throw new Error(err.message || "Invalid OTP or Admin User not found");
+  }
 }
 
 export async function requestPasswordReset(email) {
-  // Simulate delay
-  await new Promise((res) => setTimeout(res, 500));
-
-  if (email !== mockAdminCredentials.email) {
-    throw new Error("Admin email not found");
+  try {
+    const response = await apiRequest("/api/v1/admin/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+    return response;
+  } catch (err) {
+    throw new Error(err.message || "Email not registered as an Admin. Please check the email address.");
   }
+}
 
-  // In a real app this would send an email with a reset token
-  return { success: true, message: "Reset link sent successfully" };
+export async function resetPassword(email, newPassword) {
+  return { success: true, message: "Password reset not fully implemented in mock" };
 }

@@ -1,12 +1,10 @@
-import { API_BASE_URL } from "./config";
+import { apiRequest } from "./apiClient";
 
-const API_URL = `${API_BASE_URL}/activityLogs`;
+const ENDPOINT = "/api/v1/admin/activity-logs";
 
 export async function getActivityLogs(filters = {}) {
-  // Construct query parameters for the mock backend
   const queryParams = new URLSearchParams();
   
-  // JSON Server simple filtering
   if (filters.action && filters.action !== "All Actions") {
     queryParams.append("action", filters.action);
   }
@@ -18,18 +16,10 @@ export async function getActivityLogs(filters = {}) {
   }
 
   const queryString = queryParams.toString();
-  const fetchUrl = queryString ? `${API_URL}?${queryString}` : API_URL;
+  const fetchUrl = queryString ? `${ENDPOINT}?${queryString}` : ENDPOINT;
 
-  const response = await fetch(fetchUrl);
-  if (!response.ok) {
-    throw new Error("Unable to load activity logs");
-  }
+  let data = await apiRequest(fetchUrl, {}, "Unable to load activity logs");
 
-  let data = await response.json();
-
-  // Apply custom local filtering for complex rules not supported out of the box by json-server mock
-  
-  // Search query (checks user, action, module, details)
   if (filters.searchQuery) {
     const q = filters.searchQuery.toLowerCase();
     data = data.filter(log => 
@@ -40,10 +30,9 @@ export async function getActivityLogs(filters = {}) {
     );
   }
 
-  // Date Range filtering
   if (filters.startDate || filters.endDate) {
     const start = filters.startDate ? new Date(filters.startDate) : new Date(0);
-    const end = filters.endDate ? new Date(filters.endDate) : new Date(8640000000000000); // Max date
+    const end = filters.endDate ? new Date(filters.endDate) : new Date(8640000000000000);
 
     data = data.filter(log => {
       const logDate = new Date(log.timestamp);
@@ -51,38 +40,24 @@ export async function getActivityLogs(filters = {}) {
     });
   }
 
-  // Sort by timestamp descending (newest first)
   data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   return data;
 }
 
 export async function getActivityLogById(id) {
-  const response = await fetch(`${API_URL}/${id}`);
-  if (!response.ok) {
-    throw new Error("Failed to load activity log details");
-  }
-  return await response.json();
+  return await apiRequest(`${ENDPOINT}/${id}`, {}, "Failed to load activity log details");
 }
 
 export async function deleteActivityLog(id) {
-  const response = await fetch(`${API_URL}/${id}`, {
+  return await apiRequest(`${ENDPOINT}/${id}`, {
     method: "DELETE",
-  });
-  if (!response.ok) {
-    throw new Error("Failed to delete activity log");
-  }
-  return await response.json();
+  }, "Failed to delete activity log");
 }
 
 export async function createActivityLog(logData) {
-  const response = await fetch(API_URL, {
+  return await apiRequest(ENDPOINT, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(logData),
-  });
-  if (!response.ok) {
-    throw new Error("Failed to create activity log");
-  }
-  return await response.json();
+  }, "Failed to create activity log");
 }

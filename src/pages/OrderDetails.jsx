@@ -292,15 +292,16 @@ export default function OrderDetails() {
                     >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-md bg-border/50 shrink-0 overflow-hidden">
-                            <img
-                              src={
-                                item.image ||
-                                "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=100&q=80"
-                              }
-                              alt={item.name}
-                              className="w-full h-full object-cover"
-                            />
+                          <div className="h-10 w-10 rounded-md bg-border/50 shrink-0 overflow-hidden flex items-center justify-center text-muted font-bold text-xs">
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              item.name?.charAt(0) || "I"
+                            )}
                           </div>
                           <div className="flex flex-col min-w-0">
                             <span className="font-semibold text-foreground truncate">
@@ -429,13 +430,15 @@ export default function OrderDetails() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary overflow-hidden shrink-0">
-                        <img
-                          src={
-                            dp.image ||
-                            `https://i.pravatar.cc/100?img=${10 + i}`
-                          }
-                          alt={dp.name}
-                        />
+                        {dp.image ? (
+                          <img
+                            src={dp.image}
+                            alt={dp.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          dp.name?.charAt(0) || "D"
+                        )}
                       </div>
                       <div className="flex flex-col min-w-0">
                         <span className="text-sm font-bold text-foreground flex items-center gap-1 truncate">

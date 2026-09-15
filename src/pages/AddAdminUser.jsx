@@ -6,6 +6,7 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import { createAdminUser, getAdminUserById, updateAdminUser } from "../api/adminUsersApi";
+import { validateImage } from "../utils/fileUtils";
 
 const statusOptions = ["Active", "Inactive"];
 const departmentOptions = ["Select Department", "Operations", "Support", "Finance", "IT", "Management"];
@@ -40,6 +41,7 @@ function AddAdminUser() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [existingRole, setExistingRole] = useState("Admin");
+  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     if (isEditing) {
@@ -68,6 +70,7 @@ function AddAdminUser() {
         password: data.password || "",
         confirm: data.password || "",
       });
+      setImagePreview(data.profileImage || null);
     } catch (err) {
       setError("Unable to load admin user details.");
     } finally {
@@ -76,6 +79,22 @@ function AddAdminUser() {
   };
 
   const update = (key) => (event) => setForm({ ...form, [key]: event.target.value });
+  
+  const handleImageChange = async (e) => {
+    setError("");
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        await validateImage(file);
+        const objectUrl = URL.createObjectURL(file);
+        // Note: we need a real upload endpoint to persist this properly.
+        setImagePreview(objectUrl);
+        console.warn("MISSING REQUIREMENT: Image upload endpoint unavailable. Preview will not be persisted.");
+      } catch (err) {
+        setError(err.message);
+      }
+    }
+  };
   
   const field = (id, labelText, key, type = "text", placeholder = "") => (
     <Input
@@ -106,26 +125,27 @@ function AddAdminUser() {
     try {
       setLoading(true);
       
+      const payload = {
+        name: form.name,
+        email: form.email,
+        phone: form.mobile,
+        department: form.department,
+        status: form.status,
+        password: form.password,
+      };
+
+      if (imagePreview && imagePreview.startsWith("blob:")) {
+        console.warn("MISSING REQUIREMENT: Image upload endpoint unavailable. Preview will not be persisted.");
+      } else if (imagePreview) {
+        payload.profileImage = imagePreview;
+      }
+
       if (isEditing) {
-        await updateAdminUser(id, {
-          name: form.name,
-          email: form.email,
-          phone: form.mobile,
-          department: form.department,
-          status: form.status,
-          role: existingRole, // Keep existing role (Admin or Super Admin)
-          password: form.password,
-        });
+        payload.role = existingRole;
+        await updateAdminUser(id, payload);
       } else {
-        await createAdminUser({
-          name: form.name,
-          email: form.email,
-          phone: form.mobile,
-          department: form.department,
-          status: form.status,
-          role: "Admin", // Strongly locked
-          password: form.password,
-        });
+        payload.role = "Admin";
+        await createAdminUser(payload);
       }
 
       navigate("/admin-users");
@@ -177,12 +197,24 @@ function AddAdminUser() {
 
                 <div className="flex flex-col">
                   <span className="mb-1.5 block text-sm font-medium text-foreground">Profile Image</span>
-                  <label htmlFor="profile-image" className="cursor-pointer flex flex-1 flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background hover:bg-surface-hover hover:border-primary/40 transition-all text-center p-6 group">
-                    <input type="file" id="profile-image" className="hidden" accept="image/png, image/jpeg, image/webp" />
-                    <CloudUpload size={32} className="text-primary mb-4 transition-transform group-hover:scale-110" />
-                    <p className="text-sm font-medium text-foreground">Click to upload</p>
-                    <p className="mt-1 text-xs text-muted">or drag and drop</p>
-                    <p className="mt-2 text-[10px] text-muted">JPG, PNG or WEBP (Max 2MB)</p>
+                  <label htmlFor="profile-image" className="cursor-pointer flex flex-1 flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background hover:bg-surface-hover hover:border-primary/40 transition-all text-center p-6 group overflow-hidden relative">
+                    <input type="file" id="profile-image" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleImageChange} />
+                    {imagePreview ? (
+                      <div className="absolute inset-0">
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white">
+                           <CloudUpload size={24} className="mb-2" />
+                           <span className="text-xs font-medium">Change Image</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <CloudUpload size={32} className="text-primary mb-4 transition-transform group-hover:scale-110" />
+                        <p className="text-sm font-medium text-foreground">Click to upload</p>
+                        <p className="mt-1 text-xs text-muted">or drag and drop</p>
+                        <p className="mt-2 text-[10px] text-muted">JPG, PNG or WEBP (Max 2MP)</p>
+                      </>
+                    )}
                   </label>
                 </div>
               </div>

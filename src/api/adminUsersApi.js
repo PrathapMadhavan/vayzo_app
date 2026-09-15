@@ -1,33 +1,30 @@
-import { API_BASE_URL } from "./config";
+import { apiRequest } from "./apiClient";
 
-const API_URL = `${API_BASE_URL}/adminUsers`;
+const API_ENDPOINT = "/api/v1/admin/admin-users";
 
 export async function getAdminUsers(filters = {}) {
-  // Construct query parameters
-  const queryParams = new URLSearchParams();
-  
+  let data = await apiRequest(API_ENDPOINT);
+
+  if (!data) return [];
+
   if (filters.role && filters.role !== "All Roles") {
-    queryParams.append("role", filters.role);
+    data = data.filter(user => user.role === filters.role);
   }
+
   if (filters.status && filters.status !== "All Status") {
-    queryParams.append("status", filters.status);
+    data = data.filter(user => 
+      user.status === filters.status || 
+      user.status === filters.status.toUpperCase() ||
+      user.status?.toLowerCase() === filters.status.toLowerCase()
+    );
   }
-
-  const queryString = queryParams.toString();
-  const fetchUrl = queryString ? `${API_URL}?${queryString}` : API_URL;
-
-  const response = await fetch(fetchUrl);
-  if (!response.ok) {
-    throw new Error("Unable to load admin users");
-  }
-
-  let data = await response.json();
 
   if (filters.searchQuery) {
     const q = filters.searchQuery.toLowerCase();
     data = data.filter(user => 
-      user.name.toLowerCase().includes(q) || 
-      user.email.toLowerCase().includes(q)
+      user.name?.toLowerCase().includes(q) || 
+      user.email?.toLowerCase().includes(q) ||
+      user.mobileNumber?.includes(q)
     );
   }
 
@@ -35,15 +32,10 @@ export async function getAdminUsers(filters = {}) {
 }
 
 export async function getAdminUserById(id) {
-  const response = await fetch(`${API_URL}/${id}`);
-  if (!response.ok) {
-    throw new Error("Failed to load admin user details");
-  }
-  return await response.json();
+  return await apiRequest(`${API_ENDPOINT}/${id}`);
 }
 
 export async function createAdminUser(userData) {
-  // Business Logic Validation
   const allAdmins = await getAdminUsers();
   
   if (allAdmins.length >= 2) {
@@ -65,7 +57,6 @@ export async function createAdminUser(userData) {
     throw new Error("Invalid role for Admin Users.");
   }
 
-  // Assign auto-generated ID since it's mock API
   const newUser = {
     ...userData,
     id: `ADM${Date.now()}`,
@@ -74,18 +65,10 @@ export async function createAdminUser(userData) {
     joinedDate: new Date().toISOString().split('T')[0]
   };
 
-  const response = await fetch(API_URL, {
+  return await apiRequest(API_ENDPOINT, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(newUser),
   });
-
-  if (!response.ok) {
-    throw new Error("Failed to create admin user");
-  }
-  return await response.json();
 }
 
 export async function updateAdminUser(id, userData) {
@@ -99,18 +82,10 @@ export async function updateAdminUser(id, userData) {
     throw new Error("Cannot change Admin to Super Admin.");
   }
 
-  const response = await fetch(`${API_URL}/${id}`, {
+  return await apiRequest(`${API_ENDPOINT}/${id}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify({ ...existingUser, ...userData }),
   });
-
-  if (!response.ok) {
-    throw new Error("Failed to update admin user");
-  }
-  return await response.json();
 }
 
 export async function deleteAdminUser(id) {
@@ -120,12 +95,8 @@ export async function deleteAdminUser(id) {
     throw new Error("Super Admin cannot be deleted.");
   }
 
-  const response = await fetch(`${API_URL}/${id}`, {
+  await apiRequest(`${API_ENDPOINT}/${id}`, {
     method: "DELETE",
   });
-  if (!response.ok) {
-    throw new Error("Failed to delete admin user");
-  }
   return true;
 }
-

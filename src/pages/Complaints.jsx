@@ -321,14 +321,15 @@ function Complaints() {
                   </tr>
                 ) : paginatedComplaints.length ? (
                   paginatedComplaints.map((c, index) => (
-                    <tr key={c.id} >
+                    <tr 
+                      key={c.id} 
+                      onClick={() => openDrawer(c)} 
+                      className="border-b border-border hover:bg-surface-50 transition-colors cursor-pointer"
+                    >
                       <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
                         {String((currentPage - 1) * itemsPerPage + index + 1).padStart(2, "0")}
                       </td>
-                      <td 
-                        className="whitespace-nowrap px-3 py-3 font-medium text-primary cursor-pointer hover:underline"
-                        onClick={() => openDrawer(c)}
-                      >
+                      <td className="whitespace-nowrap px-3 py-3 font-medium text-primary">
                         {c.complaintId}
                       </td>
                       <td className="whitespace-nowrap px-3 py-3 text-muted">{c.date}</td>

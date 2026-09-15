@@ -493,22 +493,20 @@ function Orders() {
               </tr>
             ) : paginatedOrders.length ? (
               paginatedOrders.map((order, index) => (
-                <tr key={order.orderId}>
+                <tr
+                  key={order.orderId}
+                  onClick={() => navigate(`/orders/${order.orderId}`)}
+                  className="hover:bg-surface-50 hover:text-primary transition-colors cursor-pointer"
+                >
                   <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
                     {String(
                       (currentPage - 1) * itemsPerPage + index + 1,
                     ).padStart(2, "0")}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/orders/${order.orderId}`)}
-                      className="hover:underline focus:outline-none"
-                    >
-                      {order.orderId?.startsWith("#")
-                        ? order.orderId
-                        : `#${order.orderId}`}
-                    </button>
+                    {order.orderId?.startsWith("#")
+                      ? order.orderId
+                      : `#${order.orderId}`}
                   </td>
                   <td className="px-3 py-3">
                     <div className="flex min-w-0 items-center gap-2">

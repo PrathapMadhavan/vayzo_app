@@ -24,7 +24,7 @@ export const navigationItems = [
     icon: LayoutDashboard,
   },
   {
-    label: "Users",
+    label: "Customers",
     path: "/users",
     icon: Users,
   },

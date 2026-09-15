@@ -8,7 +8,11 @@ import DateRangeInput from "../components/ui/DateRangeInput";
 import Table from "../components/ui/Table";
 import Modal from "../components/ui/Modal";
 import ActionMenu from "../components/ui/ActionMenu";
+import FilterPanel from "../components/ui/FilterPanel";
+import SearchInput from "../components/ui/SearchInput";
+import Card from "../components/ui/Card";
 import { getActivityLogs, deleteActivityLog } from "../api/activityLogsApi";
+import { exportToCSV } from "../utils/exportUtils";
 
 function ActivityLogs() {
   const [query, setQuery] = useState("");
@@ -157,101 +161,100 @@ function ActivityLogs() {
     <section className="min-h-full bg-background p-4 sm:p-6">
       <div className="space-y-4">
         {/* Header */}
-        <div>
+        <div className="mb-4">
           <h1 className="text-2xl font-semibold text-foreground">Activity Logs</h1>
           <p className="mt-1 text-xs text-muted">Track and monitor admin activity across the VAYZO platform.</p>
         </div>
 
         {/* Unified Filter/Action Card */}
-        <div className="rounded-xl border border-border bg-surface p-4 shadow-sm flex flex-col xl:flex-row items-end gap-3 z-50 relative">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
-            <div className="w-full relative">
-              <label className="text-xs font-medium text-muted mb-1.5 block">Search</label>
-              <Input
+        <Card noPadding className="flex flex-col">
+          <FilterPanel
+            search={
+              <SearchInput
                 id="activity-search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search user, action, details..."
-                className="h-10 text-sm w-full"
               />
-            </div>
-            <div className="w-full">
-              <DateRangeInput
-                label="Date Range"
-                startDate={dateRange[0]}
-                endDate={dateRange[1]}
-                onChange={setDateRange}
-                placeholder="Select date range"
-              />
-            </div>
-            <div className="w-full">
-              <label className="text-xs font-medium text-muted mb-1.5 block">Action</label>
-              <Select
-                id="activity-action"
-                value={action}
-                onChange={(e) => setAction(e.target.value)}
-                className="h-10 text-sm w-full"
+            }
+            actions={
+              <Button
+                variant="secondary"
+                size="sm"
+                type="button"
+                className="h-10 w-full sm:w-auto"
+                onClick={() => exportToCSV(logsData, "activity_logs.csv")}
+                disabled={isExporting}
               >
-                <option value="All Actions">All Actions</option>
-                <option value="LOGIN">LOGIN</option>
-                <option value="CREATE">CREATE</option>
-                <option value="UPDATE">UPDATE</option>
-                <option value="DELETE">DELETE</option>
-                <option value="VIEW">VIEW</option>
-                <option value="EXPORT">EXPORT</option>
-              </Select>
-            </div>
-            <div className="w-full">
-              <label className="text-xs font-medium text-muted mb-1.5 block">Module</label>
-              <Select
-                id="activity-module"
-                value={module}
-                onChange={(e) => setModule(e.target.value)}
-                className="h-10 text-sm w-full"
-              >
-                <option value="All Modules">All Modules</option>
-                <option value="System">System</option>
-                <option value="Settings">Settings</option>
-                <option value="Users">Users</option>
-                <option value="Admin Users">Admin Users</option>
-                <option value="Orders">Orders</option>
-                <option value="Restaurants">Restaurants</option>
-                <option value="Reports">Reports</option>
-                <option value="Delivery">Delivery</option>
-                <option value="Categories">Categories</option>
-                <option value="Offers">Offers</option>
-                <option value="Complaints">Complaints</option>
-              </Select>
-            </div>
-          </div>
-          
-          <div className="w-full xl:w-auto flex flex-col sm:flex-row gap-3 mt-3 xl:mt-0 ml-auto shrink-0">
-            <Button variant="secondary" className="h-10 w-full sm:w-auto px-5" onClick={handleResetFilters}>
-              <RefreshCw size={14} className="mr-2" /> Reset
-            </Button>
-            <Button className="h-10 w-full sm:w-auto px-5 bg-[#4a00e0] hover:bg-[#3b00b3] text-white" onClick={handleExport} disabled={isExporting}>
-              <Download size={14} className="mr-2" /> {isExporting ? "Exporting..." : "Export"}
-            </Button>
-          </div>
-        </div>
+                <Download size={14} className="mr-1" /> Export
+              </Button>
+            }
+            filters={
+              <>
+                <Select
+                  id="activity-action"
+                  value={action}
+                  onChange={(e) => setAction(e.target.value)}
+                  className="w-full sm:w-[160px]"
+                >
+                  <option value="All Actions">All Actions</option>
+                  <option value="LOGIN">LOGIN</option>
+                  <option value="CREATE">CREATE</option>
+                  <option value="UPDATE">UPDATE</option>
+                  <option value="DELETE">DELETE</option>
+                  <option value="VIEW">VIEW</option>
+                  <option value="EXPORT">EXPORT</option>
+                </Select>
+                <Select
+                  id="activity-module"
+                  value={module}
+                  onChange={(e) => setModule(e.target.value)}
+                  className="w-full sm:w-[160px]"
+                >
+                  <option value="All Modules">All Modules</option>
+                  <option value="System">System</option>
+                  <option value="Settings">Settings</option>
+                  <option value="Users">Users</option>
+                  <option value="Admin Users">Admin Users</option>
+                  <option value="Orders">Orders</option>
+                  <option value="Restaurants">Restaurants</option>
+                  <option value="Reports">Reports</option>
+                  <option value="Delivery">Delivery</option>
+                  <option value="Categories">Categories</option>
+                  <option value="Offers">Offers</option>
+                  <option value="Complaints">Complaints</option>
+                </Select>
+                <div className="w-full sm:w-auto">
+                  <DateRangeInput
+                    fromValue={dateRange[0]}
+                    toValue={dateRange[1]}
+                    onFromChange={(e) => setDateRange([e.target.value, dateRange[1]])}
+                    onToChange={(e) => setDateRange([dateRange[0], e.target.value])}
+                  />
+                </div>
+              </>
+            }
+            hasActiveFilters={query || action !== "All Actions" || module !== "All Modules" || dateRange[0] || dateRange[1]}
+            onReset={handleResetFilters}
+          />
 
-        {/* Loading / Error States */}
-        {isLoading ? (
-          <div className="flex h-64 items-center justify-center rounded-xl border border-border bg-surface">
-             <div className="flex flex-col items-center gap-3">
-               <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-               <p className="text-sm font-medium text-muted">Loading activity logs...</p>
-             </div>
-          </div>
-        ) : error ? (
-          <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-xl border border-border bg-surface text-center">
-             <p className="text-sm text-danger font-medium">{error}</p>
-             <Button onClick={fetchLogsData} variant="secondary" size="sm">Try Again</Button>
-          </div>
-        ) : (
-          /* Table Section */
-          <div className="mt-4">
-            <Table
+          {/* Loading / Error States */}
+          {isLoading ? (
+            <div className="flex h-64 items-center justify-center bg-surface">
+               <div className="flex flex-col items-center gap-3">
+                 <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+                 <p className="text-sm font-medium text-muted">Loading activity logs...</p>
+               </div>
+            </div>
+          ) : error ? (
+            <div className="flex h-64 flex-col items-center justify-center gap-3 bg-surface text-center">
+               <p className="text-sm text-danger font-medium">{error}</p>
+               <Button onClick={fetchLogsData} variant="secondary" size="sm">Try Again</Button>
+            </div>
+          ) : (
+            /* Table Section */
+            <div className="flex-1 w-full flex flex-col min-h-0 overflow-hidden border-t border-border">
+              <Table
               headers={tableHeaders}
               currentCount={currentData.length}
               totalCount={logsData.length}
@@ -259,6 +262,7 @@ function ActivityLogs() {
               totalPages={totalPages}
               onPageChange={setCurrentPage}
               minWidth="1050px"
+              className="border-0 shadow-none rounded-none border-t-0"
             >
               {logsData.length === 0 ? (
                 <tr>
@@ -268,7 +272,11 @@ function ActivityLogs() {
                 </tr>
               ) : (
                 currentData.map((log) => (
-                  <tr key={log.id} className="border-t border-border hover:bg-surface-50 transition-colors text-sm">
+                  <tr 
+                    key={log.id} 
+                    onClick={() => handleViewDetails(log)}
+                    className="border-b border-border hover:bg-surface-50 transition-colors text-sm last:border-0 cursor-pointer"
+                  >
                     <td className="px-4 py-4 text-muted whitespace-nowrap text-xs">{formatDate(log.timestamp)}</td>
                     <td className="px-4 py-4 font-medium text-foreground whitespace-nowrap">{log.user}</td>
                     <td className="px-4 py-4 whitespace-nowrap">
@@ -305,6 +313,7 @@ function ActivityLogs() {
             </Table>
           </div>
         )}
+        </Card>
       </div>
 
       {/* Details Modal */}

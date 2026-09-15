@@ -1,5 +1,14 @@
 import { useState, useEffect } from "react";
-import { Download, RefreshCw, DollarSign, Package, Users, Percent, Edit, Trash2 } from "lucide-react";
+import {
+  Download,
+  RefreshCw,
+  DollarSign,
+  Package,
+  Users,
+  Percent,
+  Edit,
+  Trash2,
+} from "lucide-react";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Select from "../components/ui/Select";
@@ -7,6 +16,9 @@ import DateRangeInput from "../components/ui/DateRangeInput";
 import StatCard from "../components/ui/StatCard";
 import Table from "../components/ui/Table";
 import ActionMenu from "../components/ui/ActionMenu";
+import FilterPanel from "../components/ui/FilterPanel";
+import Card from "../components/ui/Card";
+import { exportToCSV } from "../utils/exportUtils";
 import { getReports, getReportSummary, deleteReport } from "../api/reportsApi";
 
 function Reports() {
@@ -30,14 +42,19 @@ function Reports() {
       const formattedEnd = endDate ? endDate.toISOString() : null;
 
       const [reportsResp, summaryResp] = await Promise.all([
-        getReports({ reportType, status, startDate: formattedStart, endDate: formattedEnd }),
+        getReports({
+          reportType,
+          status,
+          startDate: formattedStart,
+          endDate: formattedEnd,
+        }),
         getReportSummary(),
       ]);
 
       // Handle custom local filtering for status since mock API doesn't fully support it
       let filteredReports = reportsResp;
       if (status !== "All Status") {
-        filteredReports = filteredReports.filter(r => r.status === status);
+        filteredReports = filteredReports.filter((r) => r.status === status);
       }
 
       setReportsData(filteredReports);
@@ -97,7 +114,7 @@ function Reports() {
     Revenue: "success",
     Commission: "warning",
     Users: "danger",
-    Delivery: "info"
+    Delivery: "info",
   };
 
   const formatCurrency = (val) => {
@@ -121,7 +138,10 @@ function Reports() {
 
   // Pagination logic
   const totalPages = Math.ceil(reportsData.length / itemsPerPage);
-  const currentData = reportsData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const currentData = reportsData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
 
   const tableHeaders = [
     "Date",
@@ -131,103 +151,97 @@ function Reports() {
     "Orders",
     "Users",
     "Status",
-    "Action"
+    "Action",
   ];
 
   return (
     <section className="min-h-full bg-background p-4 sm:p-6">
       <div className="space-y-4">
-        {/* Title without the unnecessary top box actions */}
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Reports</h1>
-          <p className="mt-1 text-xs text-muted">Generate and analyze business reports.</p>
-        </div>
-
         {/* Unified Filter/Action Card */}
-        <div className="rounded-xl border border-border bg-surface p-4 shadow-sm flex flex-col md:flex-row items-end gap-3 z-10 relative">
-          <div className="w-full md:w-auto flex-1">
-             <DateRangeInput
-               label="Date Range"
-               startDate={dateRange[0]}
-               endDate={dateRange[1]}
-               onChange={setDateRange}
-               placeholder="Select date range"
-             />
-          </div>
-          <div className="w-full md:w-auto">
-            <label className="text-xs font-medium text-muted mb-1.5 block">Report Type</label>
-            <Select
-              id="report-type"
-              value={reportType}
-              onChange={(e) => setReportType(e.target.value)}
-              className="h-10 text-sm min-w-[150px] w-full"
-            >
-              <option value="All">All Reports</option>
-              <option value="Sales">Sales</option>
-              <option value="Orders">Orders</option>
-              <option value="Revenue">Revenue</option>
-              <option value="Commission">Commission</option>
-              <option value="Users">Users</option>
-            </Select>
-          </div>
-          <div className="w-full md:w-auto">
-            <label className="text-xs font-medium text-muted mb-1.5 block">Status</label>
-            <Select
-              id="status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="h-10 text-sm min-w-[150px] w-full"
-            >
-              <option value="All Status">All Status</option>
-              <option value="Completed">Completed</option>
-              <option value="Processing">Processing</option>
-              <option value="Failed">Failed</option>
-            </Select>
-          </div>
-          <div className="w-full md:w-auto flex gap-3 mt-2 md:mt-0">
-            <Button variant="secondary" className="h-10 w-full sm:w-auto" onClick={handleResetFilters}>
-              <RefreshCw size={14} className="mr-2" /> Reset
-            </Button>
-            <Button className="h-10 w-full sm:w-auto bg-[#4a00e0] hover:bg-[#3b00b3] text-white" onClick={handleExport} disabled={isExporting}>
-              <Download size={14} className="mr-2" /> {isExporting ? "Exporting..." : "Export"}
-            </Button>
-          </div>
-        </div>
+        <Card noPadding className="flex flex-col">
+          <FilterPanel
+            actions={
+              <Button
+                variant="secondary"
+                size="sm"
+                type="button"
+                className="h-10 w-full sm:w-auto"
+                onClick={() => exportToCSV(reportsData, "reports.csv")}
+                disabled={isExporting}
+              >
+                <Download size={14} className="mr-1" /> Export
+              </Button>
+            }
+            filters={
+              <>
+                <Select
+                  id="report-type"
+                  value={reportType}
+                  onChange={(e) => setReportType(e.target.value)}
+                  className="w-full sm:w-[150px]"
+                >
+                  <option value="All">All Reports</option>
+                  <option value="Sales">Sales</option>
+                  <option value="Orders">Orders</option>
+                  <option value="Revenue">Revenue</option>
+                  <option value="Commission">Commission</option>
+                  <option value="Users">Users</option>
+                </Select>
+                <Select
+                  id="status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full sm:w-[150px]"
+                >
+                  <option value="All Status">All Status</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Failed">Failed</option>
+                </Select>
+                <div className="w-full sm:w-auto">
+                  <DateRangeInput
+                    fromValue={dateRange[0]}
+                    toValue={dateRange[1]}
+                    onFromChange={(e) => setDateRange([e.target.value, dateRange[1]])}
+                    onToChange={(e) => setDateRange([dateRange[0], e.target.value])}
+                  />
+                </div>
+              </>
+            }
+            hasActiveFilters={reportType !== "All" || status !== "All Status" || dateRange[0] || dateRange[1]}
+            onReset={handleResetFilters}
+          />
 
-        {/* Loading / Error States */}
-        {isLoading ? (
-          <div className="flex h-64 items-center justify-center rounded-xl border border-border bg-surface">
-             <div className="flex flex-col items-center gap-3">
-               <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-               <p className="text-sm font-medium text-muted">Loading reports...</p>
-             </div>
-          </div>
-        ) : error ? (
-          <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-xl border border-border bg-surface text-center">
-             <p className="text-sm text-danger font-medium">{error}</p>
-             <Button onClick={fetchReportsData} variant="secondary" size="sm">Try Again</Button>
-          </div>
-        ) : (
-          <>
-            {/* Stat Cards */}
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-               {statCards.map((stat, i) => (
-                 <StatCard
-                   key={i}
-                   title={stat.label}
-                   value={stat.value}
-                   trend={stat.trend}
-                   icon={stat.icon}
-                   colorClass={stat.colorClass}
-                   bgClass={stat.bgClass}
-                   variant="horizontal"
-                 />
-               ))}
+          {/* Loading / Error States */}
+          {isLoading ? (
+            <div className="flex h-64 items-center justify-center bg-surface">
+               <div className="flex flex-col items-center gap-3">
+                 <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+                 <p className="text-sm font-medium text-muted">Loading reports...</p>
+               </div>
             </div>
-
-            {/* Reports Details Table */}
-            <div className="mt-4">
-              <h2 className="text-sm font-semibold text-foreground mb-3">Report Details</h2>
+          ) : error ? (
+            <div className="flex h-64 flex-col items-center justify-center gap-3 bg-surface text-center">
+               <p className="text-sm text-danger font-medium">{error}</p>
+               <Button onClick={fetchReportsData} variant="secondary" size="sm">Try Again</Button>
+            </div>
+          ) : (
+            <div className="flex-1 w-full flex flex-col min-h-0 overflow-hidden border-t border-border">
+              {/* Stat Cards */}
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 p-4 border-b border-border bg-surface-50">
+                 {statCards.map((stat, i) => (
+                   <StatCard
+                     key={i}
+                     title={stat.label}
+                     value={stat.value}
+                     trend={stat.trend}
+                     icon={stat.icon}
+                     colorClass={stat.colorClass}
+                     bgClass={stat.bgClass}
+                     variant="horizontal"
+                   />
+                 ))}
+              </div>
               <Table
                 headers={tableHeaders}
                 currentCount={currentData.length}
@@ -236,37 +250,73 @@ function Reports() {
                 totalPages={totalPages}
                 onPageChange={setCurrentPage}
                 minWidth="1000px"
+                className="border-0 shadow-none rounded-none border-t-0"
               >
                 {reportsData.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-sm text-muted">
+                    <td
+                      colSpan={8}
+                      className="p-8 text-center text-sm text-muted"
+                    >
                       No reports found matching your filters.
                     </td>
                   </tr>
                 ) : (
                   currentData.map((report) => (
-                    <tr key={report.id} className="border-t border-border hover:bg-surface-50 transition-colors text-sm">
-                      <td className="px-4 py-4 text-muted whitespace-nowrap">{report.date}</td>
+                    <tr
+                      key={report.id}
+                      onClick={() => handleView(report)}
+                      className="border-t border-border hover:bg-surface-50 transition-colors text-sm cursor-pointer"
+                    >
+                      <td className="px-4 py-4 text-muted whitespace-nowrap">
+                        {report.date}
+                      </td>
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <Badge variant={badgeVariant[report.reportType] || "default"} className="px-2 py-0.5 rounded-md font-medium">
+                        <Badge
+                          variant={badgeVariant[report.reportType] || "default"}
+                          className="px-2 py-0.5 rounded-md font-medium"
+                        >
                           {report.reportType}
                         </Badge>
                       </td>
-                      <td className="px-4 py-4 text-foreground font-medium whitespace-nowrap">{report.title}</td>
-                      <td className="px-4 py-4 text-muted whitespace-nowrap">{formatCurrency(report.totalAmount)}</td>
-                      <td className="px-4 py-4 text-muted whitespace-nowrap">{report.orders > 0 ? report.orders : "0"}</td>
-                      <td className="px-4 py-4 text-muted whitespace-nowrap">{report.users > 0 ? report.users : "0"}</td>
+                      <td className="px-4 py-4 text-foreground font-medium whitespace-nowrap">
+                        {report.title}
+                      </td>
+                      <td className="px-4 py-4 text-muted whitespace-nowrap">
+                        {formatCurrency(report.totalAmount)}
+                      </td>
+                      <td className="px-4 py-4 text-muted whitespace-nowrap">
+                        {report.orders > 0 ? report.orders : "0"}
+                      </td>
+                      <td className="px-4 py-4 text-muted whitespace-nowrap">
+                        {report.users > 0 ? report.users : "0"}
+                      </td>
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <Badge variant={badgeVariant[report.status] || "default"} className="bg-success/10 text-success rounded-full border-none">
+                        <Badge
+                          variant={badgeVariant[report.status] || "default"}
+                          className="bg-success/10 text-success rounded-full border-none"
+                        >
                           {report.status}
                         </Badge>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-center sm:text-left">
                         <ActionMenu
                           actions={[
-                            { label: "View", onClick: () => handleView(report) },
-                            { label: "Edit", icon: Edit, onClick: () => handleEdit(report) },
-                            { label: "Delete", icon: Trash2, danger: true, onClick: () => handleDelete(report) }
+                            {
+                              label: "View",
+                              onClick: () => handleView(report),
+                            },
+                            {
+                              label: "Edit",
+                              icon: Edit,
+                              onClick: () => handleEdit(report),
+                            },
+                            {
+                              label: "Delete",
+                              icon: Trash2,
+                              danger: true,
+                              onClick: () => handleDelete(report),
+                            },
                           ]}
                         />
                       </td>
@@ -275,8 +325,8 @@ function Reports() {
                 )}
               </Table>
             </div>
-          </>
-        )}
+          )}
+        </Card>
       </div>
     </section>
   );

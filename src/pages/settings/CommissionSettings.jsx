@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import Input from "../../components/ui/input";
+import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
-import Button from "../../components/ui/Button";
+import Toggle from "../../components/ui/Toggle";
+import Card from "../../components/ui/Card";
+import Button from "../../components/ui/button";
 import { getCommissionSettings, saveCommissionSettings } from "../../api/settingsApi";
 import { 
   Info, 
@@ -153,15 +155,29 @@ function CommissionSettings() {
                             </Select>
                           </td>
                           <td className="py-4 px-2">
-                            <Input className="h-9 text-xs font-medium" value={svc.comm} onChange={(e) => handleServiceChange(idx, "comm", e.target.value)} />
+                            <div className="w-24">
+                              <Input 
+                                type="text" 
+                                value={svc.comm} 
+                                onChange={(e) => handleServiceChange(idx, 'comm', e.target.value)}
+                                className="!py-1.5 !px-3 !text-xs text-right"
+                                suffix={<span className="text-xs text-muted">%</span>}
+                              />
+                            </div>
                           </td>
                           <td className="py-4 px-2">
-                            <Input className="h-9 text-xs" value={svc.gst} onChange={(e) => handleServiceChange(idx, "gst", e.target.value)} />
+                            <div className="w-20">
+                              <Input 
+                                type="text" 
+                                value={svc.gst} 
+                                onChange={(e) => handleServiceChange(idx, 'gst', e.target.value)}
+                                className="!py-1.5 !px-3 !text-xs text-right"
+                                suffix={<span className="text-xs text-muted">%</span>}
+                              />
+                            </div>
                           </td>
                           <td className="py-4 px-2">
-                            <button type="button" onClick={() => toggleServiceStatus(idx)} className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${svc.active ? "bg-success" : "bg-muted"}`}>
-                              <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${svc.active ? "left-4.5" : "left-0.5"}`} />
-                            </button>
+                            <Toggle checked={svc.active} onChange={() => toggleServiceStatus(idx)} />
                           </td>
                           <td className="py-4 pl-2 text-right">
                             <Button variant="secondary" size="sm" className="h-8 text-xs hover:text-primary">Update</Button>
@@ -183,7 +199,7 @@ function CommissionSettings() {
             </div>
 
             {/* Commission Rules */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+            <Card className="p-5">
               <h3 className="mb-5 font-semibold text-foreground">Commission Rules</h3>
               
               <div className="space-y-6">
@@ -195,9 +211,8 @@ function CommissionSettings() {
                       <p className="text-xs text-muted mt-0.5">Set minimum commission amount per order.</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-muted font-medium">Amount (₹)</span>
-                    <input type="text" defaultValue="5.00" className="w-24 rounded-md border border-border bg-surface px-3 py-1.5 text-sm focus:border-primary outline-none text-right font-medium" />
+                  <div className="flex items-center gap-3 w-32">
+                    <Input type="text" defaultValue="5.00" className="!py-1.5 !px-3 !text-sm text-right font-medium" />
                   </div>
                 </div>
 
@@ -209,9 +224,8 @@ function CommissionSettings() {
                       <p className="text-xs text-muted mt-0.5">Set maximum commission amount per order.</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-muted font-medium">Amount (₹)</span>
-                    <input type="text" defaultValue="100.00" className="w-24 rounded-md border border-border bg-surface px-3 py-1.5 text-sm focus:border-primary outline-none text-right font-medium" />
+                  <div className="flex items-center gap-3 w-32">
+                    <Input type="text" defaultValue="100.00" className="!py-1.5 !px-3 !text-sm text-right font-medium" />
                   </div>
                 </div>
 
@@ -255,7 +269,7 @@ function CommissionSettings() {
                   </div>
                 </div>
               </div>
-            </div>
+            </Card>
 
           </div>
 
@@ -286,7 +300,7 @@ function CommissionSettings() {
             </div>
 
             {/* Additional Settings */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+            <Card className="p-5">
               <h3 className="mb-5 font-semibold text-foreground">Additional Commission Settings</h3>
               
               <div className="space-y-6">
@@ -298,17 +312,12 @@ function CommissionSettings() {
                       <p className="text-sm font-medium text-foreground">Extra Commission for COD Orders</p>
                       <p className="text-[11px] text-muted mt-1 leading-relaxed">Apply extra commission for Cash on Delivery orders.</p>
                     </div>
-                    <button type="button" onClick={() => setToggles(p => ({...p, extraCod: !p.extraCod}))} className={`shrink-0 relative h-5 w-9 rounded-full transition-colors ${toggles.extraCod ? "bg-success" : "bg-muted"}`}>
-                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.extraCod ? "left-4.5 translate-x-4" : "left-0.5"}`} />
-                    </button>
+                    <Toggle checked={toggles.extraCod} onChange={() => setToggles(p => ({...p, extraCod: !p.extraCod}))} />
                   </div>
                   {toggles.extraCod && (
                     <div className="mt-4">
                       <label className="text-xs text-muted mb-1 block">Extra Commission (%)</label>
-                      <div className="relative">
-                        <input type="text" defaultValue="0" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
-                        <span className="absolute right-3 top-2 text-sm text-muted">%</span>
-                      </div>
+                      <Input type="text" defaultValue="0" className="!py-2 !text-sm" suffix={<span className="text-sm text-muted">%</span>} />
                     </div>
                   )}
                 </div>
@@ -320,17 +329,12 @@ function CommissionSettings() {
                       <p className="text-sm font-medium text-foreground">Peak Time Commission</p>
                       <p className="text-[11px] text-muted mt-1 leading-relaxed">Apply extra commission during peak hours.</p>
                     </div>
-                    <button type="button" onClick={() => setToggles(p => ({...p, peakTime: !p.peakTime}))} className={`shrink-0 relative h-5 w-9 rounded-full transition-colors ${toggles.peakTime ? "bg-success" : "bg-muted"}`}>
-                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.peakTime ? "left-4.5 translate-x-4" : "left-0.5"}`} />
-                    </button>
+                    <Toggle checked={toggles.peakTime} onChange={() => setToggles(p => ({...p, peakTime: !p.peakTime}))} />
                   </div>
                   {toggles.peakTime && (
                     <div className="mt-4">
                       <label className="text-xs text-muted mb-1 block">Extra Commission (%)</label>
-                      <div className="relative">
-                        <input type="text" defaultValue="0" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
-                        <span className="absolute right-3 top-2 text-sm text-muted">%</span>
-                      </div>
+                      <Input type="text" defaultValue="0" className="!py-2 !text-sm" suffix={<span className="text-sm text-muted">%</span>} />
                     </div>
                   )}
                 </div>
@@ -342,17 +346,12 @@ function CommissionSettings() {
                       <p className="text-sm font-medium text-foreground">Surge Commission</p>
                       <p className="text-[11px] text-muted mt-1 leading-relaxed">Enable surge commission for high demand.</p>
                     </div>
-                    <button type="button" onClick={() => setToggles(p => ({...p, surge: !p.surge}))} className={`shrink-0 relative h-5 w-9 rounded-full transition-colors ${toggles.surge ? "bg-success" : "bg-muted"}`}>
-                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.surge ? "left-4.5 translate-x-4" : "left-0.5"}`} />
-                    </button>
+                    <Toggle checked={toggles.surge} onChange={() => setToggles(p => ({...p, surge: !p.surge}))} />
                   </div>
                   {toggles.surge && (
                     <div className="mt-4">
                       <label className="text-xs text-muted mb-1 block">Surge Commission (%)</label>
-                      <div className="relative">
-                        <input type="text" defaultValue="0" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
-                        <span className="absolute right-3 top-2 text-sm text-muted">%</span>
-                      </div>
+                      <Input type="text" defaultValue="0" className="!py-2 !text-sm" suffix={<span className="text-sm text-muted">%</span>} />
                     </div>
                   )}
                 </div>
@@ -364,14 +363,12 @@ function CommissionSettings() {
                       <p className="text-sm font-medium text-foreground">Rounded Off</p>
                       <p className="text-[11px] text-muted mt-0.5">Round off commission to nearest rupee.</p>
                     </div>
-                    <button type="button" onClick={() => setToggles(p => ({...p, rounded: !p.rounded}))} className={`shrink-0 relative h-5 w-9 rounded-full transition-colors ${toggles.rounded ? "bg-success" : "bg-muted"}`}>
-                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.rounded ? "left-4.5 translate-x-4" : "left-0.5"}`} />
-                    </button>
+                    <Toggle checked={toggles.rounded} onChange={() => setToggles(p => ({...p, rounded: !p.rounded}))} />
                   </div>
                 </div>
 
               </div>
-            </div>
+            </Card>
 
           </div>
         </div>

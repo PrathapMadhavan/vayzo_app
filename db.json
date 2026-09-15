@@ -1,7 +1,7 @@
 {
   "users": [
     {
-      "userId": "USR1001",
+"userId": "USR1001",
       "name": "Prathap M",
       "email": "prathap444@gmail.com",
       "mobileNumber": "9876543210",
@@ -122,18 +122,6 @@
       "id": "WPWnjce0FRc"
     },
     {
-      "userId": "USR1788",
-      "name": "abi",
-      "email": "abi@gmail.com",
-      "mobileNumber": "93829494749",
-      "userType": "Delivery Partner",
-      "role": "Manager",
-      "status": "ACTIVE",
-      "isVerified": false,
-      "joinedOn": "2026-08-30",
-      "id": "lcI6YtJ1OBw"
-    },
-    {
       "userId": "USR2001",
       "name": "Prathap M 1",
       "email": "prathap@gmail.com",
@@ -147,7 +135,8 @@
       "isVerified": true,
       "joinedOn": "2024-05-12",
       "id": "USR2001",
-      "role": "Admin"
+      "role": "Admin",
+      "public_id": "01ARZ3NDEKTSV4RRFFQ69GCUSTA"
     },
     {
       "userId": "USR2002",
@@ -163,7 +152,8 @@
       "isVerified": true,
       "joinedOn": "2024-05-12",
       "id": "USR2002",
-      "role": "Admin"
+      "role": "Admin",
+      "public_id": "01ARZ3NDEKTSV4RRFFQ69GCUSTB"
     },
     {
       "userId": "USR2003",
@@ -438,7 +428,16 @@
       "role": "Admin"
     },
     {
-      "userId": "USR1788780749774",
+"id": "Y1zeTMOWroc",
+      "name": "HARII",
+      "email": "haripriyan@gmail.com",
+      "mobileNumber": "0987654321",
+      "userType": "Partner",
+      "role": "Delivery Partner",
+      "status": "Active",
+      "isVerified": true,
+      "joinedOn": "2026-09-11T13:23:26.484Z",
+"userId": "USR1788780749774",
       "name": "Dias ",
       "email": "dias123@gamil.com",
       "mobileNumber": "88888888",
@@ -480,7 +479,7 @@
   ],
   "orders": [
     {
-      "orderId": "ORD1001",
+"orderId": "ORD1001",
       "customerName": "Prathap M",
       "restaurantName": "Murugan Kadai",
       "status": "IN_TRANSIT",
@@ -703,20 +702,6 @@
       "city": "Madurai",
       "id": "ORD2011",
       "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2012",
-      "customerName": "Prathap M 12",
-      "restaurantName": "Murugan Kadai",
-      "status": "IN_TRANSIT",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2012",
-      "deliveryPartnerVehicle": "Bike",
-      "deliveryPartnerId": "dp-id-1"
     },
     {
       "orderId": "ORD2013",
@@ -2610,7 +2595,7 @@
   ],
   "categories": [
     {
-      "name": "briyani",
+"name": "briyani",
       "categoryId": "CAT1001",
       "type": "Product",
       "itemCount": 1200,
@@ -2880,7 +2865,7 @@
       "description": "Fresh produce, staples, and daily needs.",
       "createdDate": "2024-01-15",
       "parentId": ""
-    },
+},
     {
       "id": "101",
       "categoryId": "CAT1101",
@@ -2949,126 +2934,6 @@
     }
   ],
   "offers": [
-    {
-      "id": "1",
-      "offerId": "OFF001",
-      "name": "FIRST50",
-      "title": "First Order Offer",
-      "type": "Percentage",
-      "discountText": "50% OFF",
-      "discountDetail": "Max ₹100",
-      "usageLimit": 1245,
-      "usageMax": 5000,
-      "validFrom": "2024-05-10",
-      "validTo": "2024-05-31",
-      "status": "ACTIVE",
-      "color": "success"
-    },
-    {
-      "id": "2",
-      "offerId": "OFF002",
-      "name": "FLAT100",
-      "title": "Flat ₹100 OFF",
-      "type": "Flat",
-      "discountText": "₹100 OFF",
-      "discountDetail": "Min. order ₹249",
-      "usageLimit": 865,
-      "usageMax": 2000,
-      "validFrom": "2024-05-01",
-      "validTo": "2024-05-31",
-      "status": "ACTIVE",
-      "color": "info"
-    },
-    {
-      "id": "3",
-      "offerId": "OFF003",
-      "name": "FREESHIP",
-      "title": "Free Delivery",
-      "type": "Free Delivery",
-      "discountText": "100% OFF",
-      "discountDetail": "Delivery Charges",
-      "usageLimit": 2310,
-      "usageMax": 10000,
-      "validFrom": "2024-05-05",
-      "validTo": "2024-05-25",
-      "status": "ACTIVE",
-      "color": "warning"
-    },
-    {
-      "id": "4",
-      "offerId": "OFF004",
-      "name": "WEEKEND20",
-      "title": "Weekend Special",
-      "type": "Percentage",
-      "discountText": "20% OFF",
-      "discountDetail": "Max ₹200",
-      "usageLimit": 632,
-      "usageMax": 3000,
-      "validFrom": "2024-06-01",
-      "validTo": "2024-06-30",
-      "status": "SCHEDULED",
-      "color": "primary"
-    },
-    {
-      "id": "5",
-      "offerId": "OFF005",
-      "name": "FOODIES15",
-      "title": "Foodies Special",
-      "type": "Percentage",
-      "discountText": "15% OFF",
-      "discountDetail": "Max ₹150",
-      "usageLimit": 1028,
-      "usageMax": 4000,
-      "validFrom": "2024-05-15",
-      "validTo": "2024-06-15",
-      "status": "ACTIVE",
-      "color": "danger"
-    },
-    {
-      "id": "6",
-      "offerId": "OFF006",
-      "name": "NEWUSER75",
-      "title": "New User Offer",
-      "type": "Flat",
-      "discountText": "₹75 OFF",
-      "discountDetail": "Min. order ₹199",
-      "usageLimit": 3451,
-      "usageMax": 8000,
-      "validFrom": "2024-04-01",
-      "validTo": "2024-05-31",
-      "status": "ACTIVE",
-      "color": "warning"
-    },
-    {
-      "id": "7",
-      "offerId": "OFF007",
-      "name": "SUMMER25",
-      "title": "Summer Offer",
-      "type": "Percentage",
-      "discountText": "25% OFF",
-      "discountDetail": "Max ₹250",
-      "usageLimit": 1987,
-      "usageMax": 5000,
-      "validFrom": "2024-05-01",
-      "validTo": "2024-05-10",
-      "status": "EXPIRED",
-      "color": "muted"
-    },
-    {
-      "id": "8",
-      "offerId": "OFF008",
-      "name": "APRILDEAL",
-      "title": "April Deal",
-      "type": "Flat",
-      "discountText": "₹120 OFF",
-      "discountDetail": "Min. order ₹299",
-      "usageLimit": 921,
-      "usageMax": 3000,
-      "validFrom": "2024-04-01",
-      "validTo": "2024-04-30",
-      "status": "EXPIRED",
-      "color": "info"
-    },
     {
       "id": "OFR2001",
       "offerId": "OFR2001",
@@ -6083,48 +5948,6 @@
     {
       "contact": "9876543210",
       "otp": "123456",
-      "createdAt": 1788439698135,
-      "id": "ewCg5gQ3AKA"
-    },
-    {
-      "contact": "9876543210",
-      "otp": "123456",
-      "createdAt": 1788439701453,
-      "id": "ucMN1TrbRPM"
-    },
-    {
-      "contact": "9876543210",
-      "otp": "123456",
-      "createdAt": 1788439704207,
-      "id": "SDRod7TWiH4"
-    },
-    {
-      "contact": "9876543210",
-      "otp": "123456",
-      "createdAt": 1788439708278,
-      "id": "jH09cqi7Bp0"
-    },
-    {
-      "contact": "9876543210",
-      "otp": "123456",
-      "createdAt": 1788440207568,
-      "id": "7evVEMXI-as"
-    },
-    {
-      "contact": "9876543210",
-      "otp": "123456",
-      "createdAt": 1788440440713,
-      "id": "XhmUfhcSjgs"
-    },
-    {
-      "contact": "9876543210",
-      "otp": "123456",
-      "createdAt": 1788440444115,
-      "id": "ftpnea663o0"
-    },
-    {
-      "contact": "9876543210",
-      "otp": "123456",
       "createdAt": 1788440700231,
       "id": "EJZTOhYPUmQ"
     },
@@ -6173,7 +5996,89 @@
     {
       "contact": "9876543210",
       "otp": "123456",
-      "createdAt": 1788439698135,
+      "createdAt": 1788802002394,
+      "id": "kS3Sj1LC69w"
+    },
+    {
+      "contact": "9876543210",
+      "otp": "123456",
+      "createdAt": 1788802012956,
+      "id": "Sm2gDqnDKwo"
+    },
+    {
+      "contact": "9876543210",
+      "otp": "123456",
+      "createdAt": 1788802018070,
+      "id": "eP8z4Ou5pjA"
+    },
+    {
+      "contact": "9876543210",
+      "otp": "123456",
+      "createdAt": 1788873286067,
+      "id": "z5ZtRyEIA50"
+    },
+    {
+      "contact": "9876543210",
+      "otp": "123456",
+      "createdAt": 1788899907108,
+      "id": "VI6CvHR5GY4"
+    },
+    {
+      "contact": "9876543210",
+      "otp": "123456",
+      "createdAt": 1788932441389,
+      "id": "HVDNvl5Ny7U"
+    },
+    {
+      "contact": "919876543210",
+      "otp": "123456",
+      "createdAt": 1788932453925,
+      "id": "JDfFQHMqeOg"
+    },
+    {
+      "contact": "9876543210",
+      "otp": "123456",
+      "createdAt": 1788947650687,
+      "id": "nDoAO9W-OP4"
+    },
+    {
+      "contact": "9876543210",
+      "otp": "123456",
+      "createdAt": 1788950127864,
+      "id": "rbEAU5p5vCY"
+    },
+    {
+      "contact": "9876543210",
+      "otp": "123456",
+      "createdAt": 1788950157675,
+      "id": "fDifbui1_w0"
+    },
+    {
+      "contact": "8438285161",
+      "otp": "123456",
+"createdAt": 1788950251966,
+      "id": "3KXVfBlS9_A",
+"createdAt": 1788780852885,
+      "id": "vKQR-8iKy7A"
+    },
+    {
+      "contact": "9876543210",
+      "otp": "123456",
+"createdAt": 1788950298764,
+      "id": "4GLOuLt4kNI"
+    },
+    {
+      "contact": "9876543210",
+      "otp": "123456",
+      "createdAt": 1789025194746,
+      "id": "VA5iVl069M4"
+    },
+    {
+      "contact": "9876543210",
+      "otp": "123456",
+      "createdAt": 1789025200677,
+      "id": "dffN8AS9dho",
+"createdAt": 1788439698135,
       "id": "3WZ1YQe9GBU"
     }
   ],
@@ -6939,5 +6844,512 @@
       "firebaseKey": ""
     }
   ],
-  "$schema": "./node_modules/json-server/schema.json"
+  "reportsSummary": [
+    {
+      "id": "1",
+      "totalRevenue": 248750,
+      "totalOrders": 1245,
+      "totalUsers": 892,
+      "totalCommission": 37420,
+      "trends": {
+        "totalRevenue": "+12.5%",
+        "totalOrders": "+8.3%",
+        "totalUsers": "+6.1%",
+        "totalCommission": "+10.2%"
+      }
+    }
+  ],
+  "reports": [
+    {
+      "id": "REP001",
+      "date": "2025-05-22",
+      "reportType": "Sales",
+      "title": "Daily Sales Report",
+      "totalAmount": 48750,
+      "orders": 124,
+      "users": 89,
+      "status": "Completed"
+    },
+    {
+      "id": "REP002",
+      "date": "2025-05-21",
+      "reportType": "Orders",
+      "title": "Order Summary Report",
+      "totalAmount": 42680,
+      "orders": 98,
+      "users": 76,
+      "status": "Completed"
+    },
+    {
+      "id": "REP003",
+      "date": "2025-05-20",
+      "reportType": "Revenue",
+      "title": "Revenue Report",
+      "totalAmount": 56320,
+      "orders": 142,
+      "users": 102,
+      "status": "Completed"
+    },
+    {
+      "id": "REP004",
+      "date": "2025-05-19",
+      "reportType": "Commission",
+      "title": "Commission Report",
+      "totalAmount": 12450,
+      "orders": 0,
+      "users": 0,
+      "status": "Completed"
+    },
+    {
+      "id": "REP005",
+      "date": "2025-05-18",
+      "reportType": "Users",
+      "title": "User Activity Report",
+      "totalAmount": 0,
+      "orders": 0,
+      "users": 134,
+      "status": "Completed"
+    },
+    {
+      "id": "REP006",
+      "date": "2025-05-17",
+      "reportType": "Delivery",
+      "title": "Delivery Performance",
+      "totalAmount": 18750,
+      "orders": 67,
+      "users": 0,
+      "status": "Completed"
+    },
+    {
+      "id": "REP007",
+      "date": "2025-05-16",
+      "reportType": "Sales",
+      "title": "Daily Sales Report",
+      "totalAmount": 36890,
+      "orders": 89,
+      "users": 71,
+      "status": "Completed"
+    },
+    {
+      "id": "REP008",
+      "date": "2025-05-15",
+      "reportType": "Orders",
+      "title": "Order Summary Report",
+      "totalAmount": 29340,
+      "orders": 76,
+      "users": 58,
+      "status": "Completed"
+    },
+    {
+      "id": "REP009",
+      "date": "2025-05-14",
+      "reportType": "Revenue",
+      "title": "Revenue Report",
+      "totalAmount": 45120,
+      "orders": 112,
+      "users": 84,
+      "status": "Completed"
+    },
+    {
+      "id": "REP010",
+      "date": "2025-05-13",
+      "reportType": "Commission",
+      "title": "Commission Report",
+      "totalAmount": 16780,
+      "orders": 0,
+      "users": 0,
+      "status": "Completed"
+    }
+  ],
+  "adminUsers": [
+    {
+      "id": "ADM1001",
+      "userId": "ADM1001",
+      "name": "Pradhap",
+      "email": "admin@vayzo.com",
+      "role": "Super Admin",
+      "department": "Management",
+      "status": "Active",
+      "mobileNumber": "9876543210",
+      "phone": "+919876543210",
+      "password": "admin123"
+    }
+  ],
+  "activityLogs": [
+    {
+      "id": "ACT1001",
+      "user": "Pradhap",
+      "action": "LOGIN",
+      "module": "System",
+      "details": "Logged into the system successfully.",
+      "timestamp": "2026-09-07T10:30:00Z",
+      "ipAddress": "192.168.1.10",
+      "status": "Success"
+    },
+    {
+      "id": "ACT1002",
+      "user": "Pradhap",
+      "action": "UPDATE",
+      "module": "Settings",
+      "details": "Updated system payment configuration.",
+      "timestamp": "2026-09-07T10:35:00Z",
+      "ipAddress": "192.168.1.10",
+      "status": "Success"
+    },
+    {
+      "id": "ACT1003",
+      "user": "Aisha",
+      "action": "CREATE",
+      "module": "Users",
+      "details": "Created new customer user: John Doe",
+      "timestamp": "2026-09-07T09:15:00Z",
+      "ipAddress": "192.168.1.12",
+      "status": "Success"
+    },
+    {
+      "id": "ACT1004",
+      "user": "Ramesh",
+      "action": "DELETE",
+      "module": "Orders",
+      "details": "Cancelled order #ORD5678",
+      "timestamp": "2026-09-06T18:45:00Z",
+      "ipAddress": "192.168.1.15",
+      "status": "Success"
+    },
+    {
+      "id": "ACT1005",
+      "user": "System",
+      "action": "EXPORT",
+      "module": "Reports",
+      "details": "Automated daily sales report exported.",
+      "timestamp": "2026-09-06T23:59:00Z",
+      "ipAddress": "127.0.0.1",
+      "status": "Success"
+    },
+    {
+      "id": "ACT1006",
+      "user": "Sarah",
+      "action": "LOGIN",
+      "module": "System",
+      "details": "Failed login attempt (Invalid credentials).",
+      "timestamp": "2026-08-20T14:15:00Z",
+      "ipAddress": "192.168.1.42",
+      "status": "Failed"
+    },
+    {
+      "id": "ACT1007",
+      "user": "Karthik",
+      "action": "UPDATE",
+      "module": "Restaurants",
+      "details": "Updated opening hours for Restaurant #RST015",
+      "timestamp": "2026-09-07T11:05:00Z",
+      "ipAddress": "192.168.1.20",
+      "status": "Success"
+    },
+    {
+      "id": "ACT1008",
+      "user": "Pradhap",
+      "action": "CREATE",
+      "module": "Admin Users",
+      "details": "Added new admin user: System Operator",
+      "timestamp": "2026-09-07T15:30:00Z",
+      "ipAddress": "192.168.1.10",
+      "status": "Success"
+    },
+    {
+      "id": "ACT1009",
+      "user": "Aisha",
+      "action": "VIEW",
+      "module": "Complaints",
+      "details": "Viewed complaint details for CMP902",
+      "timestamp": "2026-09-07T09:20:00Z",
+      "ipAddress": "192.168.1.12",
+      "status": "Success"
+    },
+    {
+      "id": "ACT1010",
+      "user": "Ramesh",
+      "action": "UPDATE",
+      "module": "Delivery",
+      "details": "Re-assigned delivery partner for order ORD5679",
+      "timestamp": "2026-09-06T18:50:00Z",
+      "ipAddress": "192.168.1.15",
+      "status": "Success"
+    },
+    {
+      "id": "ACT1011",
+      "user": "Pradhap",
+      "action": "CREATE",
+      "module": "Offers",
+      "details": "Created new promotional campaign 'SUMMER26'",
+      "timestamp": "2026-09-05T10:00:00Z",
+      "ipAddress": "192.168.1.10",
+      "status": "Success"
+    },
+    {
+      "id": "ACT1012",
+      "user": "System",
+      "action": "UPDATE",
+      "module": "Categories",
+      "details": "Sync category images from CDN",
+      "timestamp": "2026-09-05T02:00:00Z",
+      "ipAddress": "127.0.0.1",
+      "status": "Success"
+    }
+  ],
+  "partners": [
+    {
+      "name": "HARII",
+      "email": "haripriyan@gmail.com",
+      "mobileNumber": "0987654321",
+      "vehicleType": "Car",
+      "vehicleName": "BMW",
+      "vehicleNumber": "TN 75 MN 7890",
+      "status": "Active",
+      "onlineStatus": "Online",
+      "city": "Keelayur",
+      "dateOfBirth": "15 Aug 1995",
+      "gender": "Male",
+      "alternateMobile": "09751775024",
+      "emergencyContact": "Dias S",
+      "emergencyMobile": "09751775024",
+      "address": "145",
+      "aadhaarNumber": "5432 1098 7654",
+      "panNumber": "ABCDE1234F",
+      "rcNumber": "TN752021987654",
+      "insuranceProvider": "Oriental Insurance",
+      "insuranceNumber": "BZJ1234567890",
+      "insuranceValidTill": "20 Nov 2024",
+      "bankName": "HDFC Bank",
+      "accountNumber": "1234 5678 9012",
+      "ifscCode": "HDFC0001234",
+      "accountHolderName": "Selvam R",
+      "id": "Y1zeTMOWroc"
+    }
+  ],
+  "partner_documents": [],
+  "partner_vehicles": [],
+  "partner_bank_accounts": [],
+  "restaurant_categories": [],
+  "restaurant_products": [],
+  "requests": [
+    {
+      "id": "REQ_A",
+      "public_id": "01ARZ3NDEKTSV4RRFFQ69GREQA",
+      "user_id": "UFt__KjoFIQ",
+      "service_type": "BUY_GET",
+      "status": "ON_THE_WAY",
+      "amount": 150,
+      "created_at": "2026-09-10T07:02:19.858Z"
+    },
+    {
+      "id": "REQ_B",
+      "public_id": "01ARZ3NDEKTSV4RRFFQ69GREQB",
+      "user_id": "xwLm2deEz3g",
+      "service_type": "FOOD",
+      "status": "COMPLETED",
+      "amount": 250,
+      "created_at": "2026-09-10T07:02:19.866Z"
+    },
+    {
+      "id": "REQ_A",
+      "public_id": "01ARZ3NDEKTSV4RRFFQ69GREQA",
+      "user_id": "USR2001",
+      "service_type": "BUY_GET",
+      "status": "ON_THE_WAY",
+      "amount": 150,
+      "created_at": "2026-09-11T13:22:32.071Z"
+    },
+    {
+      "id": "REQ_B",
+      "public_id": "01ARZ3NDEKTSV4RRFFQ69GREQB",
+      "user_id": "USR2002",
+      "service_type": "FOOD",
+      "status": "COMPLETED",
+      "amount": 250,
+      "created_at": "2026-09-11T13:22:32.072Z"
+    }
+  ],
+  "request_items": [
+    {
+      "id": "RITEM_A",
+      "request_id": "REQ_A",
+      "name": "Milk 1L",
+      "quantity": 2,
+      "amount": 50
+    },
+    {
+      "id": "RITEM_A",
+      "request_id": "REQ_A",
+      "name": "Milk 1L",
+      "quantity": 2,
+      "amount": 50
+    }
+  ],
+  "request_pickups": [],
+  "request_status_history": [],
+  "rides": [],
+  "ride_locations": [],
+  "payments": [],
+  "wallets": [
+    {
+      "id": "WAL_A",
+      "public_id": "01ARZ3NDEKTSV4RRFFQ69GWALA",
+      "user_id": "UFt__KjoFIQ",
+      "balance": 500
+    },
+    {
+      "id": "WAL_B",
+      "public_id": "01ARZ3NDEKTSV4RRFFQ69GWALB",
+      "user_id": "xwLm2deEz3g",
+      "balance": 120
+    },
+    {
+      "id": "WAL_A",
+      "public_id": "01ARZ3NDEKTSV4RRFFQ69GWALA",
+      "user_id": "USR2001",
+      "balance": 500
+    },
+    {
+      "id": "WAL_B",
+      "public_id": "01ARZ3NDEKTSV4RRFFQ69GWALB",
+      "user_id": "USR2002",
+      "balance": 120
+    }
+  ],
+  "wallet_transactions": [
+    {
+      "id": "WTXN_A1",
+      "wallet_id": "WAL_A",
+      "type": "CREDIT",
+      "amount": 1000,
+      "status": "SUCCESS",
+      "created_at": "2026-09-10T07:02:19.866Z"
+    },
+    {
+      "id": "WTXN_A2",
+      "wallet_id": "WAL_A",
+      "type": "DEBIT",
+      "amount": 500,
+      "status": "SUCCESS",
+      "created_at": "2026-09-10T07:02:19.867Z"
+    },
+    {
+      "id": "WTXN_A1",
+      "wallet_id": "WAL_A",
+      "type": "CREDIT",
+      "amount": 1000,
+      "status": "SUCCESS",
+      "created_at": "2026-09-11T13:22:32.072Z"
+    },
+    {
+      "id": "WTXN_A2",
+      "wallet_id": "WAL_A",
+      "type": "DEBIT",
+      "amount": 500,
+      "status": "SUCCESS",
+      "created_at": "2026-09-11T13:22:32.072Z"
+    }
+  ],
+  "partner_earnings": [],
+  "partner_payouts": [],
+  "roles": [],
+  "permissions": [],
+  "customer_profiles": [
+    {
+      "id": "CP_A",
+      "user_id": "UFt__KjoFIQ",
+      "date_of_birth": "1990-05-15",
+      "gender": "Female",
+      "profile_photo": "https://example.com/deepa.jpg"
+    },
+    {
+      "id": "CP_B",
+      "user_id": "xwLm2deEz3g",
+      "date_of_birth": "1988-10-22",
+      "gender": "Female",
+      "profile_photo": "https://example.com/meera.jpg"
+    },
+    {
+      "id": "CP_A",
+      "user_id": "USR2001",
+      "date_of_birth": "1990-05-15",
+      "gender": "Female",
+      "profile_photo": "https://example.com/deepa.jpg"
+    },
+    {
+      "id": "CP_B",
+      "user_id": "USR2002",
+      "date_of_birth": "1988-10-22",
+      "gender": "Female",
+      "profile_photo": "https://example.com/meera.jpg"
+    }
+  ],
+  "addresses": [
+    {
+      "id": "ADDR_A",
+      "public_id": "01ARZ3NDEKTSV4RRFFQ69GADDRA",
+      "user_id": "UFt__KjoFIQ",
+      "label": "Home",
+      "address_line1": "12 Trichy Road",
+      "city": "Trichy",
+      "latitude": 10.7905,
+      "longitude": 78.7047,
+      "is_default": true
+    },
+    {
+      "id": "ADDR_A",
+      "public_id": "01ARZ3NDEKTSV4RRFFQ69GADDRA",
+      "user_id": "USR2001",
+      "label": "Home",
+      "address_line1": "12 Trichy Road",
+      "city": "Trichy",
+      "latitude": 10.7905,
+      "longitude": 78.7047,
+      "is_default": true
+    }
+  ],
+  "assignments": [
+    {
+      "id": "ASSN_A",
+      "request_id": "REQ_A",
+      "partner_id": "JdrN1XT2DlU"
+    },
+    {
+      "id": "ASSN_A",
+      "request_id": "REQ_A",
+      "partner_id": "Y1zeTMOWroc"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json",
+  "partner_profiles": [
+    {
+      "id": "Y1zeTMOWroc",
+      "user_id": "Y1zeTMOWroc",
+      "partner_code": "VYZ-PRT-2032",
+      "verification_status": "VERIFIED",
+      "online_status": "Online",
+      "rating_avg": 0,
+      "rating_count": 0,
+      "joined_at": "2026-09-11T13:23:26.484Z",
+      "dateOfBirth": "15 Aug 1995",
+      "gender": "Male",
+      "alternateMobile": "09751775024",
+      "emergencyContact": "Dias S",
+      "emergencyMobile": "09751775024",
+      "address": "145",
+      "city": "Keelayur"
+    }
+  ],
+  "request_assignments": [
+    {
+      "id": "ASSN_A",
+      "request_id": "REQ_A",
+      "partner_id": "JdrN1XT2DlU",
+      "assignment_status": "unknown",
+      "created_at": "2026-09-11T13:23:26.486Z",
+      "updated_at": "2026-09-11T13:23:26.486Z"
+    }
+  ],
+  "ratings_reviews": []
 }

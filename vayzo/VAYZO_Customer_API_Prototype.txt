@@ -1,0 +1,860 @@
+VAYZO CUSTOMER APP – COMPLETE API PROTOTYPE
+
+01. Splash Screen
+GET /api/v1/app/config
+REQUEST
+{
+  "platform": "ANDROID",
+  "appVersion": "1.0.0"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "App configuration fetched successfully",
+  "data": {
+    "appName": "VAYZO",
+    "latestVersion": "1.0.0",
+    "minimumVersion": "1.0.0",
+    "maintenanceMode": false,
+    "forceUpdate": false
+  }
+}
+
+================================================================================
+
+02. Food Delivery Onboarding
+No API – Static Screen
+Static onboarding content.
+
+================================================================================
+
+03. Buy & Get It Onboarding
+No API – Static Screen
+Static onboarding content.
+
+================================================================================
+
+04. Rides & Travel Onboarding
+No API – Static Screen
+Static onboarding content.
+
+================================================================================
+
+05. Login – Send OTP
+POST /api/v1/auth/send-otp
+REQUEST
+{
+  "countryCode": "+91",
+  "mobileNumber": "9876543210"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "OTP sent successfully",
+  "data": {
+    "verificationId": "VER123456",
+    "maskedMobile": "******3210",
+    "expiresIn": 120,
+    "resendAfter": 30
+  }
+}
+
+================================================================================
+
+06. OTP Verification
+POST /api/v1/auth/verify-otp
+REQUEST
+{
+  "verificationId": "VER123456",
+  "mobileNumber": "9876543210",
+  "otp": "2674"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "OTP verified successfully",
+  "data": {
+    "isNewUser": false,
+    "accessToken": "ACCESS_TOKEN",
+    "refreshToken": "REFRESH_TOKEN",
+    "expiresIn": 3600,
+    "user": {
+      "userId": "USR1001",
+      "name": "Prathap M",
+      "mobileNumber": "+919876543210",
+      "profileImage": null
+    }
+  }
+}
+
+================================================================================
+
+07. Create Account / Registration
+POST /api/v1/auth/register
+REQUEST
+{
+  "verificationId": "VER123456",
+  "name": "Prathap M",
+  "email": "prathap@gmail.com",
+  "mobileNumber": "9876543210",
+  "password": "********",
+  "termsAccepted": true
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Account created successfully",
+  "data": {
+    "userId": "USR1001",
+    "name": "Prathap M",
+    "email": "prathap@gmail.com",
+    "mobileNumber": "+919876543210",
+    "accessToken": "ACCESS_TOKEN",
+    "refreshToken": "REFRESH_TOKEN"
+  }
+}
+
+================================================================================
+
+08. Select Location – Get Locations
+GET /api/v1/locations?search=Madurai
+RESPONSE
+{
+  "success": true,
+  "message": "Locations fetched successfully",
+  "data": [
+    {
+      "locationId": "LOC001",
+      "name": "Anna Nagar",
+      "city": "Madurai",
+      "state": "Tamil Nadu",
+      "latitude": 9.9252,
+      "longitude": 78.1198
+    },
+    {
+      "locationId": "LOC002",
+      "name": "Melur",
+      "city": "Madurai",
+      "state": "Tamil Nadu",
+      "latitude": 10.032,
+      "longitude": 78.338
+    }
+  ]
+}
+
+================================================================================
+
+08A. Select Location – Save Current Location
+POST /api/v1/users/location
+REQUEST
+{
+  "latitude": 9.9252,
+  "longitude": 78.1198,
+  "address": "Anna Nagar, Madurai",
+  "locationId": "LOC001"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Location updated successfully",
+  "data": {
+    "locationId": "LOC001",
+    "address": "Anna Nagar, Madurai"
+  }
+}
+
+================================================================================
+
+09. Dashboard / Home
+GET /api/v1/home
+RESPONSE
+{
+  "success": true,
+  "message": "Home data fetched successfully",
+  "data": {
+    "user": {
+      "userId": "USR1001",
+      "name": "Prathap M"
+    },
+    "currentLocation": {
+      "locationId": "LOC001",
+      "address": "Anna Nagar, Madurai"
+    },
+    "services": [
+      {"serviceId": "FOOD", "name": "Food Delivery", "icon": "food_icon"},
+      {"serviceId": "BUY_GET", "name": "Buy & Get It", "icon": "shopping_icon"},
+      {"serviceId": "RIDE", "name": "Rides", "icon": "ride_icon"},
+      {"serviceId": "BIKE", "name": "Bike Booking", "icon": "bike_icon"},
+      {"serviceId": "CAR", "name": "Car Booking", "icon": "car_icon"}
+    ],
+    "activeRequests": [
+      {
+        "requestId": "REQ1001",
+        "serviceType": "BUY_GET",
+        "status": "PARTNER_ASSIGNED",
+        "estimatedTime": 18
+      }
+    ]
+  }
+}
+
+================================================================================
+
+10. Voice Request – Upload Voice
+POST /api/v1/voice/upload
+REQUEST – multipart/form-data
+file: voice_recording.m4a
+language: en-IN
+
+RESPONSE
+{
+  "success": true,
+  "message": "Voice uploaded successfully",
+  "data": {
+    "voiceId": "VOICE1001",
+    "fileUrl": "https://storage.example.com/voice/VOICE1001.m4a"
+  }
+}
+
+================================================================================
+
+10A. Voice Request – Create Request
+POST /api/v1/requests/voice
+REQUEST
+{
+  "voiceId": "VOICE1001",
+  "serviceType": "BUY_GET",
+  "location": {
+    "latitude": 9.9252,
+    "longitude": 78.1198
+  }
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Request created successfully",
+  "data": {
+    "requestId": "REQ1001",
+    "status": "REQUEST_PLACED",
+    "estimatedTime": 30
+  }
+}
+
+================================================================================
+
+11. My Requests
+GET /api/v1/requests?page=0&size=20&status=ACTIVE
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "content": [
+      {
+        "requestId": "REQ1001",
+        "serviceType": "BUY_GET",
+        "title": "4 Idly from Murugan Kadai",
+        "amount": 160,
+        "status": "ACTIVE",
+        "createdAt": "2026-08-18T10:30:00"
+      }
+    ],
+    "page": 0,
+    "size": 20,
+    "totalElements": 1,
+    "totalPages": 1
+  }
+}
+
+================================================================================
+
+12. Request Details / Order Summary
+GET /api/v1/requests/{requestId}
+EXAMPLE
+GET /api/v1/requests/REQ1001
+
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "requestId": "REQ1001",
+    "serviceType": "BUY_GET",
+    "items": [
+      {"name": "4 Idly", "quantity": 1, "amount": 80},
+      {"name": "1L Milk", "quantity": 1, "amount": 35}
+    ],
+    "itemTotal": 115,
+    "serviceFee": 20,
+    "deliveryFee": 25,
+    "totalAmount": 160,
+    "status": "PARTNER_ASSIGNED",
+    "createdAt": "2026-08-18T10:30:00"
+  }
+}
+
+================================================================================
+
+13. Live Tracking
+GET /api/v1/requests/{requestId}/tracking
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "requestId": "REQ1001",
+    "status": "ON_THE_WAY",
+    "estimatedMinutes": 18,
+    "partner": {
+      "partnerId": "PART1001",
+      "name": "Kannan",
+      "rating": 4.8,
+      "phoneNumber": "+919876543210",
+      "profileImage": "https://example.com/profile.jpg"
+    },
+    "location": {
+      "latitude": 9.9271,
+      "longitude": 78.1215
+    },
+    "destination": {
+      "latitude": 9.9252,
+      "longitude": 78.1198
+    }
+  }
+}
+
+================================================================================
+
+14. Completed & Rating
+POST /api/v1/requests/{requestId}/rating
+REQUEST
+{
+  "rating": 5,
+  "review": "Very good service"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Rating submitted successfully",
+  "data": {
+    "requestId": "REQ1001",
+    "rating": 5,
+    "review": "Very good service"
+  }
+}
+
+================================================================================
+
+15. Wallet
+GET /api/v1/wallet
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "walletId": "WAL1001",
+    "balance": 250.00,
+    "currency": "INR",
+    "recentTransactions": [
+      {
+        "transactionId": "TXN1001",
+        "type": "CREDIT",
+        "amount": 100,
+        "description": "Added to wallet",
+        "date": "2026-08-18T10:30:00"
+      },
+      {
+        "transactionId": "TXN1002",
+        "type": "DEBIT",
+        "amount": 160,
+        "description": "Buy & Get request",
+        "date": "2026-08-17T10:30:00"
+      }
+    ]
+  }
+}
+
+================================================================================
+
+15A. Wallet Transactions
+GET /api/v1/wallet/transactions?page=0&size=20
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "content": [
+      {
+        "transactionId": "TXN1001",
+        "type": "CREDIT",
+        "amount": 100,
+        "description": "Added to wallet",
+        "status": "SUCCESS",
+        "createdAt": "2026-08-18T10:30:00"
+      }
+    ],
+    "page": 0,
+    "size": 20,
+    "totalElements": 1
+  }
+}
+
+================================================================================
+
+16. Add Money
+POST /api/v1/wallet/add-money
+REQUEST
+{
+  "amount": 500,
+  "paymentMethodId": "PM1001"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Payment initiated",
+  "data": {
+    "transactionId": "TXN1005",
+    "amount": 500,
+    "currency": "INR",
+    "paymentStatus": "PENDING",
+    "gatewayOrderId": "ORDER_123456"
+  }
+}
+
+================================================================================
+
+17. Payment Success / Payment Status
+GET /api/v1/payments/{transactionId}
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "transactionId": "TXN1005",
+    "amount": 500,
+    "currency": "INR",
+    "status": "SUCCESS",
+    "paymentMethod": "UPI",
+    "gatewayTransactionId": "PG123456",
+    "walletBalance": 750,
+    "createdAt": "2026-08-18T11:00:00"
+  }
+}
+
+================================================================================
+
+18. Profile
+GET /api/v1/profile
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "userId": "USR1001",
+    "name": "Prathap M",
+    "email": "prathap@gmail.com",
+    "mobileNumber": "+919876543210",
+    "profileImage": "https://example.com/profile.jpg"
+  }
+}
+
+================================================================================
+
+18A. Update Profile
+PUT /api/v1/profile
+REQUEST
+{
+  "name": "Prathap M",
+  "email": "prathap@gmail.com",
+  "profileImage": "https://example.com/profile.jpg"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Profile updated successfully",
+  "data": {
+    "userId": "USR1001",
+    "name": "Prathap M",
+    "email": "prathap@gmail.com"
+  }
+}
+
+================================================================================
+
+19. My Addresses
+GET /api/v1/addresses
+RESPONSE
+{
+  "success": true,
+  "data": [
+    {
+      "addressId": "ADDR1001",
+      "label": "Home",
+      "addressLine1": "12, Anna Nagar",
+      "addressLine2": "Near Tower Park",
+      "city": "Madurai",
+      "state": "Tamil Nadu",
+      "pincode": "625020",
+      "latitude": 9.9252,
+      "longitude": 78.1198,
+      "isDefault": true
+    }
+  ]
+}
+
+================================================================================
+
+20. Add New Address
+POST /api/v1/addresses
+REQUEST
+{
+  "label": "Home",
+  "addressLine1": "12, 3rd Street, Anna Nagar",
+  "addressLine2": "Near Tower Park",
+  "city": "Madurai",
+  "state": "Tamil Nadu",
+  "pincode": "625020",
+  "latitude": 9.9252,
+  "longitude": 78.1198,
+  "isDefault": true
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Address added successfully",
+  "data": {
+    "addressId": "ADDR1002",
+    "label": "Home",
+    "isDefault": true
+  }
+}
+
+================================================================================
+
+20A. Update Address
+PUT /api/v1/addresses/{addressId}
+REQUEST
+{
+  "label": "Work",
+  "addressLine1": "Siam Computing",
+  "addressLine2": "Anna Nagar",
+  "city": "Madurai",
+  "state": "Tamil Nadu",
+  "pincode": "625020",
+  "isDefault": false
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Address updated successfully"
+}
+
+================================================================================
+
+20B. Delete Address
+DELETE /api/v1/addresses/{addressId}
+RESPONSE
+{
+  "success": true,
+  "message": "Address deleted successfully"
+}
+
+================================================================================
+
+21. Payment Methods
+GET /api/v1/payment-methods
+RESPONSE
+{
+  "success": true,
+  "data": [
+    {
+      "paymentMethodId": "PM1001",
+      "type": "UPI",
+      "upiId": "prathap@upi",
+      "isDefault": true
+    },
+    {
+      "paymentMethodId": "PM1002",
+      "type": "CARD",
+      "cardType": "VISA",
+      "last4": "4342",
+      "isDefault": false
+    }
+  ]
+}
+
+================================================================================
+
+21A. Add Payment Method
+POST /api/v1/payment-methods
+REQUEST
+{
+  "type": "UPI",
+  "upiId": "prathap@upi",
+  "isDefault": true
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Payment method added successfully",
+  "data": {
+    "paymentMethodId": "PM1003",
+    "type": "UPI",
+    "upiId": "prathap@upi",
+    "isDefault": true
+  }
+}
+
+================================================================================
+
+22. Notifications
+GET /api/v1/notifications?page=0&size=20
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "content": [
+      {
+        "notificationId": "NOT1001",
+        "title": "Request Update",
+        "message": "Your order has been picked up",
+        "type": "REQUEST_UPDATE",
+        "isRead": false,
+        "createdAt": "2026-08-18T10:30:00"
+      }
+    ],
+    "unreadCount": 3
+  }
+}
+
+================================================================================
+
+22A. Mark Notification Read
+PUT /api/v1/notifications/{notificationId}/read
+RESPONSE
+{
+  "success": true,
+  "message": "Notification marked as read"
+}
+
+================================================================================
+
+23. Help & Support
+GET /api/v1/support/topics
+RESPONSE
+{
+  "success": true,
+  "data": [
+    {"topicId": "TOPIC001", "title": "How VAYZO Works", "icon": "info"},
+    {"topicId": "TOPIC002", "title": "Cancelling a Request", "icon": "cancel"},
+    {"topicId": "TOPIC003", "title": "Payment & Refunds", "icon": "payment"},
+    {"topicId": "TOPIC004", "title": "Wallet Issues", "icon": "wallet"}
+  ]
+}
+
+================================================================================
+
+23A. Create Support Ticket
+POST /api/v1/support/tickets
+REQUEST
+{
+  "categoryId": "TOPIC003",
+  "subject": "Payment issue",
+  "description": "My payment was deducted but wallet was not updated",
+  "requestId": "REQ1001",
+  "attachments": []
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Support ticket created successfully",
+  "data": {
+    "ticketId": "TKT1001",
+    "status": "OPEN",
+    "createdAt": "2026-08-18T11:30:00"
+  }
+}
+
+================================================================================
+
+24. Settings
+GET /api/v1/settings
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "pushNotifications": true,
+    "smsNotifications": true,
+    "emailNotifications": false,
+    "darkMode": false,
+    "language": "en"
+  }
+}
+
+================================================================================
+
+24A. Update Settings
+PUT /api/v1/settings
+REQUEST
+{
+  "pushNotifications": true,
+  "smsNotifications": true,
+  "emailNotifications": false,
+  "darkMode": false,
+  "language": "en"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Settings updated successfully",
+  "data": {
+    "pushNotifications": true,
+    "smsNotifications": true,
+    "emailNotifications": false,
+    "darkMode": false,
+    "language": "en"
+  }
+}
+
+================================================================================
+
+25. About VAYZO
+GET /api/v1/app/about
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "appName": "VAYZO",
+    "tagline": "You Ask. We Get It.",
+    "version": "1.0.0",
+    "description": "VAYZO is your all-in-one solution for Food Delivery, Buy & Get It, Bike Rides and Car Booking.",
+    "privacyPolicyUrl": "https://example.com/privacy",
+    "termsUrl": "https://example.com/terms",
+    "supportEmail": "support@vayzo.com"
+  }
+}
+
+================================================================================
+
+26. Logout
+POST /api/v1/auth/logout
+REQUEST
+{
+  "refreshToken": "REFRESH_TOKEN"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Logged out successfully"
+}
+
+================================================================================
+
+CORE BUSINESS API – Create Request
+POST /api/v1/requests
+REQUEST
+{
+  "serviceType": "BUY_GET",
+  "requestMode": "TEXT",
+  "description": "Buy 4 idly and 1 litre milk",
+  "items": [
+    {
+      "name": "Idly",
+      "quantity": 4,
+      "estimatedPrice": 80
+    },
+    {
+      "name": "Milk",
+      "quantity": 1,
+      "unit": "L",
+      "estimatedPrice": 35
+    }
+  ],
+  "pickupLocation": {
+    "address": "Murugan Kadai",
+    "latitude": 9.9252,
+    "longitude": 78.1198
+  },
+  "deliveryLocation": {
+    "address": "Anna Nagar, Madurai",
+    "latitude": 9.9300,
+    "longitude": 78.1200
+  },
+  "paymentMethod": "WALLET"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Request created successfully",
+  "data": {
+    "requestId": "REQ1001",
+    "requestNumber": "BUY1025",
+    "serviceType": "BUY_GET",
+    "status": "REQUEST_PLACED",
+    "estimatedAmount": 160,
+    "paymentStatus": "PENDING",
+    "createdAt": "2026-08-18T15:30:00"
+  }
+}
+
+================================================================================
+
+Request Status Flow
+Business Status
+REQUEST_PLACED
+      ↓
+PARTNER_ASSIGNED
+      ↓
+GOING_TO_SHOP
+      ↓
+ITEMS_PURCHASED
+      ↓
+ON_THE_WAY
+      ↓
+DELIVERED
+      ↓
+COMPLETED
+
+================================================================================
+
+Common Error Response
+Applicable to all APIs
+{
+  "success": false,
+  "message": "Invalid request",
+  "errorCode": "REQ_400",
+  "errors": [
+    {
+      "field": "mobileNumber",
+      "message": "Mobile number is required"
+    }
+  ],
+  "timestamp": "2026-08-18T15:30:00",
+  "path": "/api/v1/auth/send-otp"
+}
+
+================================================================================
+
+HTTP Status Codes
+API Standard
+200 → Success
+201 → Created
+400 → Validation Error
+401 → Unauthorized
+403 → Forbidden
+404 → Resource Not Found
+409 → Conflict
+422 → Business Validation Error
+500 → Internal Server Error
+
+================================================================================
+

@@ -1,7 +1,10 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Mail, Shield, Pencil } from "lucide-react";
 import Button from "../components/ui/Button";
 import UserImg from "../assets/logo/Trans_full.png";
+import { getAdminUserById } from "../api/adminUsersApi";
+import Avatar from "../components/ui/Avatar";
 
 const DetailCard = ({ title, icon: Icon, children }) => (
   <div className="rounded-xl border border-border bg-surface p-4 sm:p-5 shadow-sm h-full flex flex-col">
@@ -20,13 +23,32 @@ const getValue = (value) => value || "--";
 export default function Profile() {
   const navigate = useNavigate();
   
-  const userStr = localStorage.getItem("vayzo_admin_user");
-  const user = userStr ? JSON.parse(userStr) : {
-    name: "Admin User",
-    email: "admin@vayzo.com",
-    role: "Super Admin",
-    profileImage: null
-  };
+  const [user, setUser] = useState(() => {
+    const userStr = localStorage.getItem("vayzo_admin_user");
+    if (!userStr) {
+      // Handle missing session safely
+      navigate("/");
+      return null;
+    }
+    return JSON.parse(userStr);
+  });
+
+  if (!user) {
+    return null; // Don't render until redirected
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+    if (user.id || user.userId) {
+      getAdminUserById(user.id || user.userId).then((apiUser) => {
+        if (isMounted && apiUser) {
+          setUser(apiUser);
+          localStorage.setItem("vayzo_admin_user", JSON.stringify(apiUser));
+        }
+      }).catch(err => console.error("Failed to fetch admin profile", err));
+    }
+    return () => { isMounted = false; };
+  }, [user.id, user.userId]);
 
   const personalInformation = [
     ["Full Name", user.name],
@@ -43,9 +65,10 @@ export default function Profile() {
         
         <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-end">
           <div className="mt-12 h-24 w-24 shrink-0 overflow-hidden rounded-xl border-4 border-surface bg-white shadow-sm sm:mt-16 sm:h-32 sm:w-32">
-            <img
-              src={user.profileImage || UserImg}
+            <Avatar
+              src={user.profileImage}
               alt={user.name}
+              identifier={user.id || user.userId || user.email}
               className="h-full w-full object-cover"
             />
           </div>

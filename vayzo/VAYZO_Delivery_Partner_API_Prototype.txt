@@ -1,0 +1,962 @@
+VAYZO DELIVERY PARTNER APP – COMPLETE API PROTOTYPE
+
+01. Splash Screen
+GET /api/v1/partner/app/config
+REQUEST
+{
+  "platform": "ANDROID",
+  "appVersion": "1.0.0"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "App configuration fetched successfully",
+  "data": {
+    "appName": "VAYZO Partner",
+    "latestVersion": "1.0.0",
+    "minimumVersion": "1.0.0",
+    "maintenanceMode": false,
+    "forceUpdate": false
+  }
+}
+
+==========================================================================================
+
+02. Partner Onboarding
+No API – Static Screen
+Static onboarding content. No backend API required.
+
+==========================================================================================
+
+03. Partner Login – Send OTP
+POST /api/v1/partner/auth/send-otp
+REQUEST
+{
+  "countryCode": "+91",
+  "mobileNumber": "9876543210"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "OTP sent successfully",
+  "data": {
+    "verificationId": "PVER1001",
+    "maskedMobile": "******3210",
+    "expiresIn": 120,
+    "resendAfter": 30
+  }
+}
+
+==========================================================================================
+
+04. OTP Verification
+POST /api/v1/partner/auth/verify-otp
+REQUEST
+{
+  "verificationId": "PVER1001",
+  "mobileNumber": "9876543210",
+  "otp": "2674"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "OTP verified successfully",
+  "data": {
+    "isNewPartner": false,
+    "verificationStatus": "VERIFIED",
+    "accessToken": "ACCESS_TOKEN",
+    "refreshToken": "REFRESH_TOKEN",
+    "expiresIn": 3600,
+    "partner": {
+      "partnerId": "PART1001",
+      "name": "Kannan P",
+      "mobileNumber": "+919876543210",
+      "status": "ACTIVE"
+    }
+  }
+}
+
+==========================================================================================
+
+05. Choose Partner Type
+POST /api/v1/partner/registration/type
+REQUEST
+{
+  "partnerTypes": [
+    "FOOD_DELIVERY",
+    "BUY_GET",
+    "BIKE_RIDE",
+    "CAR_RIDE"
+  ],
+  "selectedType": "FOOD_DELIVERY"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Partner type saved successfully",
+  "data": {
+    "registrationId": "REG1001",
+    "selectedType": "FOOD_DELIVERY",
+    "nextStep": "PERSONAL_DETAILS"
+  }
+}
+
+==========================================================================================
+
+06. Personal Details
+POST /api/v1/partner/registration/personal-details
+REQUEST
+{
+  "registrationId": "REG1001",
+  "fullName": "Kannan P",
+  "email": "kannan1995@gmail.com",
+  "dateOfBirth": "1995-05-12",
+  "gender": "MALE"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Personal details saved successfully",
+  "data": {
+    "registrationId": "REG1001",
+    "nextStep": "DOCUMENTS"
+  }
+}
+
+==========================================================================================
+
+07. Document Upload
+POST /api/v1/partner/registration/documents
+REQUEST – multipart/form-data
+registrationId: REG1001
+documentType: AADHAAR
+file: aadhaar.jpg
+
+Repeat for:
+DRIVING_LICENSE
+PROFILE_PHOTO
+
+RESPONSE
+{
+  "success": true,
+  "message": "Document uploaded successfully",
+  "data": {
+    "documentId": "DOC1001",
+    "documentType": "AADHAAR",
+    "status": "UPLOADED",
+    "fileUrl": "https://storage.example.com/partners/DOC1001.jpg"
+  }
+}
+
+==========================================================================================
+
+08. Vehicle Details
+POST /api/v1/partner/registration/vehicle
+REQUEST
+{
+  "registrationId": "REG1001",
+  "vehicleType": "BIKE",
+  "vehicleNumber": "TN 57 AB 1234",
+  "vehicleModel": "Bajaj Pulsar 150",
+  "vehicleColor": "Black",
+  "rcDocumentId": "DOC1002",
+  "insuranceDocumentId": "DOC1003"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Vehicle details saved successfully",
+  "data": {
+    "vehicleId": "VEH1001",
+    "vehicleType": "BIKE",
+    "vehicleNumber": "TN57AB1234",
+    "nextStep": "BANK_DETAILS"
+  }
+}
+
+==========================================================================================
+
+09. Bank Details
+POST /api/v1/partner/registration/bank-details
+REQUEST
+{
+  "registrationId": "REG1001",
+  "bankName": "State Bank of India",
+  "accountNumber": "501012345678",
+  "ifscCode": "SBIN0001234",
+  "accountHolderName": "Kannan P"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Bank details submitted successfully",
+  "data": {
+    "bankAccountId": "BANK1001",
+    "verificationStatus": "PENDING",
+    "nextStep": "VERIFICATION_PENDING"
+  }
+}
+
+==========================================================================================
+
+10. Verification Pending
+GET /api/v1/partner/registration/status
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "registrationId": "REG1001",
+    "status": "UNDER_REVIEW",
+    "message": "Your details are under review.",
+    "estimatedVerificationTime": "24-48 hours"
+  }
+}
+
+==========================================================================================
+
+11. Dashboard
+GET /api/v1/partner/dashboard
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "partner": {
+      "partnerId": "PART1001",
+      "name": "Kannan P",
+      "isOnline": true
+    },
+    "today": {
+      "earnings": 1250,
+      "completedTrips": 8,
+      "incentive": 150,
+      "rating": 4.8
+    },
+    "activeRequest": null,
+    "stats": {
+      "totalOrders": 32
+    }
+  }
+}
+
+==========================================================================================
+
+12. Go Online / Offline
+PUT /api/v1/partner/availability
+REQUEST
+{
+  "isOnline": true,
+  "latitude": 9.9252,
+  "longitude": 78.1198
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Partner is now online",
+  "data": {
+    "isOnline": true,
+    "availableForRequests": true
+  }
+}
+
+==========================================================================================
+
+13. Buy & Get Incoming Request
+GET /api/v1/partner/requests/incoming?serviceType=BUY_GET
+RESPONSE
+{
+  "success": true,
+  "data": [
+    {
+      "requestId": "REQ1001",
+      "requestNumber": "BG1025",
+      "serviceType": "BUY_GET",
+      "distanceKm": 1.2,
+      "pickup": {
+        "name": "Murugan Hotel",
+        "address": "Anna Nagar, Madurai",
+        "latitude": 9.9252,
+        "longitude": 78.1198
+      },
+      "items": [
+        {"name": "4 Idly", "quantity": 4},
+        {"name": "1 L Milk", "quantity": 1}
+      ],
+      "estimatedEarnings": 65,
+      "expiresIn": 15
+    }
+  ]
+}
+
+==========================================================================================
+
+14. Food Delivery Incoming Request
+GET /api/v1/partner/requests/incoming?serviceType=FOOD_DELIVERY
+RESPONSE
+{
+  "success": true,
+  "data": [
+    {
+      "requestId": "REQ1002",
+      "requestNumber": "FD1025",
+      "serviceType": "FOOD_DELIVERY",
+      "distanceKm": 0.8,
+      "pickup": {
+        "name": "Zam Zam Restaurant",
+        "address": "Anna Nagar, Madurai"
+      },
+      "orderId": "FD1025",
+      "estimatedEarnings": 40,
+      "expiresIn": 15
+    }
+  ]
+}
+
+==========================================================================================
+
+15. Bike Ride Incoming Request
+GET /api/v1/partner/requests/incoming?serviceType=BIKE_RIDE
+RESPONSE
+{
+  "success": true,
+  "data": [
+    {
+      "requestId": "REQ1003",
+      "requestNumber": "BR1025",
+      "serviceType": "BIKE_RIDE",
+      "distanceKm": 2.3,
+      "pickup": {
+        "address": "Melur Bus Stand",
+        "latitude": 10.032,
+        "longitude": 78.338
+      },
+      "drop": {
+        "address": "Anna Nagar",
+        "latitude": 9.9252,
+        "longitude": 78.1198
+      },
+      "estimatedEarnings": 70,
+      "expiresIn": 15
+    }
+  ]
+}
+
+==========================================================================================
+
+16. Car Ride Incoming Request
+GET /api/v1/partner/requests/incoming?serviceType=CAR_RIDE
+RESPONSE
+{
+  "success": true,
+  "data": [
+    {
+      "requestId": "REQ1004",
+      "requestNumber": "CR1025",
+      "serviceType": "CAR_RIDE",
+      "distanceKm": 12.5,
+      "pickup": {
+        "address": "Airport, Madurai"
+      },
+      "drop": {
+        "address": "Anna Nagar, Madurai"
+      },
+      "estimatedEarnings": 210,
+      "expiresIn": 15
+    }
+  ]
+}
+
+==========================================================================================
+
+17. Request Accepted
+POST /api/v1/partner/requests/{requestId}/accept
+REQUEST
+{
+  "partnerId": "PART1001",
+  "acceptedAt": "2026-08-18T15:30:00",
+  "latitude": 9.9252,
+  "longitude": 78.1198
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Request accepted successfully",
+  "data": {
+    "requestId": "REQ1001",
+    "status": "ACCEPTED",
+    "estimatedEarnings": 65
+  }
+}
+
+==========================================================================================
+
+17A. Reject Request
+POST /api/v1/partner/requests/{requestId}/reject
+REQUEST
+{
+  "reasonCode": "TOO_FAR",
+  "reason": "Pickup location is too far"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Request rejected successfully"
+}
+
+==========================================================================================
+
+18. Navigate to Shop
+GET /api/v1/partner/requests/{requestId}/navigation
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "requestId": "REQ1001",
+    "destinationType": "PICKUP",
+    "destination": {
+      "name": "Murugan Hotel",
+      "address": "Anna Nagar, Madurai",
+      "latitude": 9.9252,
+      "longitude": 78.1198
+    },
+    "distanceKm": 1.2,
+    "estimatedMinutes": 6,
+    "routePolyline": "encoded_polyline"
+  }
+}
+
+==========================================================================================
+
+18A. Update Partner Location
+POST /api/v1/partner/location
+REQUEST
+{
+  "requestId": "REQ1001",
+  "latitude": 9.9271,
+  "longitude": 78.1215,
+  "accuracy": 8.5,
+  "recordedAt": "2026-08-18T15:32:00"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Location updated successfully"
+}
+
+==========================================================================================
+
+19. Arrived at Shop
+POST /api/v1/partner/requests/{requestId}/arrived-pickup
+REQUEST
+{
+  "latitude": 9.9252,
+  "longitude": 78.1198
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Arrival marked successfully",
+  "data": {
+    "requestId": "REQ1001",
+    "status": "ARRIVED_AT_PICKUP"
+  }
+}
+
+==========================================================================================
+
+20. Items to Buy
+GET /api/v1/partner/requests/{requestId}/items
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "requestId": "REQ1001",
+    "items": [
+      {
+        "itemId": "ITEM001",
+        "name": "4 Idly",
+        "quantity": 4,
+        "estimatedAmount": 80,
+        "purchased": false
+      },
+      {
+        "itemId": "ITEM002",
+        "name": "1 L Milk",
+        "quantity": 1,
+        "estimatedAmount": 35,
+        "purchased": false
+      }
+    ],
+    "customerNote": "Please buy fresh items"
+  }
+}
+
+==========================================================================================
+
+21. Items Purchased
+POST /api/v1/partner/requests/{requestId}/purchase
+REQUEST
+{
+  "items": [
+    {
+      "itemId": "ITEM001",
+      "quantity": 4,
+      "actualAmount": 80
+    },
+    {
+      "itemId": "ITEM002",
+      "quantity": 1,
+      "actualAmount": 35
+    }
+  ],
+  "totalPaid": 115
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Items purchased successfully",
+  "data": {
+    "requestId": "REQ1001",
+    "status": "ITEMS_PURCHASED",
+    "totalPaid": 115
+  }
+}
+
+==========================================================================================
+
+22. Bill Uploaded
+POST /api/v1/partner/requests/{requestId}/bill
+REQUEST – multipart/form-data
+file: bill.jpg
+totalAmount: 115
+
+RESPONSE
+{
+  "success": true,
+  "message": "Bill uploaded successfully",
+  "data": {
+    "billId": "BILL1001",
+    "requestId": "REQ1001",
+    "amount": 115,
+    "billUrl": "https://storage.example.com/bills/BILL1001.jpg",
+    "status": "UPLOADED"
+  }
+}
+
+==========================================================================================
+
+23. Navigate to Customer
+GET /api/v1/partner/requests/{requestId}/navigation?destination=DROP
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "requestId": "REQ1001",
+    "destinationType": "DROP",
+    "destination": {
+      "address": "Anna Nagar, Madurai",
+      "latitude": 9.9300,
+      "longitude": 78.1200
+    },
+    "distanceKm": 2.1,
+    "estimatedMinutes": 8,
+    "routePolyline": "encoded_polyline"
+  }
+}
+
+==========================================================================================
+
+24. Arrived at Customer
+POST /api/v1/partner/requests/{requestId}/arrived-drop
+REQUEST
+{
+  "latitude": 9.9300,
+  "longitude": 78.1200
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Arrival at customer marked successfully",
+  "data": {
+    "requestId": "REQ1001",
+    "status": "ARRIVED_AT_DROP"
+  }
+}
+
+==========================================================================================
+
+25. Delivery OTP
+POST /api/v1/partner/requests/{requestId}/verify-delivery-otp
+REQUEST
+{
+  "otp": "2674"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Delivery OTP verified successfully",
+  "data": {
+    "requestId": "REQ1001",
+    "status": "DELIVERY_VERIFIED",
+    "canComplete": true
+  }
+}
+
+==========================================================================================
+
+26. Request Completed
+POST /api/v1/partner/requests/{requestId}/complete
+REQUEST
+{
+  "deliveryOtpVerified": true,
+  "deliveredAt": "2026-08-18T16:00:00"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Request completed successfully",
+  "data": {
+    "requestId": "REQ1001",
+    "status": "COMPLETED",
+    "earnings": 65,
+    "customerRating": null
+  }
+}
+
+==========================================================================================
+
+27. Earnings
+GET /api/v1/partner/earnings/summary
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "today": 1250,
+    "thisWeek": 4860,
+    "thisMonth": 18750,
+    "recentTransactions": [
+      {
+        "transactionId": "EARN1001",
+        "serviceType": "BUY_GET",
+        "amount": 65,
+        "createdAt": "2026-08-18T15:30:00"
+      },
+      {
+        "transactionId": "EARN1002",
+        "serviceType": "FOOD_DELIVERY",
+        "amount": 40,
+        "createdAt": "2026-08-18T15:10:00"
+      }
+    ]
+  }
+}
+
+==========================================================================================
+
+28. Earnings Details
+GET /api/v1/partner/earnings?period=WEEKLY&startDate=2026-05-04&endDate=2026-05-10
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "period": "WEEKLY",
+    "totalEarnings": 4860,
+    "dailyEarnings": [
+      {"date": "2026-05-04", "amount": 650},
+      {"date": "2026-05-05", "amount": 720},
+      {"date": "2026-05-06", "amount": 580},
+      {"date": "2026-05-07", "amount": 760},
+      {"date": "2026-05-08", "amount": 690},
+      {"date": "2026-05-09", "amount": 810},
+      {"date": "2026-05-10", "amount": 650}
+    ],
+    "breakdown": {
+      "baseEarnings": 4210,
+      "incentives": 450,
+      "tips": 200
+    }
+  }
+}
+
+==========================================================================================
+
+29. Partner Profile
+GET /api/v1/partner/profile
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "partnerId": "PART1001",
+    "name": "Kannan P",
+    "mobileNumber": "+919876543210",
+    "profileImage": "https://example.com/profile.jpg",
+    "rating": 4.8,
+    "status": "ACTIVE",
+    "partnerTypes": [
+      "FOOD_DELIVERY",
+      "BUY_GET",
+      "BIKE_RIDE"
+    ]
+  }
+}
+
+==========================================================================================
+
+29A. Update Personal Details
+PUT /api/v1/partner/profile/personal-details
+REQUEST
+{
+  "fullName": "Kannan P",
+  "email": "kannan1995@gmail.com",
+  "dateOfBirth": "1995-05-12",
+  "gender": "MALE"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Personal details updated successfully"
+}
+
+==========================================================================================
+
+29B. Partner Documents
+GET /api/v1/partner/documents
+RESPONSE
+{
+  "success": true,
+  "data": [
+    {
+      "documentId": "DOC1001",
+      "documentType": "AADHAAR",
+      "status": "VERIFIED",
+      "fileUrl": "https://storage.example.com/documents/DOC1001.jpg"
+    },
+    {
+      "documentId": "DOC1002",
+      "documentType": "DRIVING_LICENSE",
+      "status": "VERIFIED",
+      "fileUrl": "https://storage.example.com/documents/DOC1002.jpg"
+    }
+  ]
+}
+
+==========================================================================================
+
+29C. Vehicle Details
+GET /api/v1/partner/vehicle
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "vehicleId": "VEH1001",
+    "vehicleType": "BIKE",
+    "vehicleNumber": "TN57AB1234",
+    "vehicleModel": "Bajaj Pulsar 150",
+    "vehicleColor": "Black",
+    "rcStatus": "VERIFIED",
+    "insuranceStatus": "VERIFIED"
+  }
+}
+
+==========================================================================================
+
+29D. Bank Details
+GET /api/v1/partner/bank-details
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "bankAccountId": "BANK1001",
+    "bankName": "State Bank of India",
+    "accountNumberMasked": "******5678",
+    "ifscCode": "SBIN0001234",
+    "accountHolderName": "Kannan P",
+    "verificationStatus": "VERIFIED"
+  }
+}
+
+==========================================================================================
+
+30. Partner Menu
+GET /api/v1/partner/menu
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "items": [
+      {"key": "PERFORMANCE", "title": "My Performance"},
+      {"key": "INCENTIVES", "title": "Incentives"},
+      {"key": "REFERRALS", "title": "Refer & Earn"},
+      {"key": "SUPPORT", "title": "Support"},
+      {"key": "ABOUT", "title": "About VAYZO"},
+      {"key": "TERMS", "title": "Terms & Conditions"},
+      {"key": "PRIVACY", "title": "Privacy Policy"}
+    ]
+  }
+}
+
+==========================================================================================
+
+30A. My Performance
+GET /api/v1/partner/performance
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "rating": 4.8,
+    "totalTrips": 32,
+    "acceptanceRate": 92,
+    "completionRate": 98,
+    "onTimeRate": 95
+  }
+}
+
+==========================================================================================
+
+30B. Incentives
+GET /api/v1/partner/incentives
+RESPONSE
+{
+  "success": true,
+  "data": [
+    {
+      "incentiveId": "INC1001",
+      "title": "Complete 20 orders",
+      "target": 20,
+      "completed": 15,
+      "reward": 500,
+      "status": "IN_PROGRESS"
+    }
+  ]
+}
+
+==========================================================================================
+
+30C. Refer & Earn
+GET /api/v1/partner/referrals
+RESPONSE
+{
+  "success": true,
+  "data": {
+    "referralCode": "KANNAN500",
+    "rewardPerSuccessfulReferral": 500,
+    "totalReferrals": 4,
+    "successfulReferrals": 2,
+    "totalEarned": 1000
+  }
+}
+
+==========================================================================================
+
+30D. Support
+GET /api/v1/partner/support/topics
+RESPONSE
+{
+  "success": true,
+  "data": [
+    {"topicId": "PST001", "title": "Request Issues"},
+    {"topicId": "PST002", "title": "Payment & Earnings"},
+    {"topicId": "PST003", "title": "Account & Verification"},
+    {"topicId": "PST004", "title": "Vehicle Issues"}
+  ]
+}
+
+==========================================================================================
+
+30E. Logout
+POST /api/v1/partner/auth/logout
+REQUEST
+{
+  "refreshToken": "REFRESH_TOKEN"
+}
+
+RESPONSE
+{
+  "success": true,
+  "message": "Partner logged out successfully"
+}
+
+==========================================================================================
+
+Common Error Response
+Applicable to all APIs
+{
+  "success": false,
+  "message": "Invalid request",
+  "errorCode": "REQ_400",
+  "errors": [
+    {
+      "field": "vehicleNumber",
+      "message": "Vehicle number is required"
+    }
+  ],
+  "timestamp": "2026-08-18T15:30:00",
+  "path": "/api/v1/partner/registration/vehicle"
+}
+
+==========================================================================================
+
+HTTP Status Codes
+API Standard
+200 → Success
+201 → Created
+400 → Validation Error
+401 → Unauthorized
+403 → Forbidden
+404 → Resource Not Found
+409 → Conflict
+422 → Business Validation Error
+500 → Internal Server Error
+
+==========================================================================================
+
+Partner Request Status Flow
+Core Delivery Workflow
+REQUEST_RECEIVED
+      ↓
+ACCEPTED
+      ↓
+NAVIGATING_TO_PICKUP
+      ↓
+ARRIVED_AT_PICKUP
+      ↓
+ITEMS_PURCHASED / ORDER_PICKED_UP
+      ↓
+BILL_UPLOADED (Buy & Get only)
+      ↓
+NAVIGATING_TO_DROP
+      ↓
+ARRIVED_AT_DROP
+      ↓
+DELIVERY_OTP_VERIFIED
+      ↓
+COMPLETED
+
+==========================================================================================
+
+Partner Availability Rules
+Online / Offline
+OFFLINE → Partner does not receive new requests.
+ONLINE → Partner can receive new requests.
+BUSY → Partner is handling an active request.
+SUSPENDED → Partner cannot go online.
+UNDER_REVIEW → Registration is pending verification.
+
+==========================================================================================
+

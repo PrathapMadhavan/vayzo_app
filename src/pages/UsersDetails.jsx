@@ -6,12 +6,7 @@ import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import { getUserById } from "../api/usersApi";
 
-const statusBadgeMap = {
-  ACTIVE: "success",
-  VERIFIED: "info",
-  PENDING: "warning",
-  BLOCKED: "danger",
-};
+
 
 function UsersDetails() {
   const navigate = useNavigate();
@@ -82,7 +77,7 @@ function UsersDetails() {
     );
   }
 
-  const isVerified = user.status === "ACTIVE" || user.status === "VERIFIED";
+
 
   return (
     <section className="min-h-full bg-background p-4 sm:p-6">
@@ -110,12 +105,7 @@ function UsersDetails() {
                   {user.name}
                 </h1>
 
-                <Badge
-                  variant={statusBadgeMap[user.status] || "default"}
-                  className="rounded-md px-2 py-1 text-xs"
-                >
-                  {user.status}
-                </Badge>
+
               </div>
 
               <p className="mt-1 text-xs text-muted">User ID: {user.userId}</p>
@@ -147,23 +137,21 @@ function UsersDetails() {
 
             <DetailItem icon={Mail} label="Email" value={user.email} />
 
-            <DetailItem
-              icon={UserRound}
-              label="User Type"
-              value={user.userType}
-            />
+            {user.joinedOn && (
+              <DetailItem
+                icon={CalendarDays}
+                label="Joined On"
+                value={user.joinedOn}
+              />
+            )}
 
-            <DetailItem
-              icon={CalendarDays}
-              label="Joined On"
-              value={user.joinedOn}
-            />
-
-            <DetailItem
-              icon={UserRound}
-              label="Verification"
-              value={isVerified ? "Verified" : "Not Verified"}
-            />
+            {user.isVerified !== undefined && (
+              <DetailItem
+                icon={UserRound}
+                label="Verification"
+                value={user.isVerified ? "Verified" : "Not Verified"}
+              />
+            )}
           </div>
         </div>
       </div>

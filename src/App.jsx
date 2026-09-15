@@ -48,6 +48,13 @@ import RestaurantsDetails from "./pages/RestaurantsDetails";
 import Profile from "./pages/Profile";
 import ProfileEdit from "./pages/ProfileEdit";
 
+import AdminUsers from "./pages/AdminUsers";
+import AddAdminUser from "./pages/AddAdminUser";
+
+import ActivityLogs from "./pages/ActivityLogs";
+import Transactions from "./pages/Transactions";
+import Reports from "./pages/Reports";
+
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import GeneralSettings from "./pages/settings/GeneralSettings";
 import SiteSettings from "./pages/settings/SiteSettings";
@@ -147,6 +154,22 @@ function App() {
                 <Route path="edit/:restaurantId" element={<RestaurantsAdd />} />
                 <Route path=":restaurantId" element={<RestaurantsDetails />} />
               </Route>
+
+              {/* Admin Users */}
+              <Route path="/admin-users" element={<Outlet />}>
+                <Route index element={<AdminUsers />} />
+                <Route path="add" element={<AddAdminUser />} />
+                <Route path="edit/:userId" element={<AddAdminUser />} />
+              </Route>
+
+              {/* Activity Logs */}
+              <Route path="/activity-logs" element={<ActivityLogs />} />
+
+              {/* Transactions */}
+              <Route path="/transactions" element={<Transactions />} />
+
+              {/* Reports */}
+              <Route path="/reports" element={<Reports />} />
 
               {/* Settings */}
               <Route path="/settings" element={<SettingsLayout />}>

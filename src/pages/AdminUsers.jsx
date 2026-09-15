@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, ShieldUser, RefreshCw, Trash2, Edit, Eye, UserPlus, AlertCircle } from "lucide-react";
+import { Search, ShieldUser, RefreshCw, Trash2, Edit, Eye, UserPlus, AlertCircle, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
@@ -7,7 +7,12 @@ import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
 import Table from "../components/ui/Table";
 import Avatar from "../components/ui/Avatar";
+import FilterPanel from "../components/ui/FilterPanel";
+import SearchInput from "../components/ui/SearchInput";
+import StatusSelect from "../components/ui/StatusSelect";
+import Card from "../components/ui/Card";
 import { getAdminUsers, deleteAdminUser } from "../api/adminUsersApi";
+import { exportToCSV } from "../utils/exportUtils";
 
 function AdminUsers() {
   const navigate = useNavigate();
@@ -112,7 +117,7 @@ function AdminUsers() {
     <section className="min-h-full bg-background p-4 sm:p-6">
       <div className="space-y-4">
         {/* Header */}
-        <div>
+        <div className="mb-4">
           <h1 className="text-2xl font-semibold text-foreground">Admin Users</h1>
           <p className="mt-1 text-xs text-muted">Manage admin users and their access.</p>
         </div>
@@ -128,140 +133,162 @@ function AdminUsers() {
         )}
 
         {/* Filter/Search Card */}
-        <div className="rounded-xl border border-border bg-surface p-4 shadow-sm flex flex-col md:flex-row items-end gap-3 z-50 relative">
-          <div className="w-full md:w-auto flex-1 relative">
-            <label className="text-xs font-medium text-muted mb-1.5 block">Search</label>
-            <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-              <Input
+        <Card noPadding className="flex flex-col">
+          <FilterPanel
+            search={
+              <SearchInput
                 id="admin-search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search name or email..."
-                className="h-10 text-sm pl-9 w-full"
               />
-            </div>
-          </div>
-          <div className="w-full md:w-auto">
-            <label className="text-xs font-medium text-muted mb-1.5 block">Role</label>
-            <Select
-              id="admin-role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="h-10 text-sm min-w-[140px] w-full"
-            >
-              <option value="All Roles">All Roles</option>
-              <option value="Super Admin">Super Admin</option>
-              <option value="Admin">Admin</option>
-            </Select>
-          </div>
-          <div className="w-full md:w-auto">
-            <label className="text-xs font-medium text-muted mb-1.5 block">Status</label>
-            <Select
-              id="admin-status"
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="h-10 text-sm min-w-[140px] w-full"
-            >
-              <option value="All Status">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </Select>
-          </div>
-          <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3 mt-2 md:mt-0">
-            <Button variant="secondary" className="h-10 w-full sm:w-auto" onClick={handleResetFilters}>
-              <RefreshCw size={14} className="mr-2" /> Reset
-            </Button>
-            <Button 
-              className={`h-10 w-full sm:w-auto ${totalAdminCount >= 2 ? 'opacity-50 cursor-not-allowed bg-muted text-white' : 'bg-[#4a00e0] hover:bg-[#3b00b3] text-white'}`}
-              onClick={() => {
-                if (totalAdminCount < 2) {
-                  navigate("/admin-users/add");
-                }
-              }}
-              disabled={totalAdminCount >= 2}
-            >
-              <UserPlus size={14} className="mr-2" /> Add Admin User
-            </Button>
-          </div>
-        </div>
+            }
+            actions={
+              <>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  type="button"
+                  className="h-10 w-full sm:w-auto"
+                  onClick={() => exportToCSV(adminUsersData, "admin_users.csv")}
+                >
+                  <Download size={14} className="mr-1" /> Export
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-10 w-full sm:w-auto"
+                  onClick={() => {
+                    if (totalAdminCount < 2) {
+                      navigate("/admin-users/add");
+                    }
+                  }}
+                  disabled={totalAdminCount >= 2}
+                >
+                  <UserPlus size={14} className="mr-2" /> Add Admin User
+                </Button>
+              </>
+            }
+            filters={
+              <>
+                <Select
+                  id="admin-role"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="w-full sm:w-[160px]"
+                >
+                  <option value="All Roles">All Roles</option>
+                  <option value="Super Admin">Super Admin</option>
+                  <option value="Admin">Admin</option>
+                </Select>
+                <StatusSelect
+                  id="admin-status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  options={["All Status", "Active", "Inactive"]}
+                  className="w-full sm:w-[160px]"
+                />
+              </>
+            }
+            hasActiveFilters={query || role !== "All Roles" || status !== "All Status"}
+            onReset={handleResetFilters}
+          />
 
-        {/* Loading / Error States */}
-        {isLoading ? (
-          <div className="flex h-64 items-center justify-center rounded-xl border border-border bg-surface">
-             <div className="flex flex-col items-center gap-3">
-               <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-               <p className="text-sm font-medium text-muted">Loading admin users...</p>
-             </div>
-          </div>
-        ) : error ? (
-          <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-xl border border-border bg-surface text-center">
-             <p className="text-sm text-danger font-medium">{error}</p>
-             <Button onClick={fetchAdminUsers} variant="secondary" size="sm">Try Again</Button>
-          </div>
-        ) : (
-          /* Table Section */
-          <div className="mt-4">
-            <Table
-              headers={tableHeaders}
-              currentCount={currentData.length}
-              totalCount={adminUsersData.length}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              minWidth="1050px"
-            >
-              {adminUsersData.length === 0 ? (
-                <tr>
-                  <td colSpan={9} className="p-8 text-center text-sm text-muted">
-                    No admin users found matching your filters.
-                  </td>
-                </tr>
-              ) : (
-                currentData.map((user) => (
-                  <tr key={user.id} className="border-t border-border hover:bg-surface-50 transition-colors text-sm">
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <Avatar seed={user.name} size="sm" />
-                        <div>
-                          <p className="font-semibold text-foreground">{user.name}</p>
-                          <p className="text-xs text-muted">ID: {user.userId}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-muted whitespace-nowrap">{user.email}</td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <Badge variant={roleColors[user.role] || "default"} className="px-2 py-0.5 rounded-md font-medium text-[11px]">
-                        {user.role}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-4 text-muted whitespace-nowrap">{user.department}</td>
-                    <td className="px-4 py-4 text-muted whitespace-nowrap">{user.phone}</td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <Badge variant={statusColors[user.status] || "default"} className="border-none rounded-full">
-                        {user.status}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-4 text-muted whitespace-nowrap text-xs">{user.lastLogin}</td>
-                    <td className="px-4 py-4 text-muted whitespace-nowrap text-xs">{user.joinedDate}</td>
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <button type="button" onClick={() => navigate(`/admin-users/edit/${user.id}`)} className="text-primary hover:bg-primary-light transition-colors rounded-md p-1.5" title="View/Edit">
-                          <Edit size={16} />
-                        </button>
-                        {user.role !== "Super Admin" && (
-                          <button type="button" onClick={() => handleDelete(user)} className="text-danger hover:bg-danger/10 transition-colors rounded-md p-1.5" title="Delete">
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </div>
+          {/* Loading / Error States */}
+          {isLoading ? (
+            <div className="flex h-64 items-center justify-center bg-surface">
+               <div className="flex flex-col items-center gap-3">
+                 <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+                 <p className="text-sm font-medium text-muted">Loading admin users...</p>
+               </div>
+            </div>
+          ) : error ? (
+            <div className="flex h-64 flex-col items-center justify-center gap-3 bg-surface text-center">
+               <p className="text-sm text-danger font-medium">{error}</p>
+               <Button onClick={fetchAdminUsers} variant="secondary" size="sm">Try Again</Button>
+            </div>
+          ) : (
+            /* Table Section */
+            <div className="flex-1 w-full flex flex-col min-h-0 overflow-hidden border-t border-border">
+              <Table
+                headers={tableHeaders}
+                currentCount={currentData.length}
+                totalCount={adminUsersData.length}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                minWidth="1050px"
+                className="border-0 shadow-none rounded-none border-t-0"
+              >
+                {adminUsersData.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="p-8 text-center text-sm text-muted">
+                      No admin users found matching your filters.
                     </td>
                   </tr>
-                ))
-              )}
-            </Table>
-          </div>
-        )}
+                ) : (
+                  currentData.map((user) => (
+                    <tr 
+                      key={user.id} 
+                      onClick={() => navigate(`/admin-users/${user.id}`)}
+                      className="border-b border-border hover:bg-surface-50 transition-colors text-sm last:border-0 cursor-pointer"
+                    >
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-3">
+                          <Avatar src={user.image} seed={user.name} size="sm" />
+                          <div>
+                            <p className="font-semibold text-foreground">{user.name}</p>
+                            <p className="text-xs text-muted">ID: {user.userId}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-muted whitespace-nowrap">{user.email}</td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <Badge variant={roleColors[user.role] || "default"} className="px-2 py-0.5 rounded-md font-medium text-[11px]">
+                          {user.role}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-4 text-muted whitespace-nowrap">{user.department}</td>
+                      <td className="px-4 py-4 text-muted whitespace-nowrap">{user.phone}</td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <Badge variant={statusColors[user.status] || "default"} className="border-none rounded-full">
+                          {user.status}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-4 text-muted whitespace-nowrap text-xs">{user.lastLogin}</td>
+                      <td className="px-4 py-4 text-muted whitespace-nowrap text-xs">{user.joinedDate}</td>
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <button 
+                            type="button" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/admin-users/edit/${user.id}`);
+                            }} 
+                            className="text-primary hover:bg-primary-light transition-colors rounded-md p-1.5" title="View/Edit"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          {user.role !== "Super Admin" && (
+                            <button 
+                              type="button" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(user);
+                              }} 
+                              className="text-danger hover:bg-danger/10 transition-colors rounded-md p-1.5" title="Delete"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </Table>
+            </div>
+          )}
+        </Card>
       </div>
     </section>
   );

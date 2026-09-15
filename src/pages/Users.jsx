@@ -19,29 +19,9 @@ import ActionMenu from "../components/ui/ActionMenu";
 import { getUsers, deleteUser } from "../api/usersApi";
 import { exportToCSV } from "../utils/exportUtils";
 
-const statusBadgeMap = {
-  Active: "success",
-  Verified: "info",
-  Pending: "warning",
-  Blocked: "danger",
-  Inactive: "danger",
-};
 
-const statusOptions = [
-  "All Status",
-  "Active",
-  "Verified",
-  "Pending",
-  "Blocked",
-];
 
-const userTypeOptions = [
-  "All User Type",
-  "Customer",
-  "Business",
-  "Delivery Partner",
-  "Merchant",
-];
+
 
 const verificationOptions = ["All Verified", "Verified", "Not Verified"];
 
@@ -51,8 +31,8 @@ const userTableHeaders = [
   "User",
   "Mobile",
   "Email",
-  "User Type",
-  "Status",
+
+
   "Verified",
   "Joined On",
   "Actions",
@@ -68,8 +48,7 @@ function Users() {
   const [deleteModalId, setDeleteModalId] = useState(null);
 
   const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All Status");
-  const [userTypeFilter, setUserTypeFilter] = useState("All User Type");
+
   const [verificationFilter, setVerificationFilter] = useState("All Verified");
   const [joinedFrom, setJoinedFrom] = useState("");
   const [joinedTo, setJoinedTo] = useState("");
@@ -120,12 +99,7 @@ function Users() {
           .toLowerCase()
           .includes(query);
 
-      const matchesStatus =
-        statusFilter === "All Status" ||
-        user.status?.toLowerCase() === statusFilter.toLowerCase();
 
-      const matchesUserType =
-        userTypeFilter === "All User Type" || user.userType === userTypeFilter;
 
       const matchesVerification =
         verificationFilter === "All Verified" ||
@@ -138,8 +112,6 @@ function Users() {
 
       return (
         matchesSearch &&
-        matchesStatus &&
-        matchesUserType &&
         matchesVerification &&
         matchesJoinedDate
       );
@@ -147,8 +119,6 @@ function Users() {
   }, [
     searchText,
     users,
-    statusFilter,
-    userTypeFilter,
     verificationFilter,
     joinedFrom,
     joinedTo,
@@ -161,40 +131,27 @@ function Users() {
     currentPage * itemsPerPage
   );
 
-  const maxUserType = useMemo(() => {
-    return paginatedUsers.reduce((max, u) => 
-      (u.userType || "").length > max.length ? (u.userType || "") : max, 
-    "");
-  }, [paginatedUsers]);
+
 
   const toTitleCase = (str) => {
     if (!str) return "";
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
-  const maxStatus = useMemo(() => {
-    return paginatedUsers.reduce((max, u) => {
-      const statusStr = toTitleCase(u.status || "");
-      return statusStr.length > max.length ? statusStr : max;
-    }, "");
-  }, [paginatedUsers]);
+
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchText, statusFilter, userTypeFilter, verificationFilter, joinedFrom, joinedTo]);
+  }, [searchText, verificationFilter, joinedFrom, joinedTo]);
 
   const hasFilters =
     searchText !== "" ||
-    statusFilter !== "All Status" ||
-    userTypeFilter !== "All User Type" ||
     verificationFilter !== "All Verified" ||
     joinedFrom !== "" ||
     joinedTo !== "";
 
   const resetFilters = () => {
     setSearchText("");
-    setStatusFilter("All Status");
-    setUserTypeFilter("All User Type");
     setVerificationFilter("All Verified");
     setJoinedFrom("");
     setJoinedTo("");
@@ -259,20 +216,8 @@ function Users() {
           }
           filters={
             <>
-              <StatusSelect
-                id="user-status"
-                value={statusFilter}
-                options={statusOptions}
-                onChange={(event) => setStatusFilter(event.target.value)}
-                className="w-full lg:w-[150px]"
-              />
-              <StatusSelect
-                id="user-type"
-                value={userTypeFilter}
-                options={userTypeOptions}
-                onChange={(event) => setUserTypeFilter(event.target.value)}
-                className="w-full lg:w-[160px]"
-              />
+
+
               <StatusSelect
                 id="user-verification"
                 value={verificationFilter}
@@ -325,7 +270,8 @@ function Users() {
               paginatedUsers.map((user, index) => (
                 <tr
                   key={user.userId}
-                  className="border-b border-border last:border-0 transition-colors hover:bg-background"
+                  onClick={() => navigate(`/users/${user.userId}`)}
+                  className="border-b border-border last:border-0 transition-colors hover:bg-background cursor-pointer"
                 >
                   <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
                     {String((currentPage - 1) * itemsPerPage + index + 1).padStart(2, "0")}
@@ -358,28 +304,9 @@ function Users() {
                     {user.email}
                   </td>
 
-                  <td className="px-3 py-3">
-                    <BadgeCell
-                      maxContent={maxUserType}
-                      content={user.userType}
-                      variant={
-                        user.userType === "Customer" ? "info" :
-                        user.userType === "Delivery Partner" ? "default" :
-                        user.userType === "Merchant" ? "warning" :
-                        user.userType === "Business" ? "success" : "default"
-                      }
-                      className="px-3"
-                    />
-                  </td>
 
-                  <td className="px-3 py-3">
-                    <BadgeCell
-                      maxContent={maxStatus}
-                      content={toTitleCase(user.status)}
-                      variant={statusBadgeMap[toTitleCase(user.status)] || "default"}
-                      className="px-3"
-                    />
-                  </td>
+
+
 
                   <td className="px-3 py-3">
                     <span

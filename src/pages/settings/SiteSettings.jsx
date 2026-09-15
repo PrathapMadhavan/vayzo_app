@@ -18,11 +18,13 @@ import {
   CheckSquare
 } from "lucide-react";
 import Button from "../../components/ui/Button";
-import Input from "../../components/ui/input";
+import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import { getGeneralSettings, saveGeneralSettings } from "../../api/settingsApi";
 
 function SiteSettings() {
+  const userStr = localStorage.getItem("vayzo_admin_user");
+  const user = userStr ? JSON.parse(userStr) : {};
   const [activeTab, setActiveTab] = useState("General");
   const [loading, setLoading] = useState(true);
   const [formValues, setFormValues] = useState({
@@ -187,14 +189,18 @@ function SiteSettings() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <Input id="siteEmail" type="email" label={<span className="font-semibold text-xs text-foreground">Site Email <span className="text-red-500">*</span></span>} value={formValues.siteEmail} onChange={(e) => handleChange("siteEmail", e.target.value)} />
                       <div>
-                          <label className="mb-1.5 block text-xs font-semibold text-foreground">Site Phone <span className="text-red-500">*</span></label>
-                          <div className="flex rounded-lg border border-border focus-within:border-primary">
-                              <div className="flex items-center gap-2 border-r border-border bg-surface px-3 py-2 text-sm cursor-pointer hover:bg-muted/5">
-                                  <span className="text-base leading-none">🇮🇳</span><span className="text-sm font-medium">+91</span>
-                                  <svg className="h-4 w-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/></svg>
+                          <Input
+                            id="sitePhone"
+                            label={<span className="font-semibold text-xs text-foreground">Site Phone <span className="text-red-500">*</span></span>}
+                            value={formValues.sitePhone.replace("+91 ", "")}
+                            onChange={(e) => handleChange("sitePhone", "+91 " + e.target.value)}
+                            placeholder="98765 43210"
+                            prefix={
+                              <div className="flex items-center gap-2 border-r border-border bg-surface px-3 py-2 text-sm text-foreground h-full cursor-pointer hover:bg-muted/5">
+                                <span className="text-base leading-none">🇮🇳</span><span className="text-sm font-medium">+91</span>
                               </div>
-                              <input type="text" value={formValues.sitePhone.replace("+91 ", "")} onChange={(e) => handleChange("sitePhone", "+91 " + e.target.value)} className="w-full rounded-r-lg bg-surface px-3 py-2 text-sm outline-none" placeholder="98765 43210" />
-                          </div>
+                            }
+                          />
                       </div>
                   </div>
 
@@ -302,8 +308,8 @@ function SiteSettings() {
                 <div className="border-b border-border pb-4">
                     <p className="text-xs font-semibold text-foreground mb-2">Updated By</p>
                     <div className="flex items-center gap-2">
-                        <img src={mockAdmin.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(mockAdmin.name)}&background=random&color=fff&size=150`} alt="User Avatar" className="h-6 w-6 rounded-full object-cover" />
-                        <span className="text-sm font-semibold text-foreground">{mockAdmin.name}</span>
+                        <img src={user.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "Admin")}&background=random&color=fff&size=150`} alt="User Avatar" className="h-6 w-6 rounded-full object-cover" />
+                        <span className="text-sm font-semibold text-foreground">{user.name || "Admin"}</span>
                     </div>
                 </div>
 

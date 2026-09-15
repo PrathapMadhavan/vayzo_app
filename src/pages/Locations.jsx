@@ -317,16 +317,15 @@ export default function Locations() {
                       return (
                         <tr
                           key={loc.id}
-                          className="border-b border-border transition-colors hover:bg-background last:border-0"
+                          onClick={() => navigate(`/locations/edit/${loc.id}`)}
+                          className="border-b border-border transition-colors hover:bg-background last:border-0 cursor-pointer"
                         >
                           <td className="whitespace-nowrap px-5 py-4 font-medium text-foreground">
                             {String((currentPage - 1) * itemsPerPage + index + 1).padStart(2, "0")}
                           </td>
                           <td className="px-5 py-4 min-w-[220px]">
                             <div 
-                              className="flex items-center gap-3 cursor-pointer group"
-                              // onClick={() => navigate(`/locations/${loc.id}`)}
-                              onClick={() => navigate(`/locations/`)}
+                              className="flex items-center gap-3 group"
                             >
                               <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${bgAndColor}`}>
                                 <Building2 size={18} strokeWidth={2.5}/>

@@ -35,17 +35,21 @@ function SettingsLayout() {
   const location = useLocation();
 
   return (
-    <div className="flex flex-col xl:flex-row min-h-full bg-background">
-      <aside className="w-full xl:w-50 shrink-0 border-b xl:border-b-0 xl:border-r border-border bg-surface xl:h-screen xl:sticky xl:top-0 flex flex-col">
-        <div className="flex-1 overflow-y-auto sidebar-scroll p-4 xl:p-5">
-          
+    <div className="flex flex-col lg:flex-row min-h-full lg:h-[calc(100vh-64px)] lg:overflow-hidden bg-background">
+      <aside className="w-full lg:w-55 shrink-0 border-b lg:border-b-0 lg:border-r border-border bg-surface flex flex-col lg:h-full">
+        <div className="flex-1 overflow-y-auto sidebar-scroll p-2">
+          <div className="mb-3 hidden xl:flex items-center gap-2 px-6 py-2">
+            <SettingsIcon size={18} className="text-primary" />
+            <span className="text-sm font-semibold text-foreground">
+              Settings Menu
+            </span>
+          </div>
 
           <nav className="space-y-1">
             {settingsMenu.map(({ label, path, icon: Icon }) => {
               const isActive =
                 location.pathname === path ||
-                (path !== "/settings" &&
-                  location.pathname.startsWith(path));
+                (path !== "/settings" && location.pathname.startsWith(path));
 
               return (
                 <NavLink
@@ -66,7 +70,7 @@ function SettingsLayout() {
         </div>
       </aside>
 
-      <div className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
+      <div className="flex-1 min-w-0 p-4 sm:p-6 lg:p-2 lg:overflow-y-auto main-scroll">
         <div className="mx-auto max-w-4xl">
           <Outlet />
         </div>

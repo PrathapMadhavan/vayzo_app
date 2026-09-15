@@ -1,5 +1,5 @@
 import { apiRequest } from "./apiClient";
 
 export async function getDashboardData() {
-  return apiRequest("/dashboard", {}, "Unable to load dashboard data");
+  return apiRequest("/api/v1/admin/dashboard", {}, "Unable to load dashboard data");
 }

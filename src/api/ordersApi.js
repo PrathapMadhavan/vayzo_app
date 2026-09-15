@@ -1,41 +1,67 @@
 import { apiRequest } from "./apiClient";
 
-export async function getOrders() {
-  return apiRequest("/orders", {}, "Unable to load orders");
+const ENDPOINT = "/api/v1/admin/requests";
+
+export async function getOrders(filters = {}) {
+  let url = ENDPOINT;
+  
+  const queryParams = [];
+  if (filters.serviceType) {
+    queryParams.push(`serviceType=${filters.serviceType}`);
+  }
+  
+  if (filters.status && filters.status !== "All Status") {
+    queryParams.push(`status=${filters.status}`);
+  }
+  
+  if (queryParams.length > 0) {
+    url += `?${queryParams.join("&")}`;
+  }
+  
+  return apiRequest(url, {}, "Unable to load requests");
 }
 
 export async function getOrderById(orderId) {
-  const data = await apiRequest(`/orders?orderId=${orderId}`, {}, "Unable to load order");
+  let data = await apiRequest(`${ENDPOINT}?requestId=${orderId}`, {}, "Unable to load request");
+  
+  if (!data || data.length === 0) {
+    data = await apiRequest(`${ENDPOINT}?id=${orderId}`, {}, "Unable to load request");
+  }
 
   if (!data || !data.length) {
-    throw new Error("Order not found");
+    throw new Error("Request not found");
   }
 
   return data[0];
 }
 
 export async function createOrder(orderData) {
-  const newOrder = {
+  if (!orderData.serviceType) {
+    console.warn("MISSING REQUIREMENT: serviceType is required for new requests.");
+  }
+
+  console.warn("MISSING REQUIREMENT: Backend generation of business request ID is unavailable.");
+  const newRequest = {
     ...orderData,
-    orderId: `ORD${Date.now()}`,
     orderDate: new Date().toISOString(),
+    serviceType: orderData.serviceType || undefined
   };
 
-  return apiRequest("/orders", {
+  return apiRequest(ENDPOINT, {
     method: "POST",
-    body: JSON.stringify(newOrder),
-  }, "Unable to create order");
-}
-
-export async function deleteOrder(id) {
-  return apiRequest(`/orders/${id}`, {
-    method: 'DELETE',
-  }, "Unable to delete order");
+    body: JSON.stringify(newRequest),
+  }, "Unable to create request");
 }
 
 export async function updateOrder(id, orderData) {
-  return apiRequest(`/orders/${id}`, {
-    method: 'PATCH',
+  return apiRequest(`${ENDPOINT}/${id}`, {
+    method: "PATCH",
     body: JSON.stringify(orderData),
-  }, "Unable to update order");
+  }, "Unable to update request");
+}
+
+export async function deleteOrder(id) {
+  return apiRequest(`${ENDPOINT}/${id}`, {
+    method: "DELETE",
+  }, "Unable to delete request");
 }

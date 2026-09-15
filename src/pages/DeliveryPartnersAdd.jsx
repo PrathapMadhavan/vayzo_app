@@ -10,7 +10,7 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import { createDeliveryPartner, getDeliveryPartnerById, updateDeliveryPartner } from "../api/deliveryPartnersApi";
-import { fileToBase64 } from "../utils/fileUtils";
+import { validateImage } from "../utils/fileUtils";
 
 const vehicleOptions = [
   "Select vehicle type",
@@ -134,13 +134,18 @@ function DeliveryPartnersAdd() {
   );
 
   const handleImageChange = async (e) => {
+    setError("");
     const file = e.target.files[0];
     if (file) {
       try {
-        const base64 = await fileToBase64(file);
-        setImagePreview(base64);
+        await validateImage(file);
+        const objectUrl = URL.createObjectURL(file);
+        // Note: we need a real upload endpoint to persist this properly.
+        setImagePreview(objectUrl);
+        console.warn("MISSING REQUIREMENT: Image upload endpoint unavailable. Preview will not be persisted.");
       } catch (err) {
         console.error("Failed to read file", err);
+        setError(err.message);
       }
     }
   };
@@ -154,20 +159,13 @@ function DeliveryPartnersAdd() {
       
       const payload = {
         ...form,
-        profileImage: imagePreview,
-        // Mock values for new partner if we're adding
-        ...(isEditing ? {} : {
-          partnerId: "DVP" + Math.floor(Math.random() * 90000 + 10000),
-          joinedOn: new Date().toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' }),
-          ordersCompleted: 0,
-          rating: 0,
-          earnings: 0,
-          todayEarnings: "₹0",
-          completionRate: "0%",
-          cancellationRate: "0%",
-          lastOrder: "--"
-        })
       };
+
+      if (imagePreview && imagePreview.startsWith("blob:")) {
+        console.warn("MISSING REQUIREMENT: Image upload endpoint unavailable. Preview will not be persisted.");
+      } else if (imagePreview) {
+        payload.profileImage = imagePreview;
+      }
 
       if (isEditing) {
          // get existing data first to merge

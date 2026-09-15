@@ -32,51 +32,58 @@ const ForgetPassword = () => {
     }
   };
 
+  const inputBase =
+    "h-10 w-full rounded-lg border border-border bg-background text-sm text-foreground outline-none transition placeholder:text-muted/60 focus:border-primary focus:ring-2 focus:ring-primary/10";
+
   return (
     <AuthLayout>
-      <div className="mb-6 text-center sm:mb-7">
-        <h1 className="text-2xl font-bold text-foreground sm:text-[26px] md:text-3xl">
-          Forgot Password?
-        </h1>
-        <p className="mt-2 text-xs text-muted sm:text-sm md:text-base">
-          Enter your registered admin email address and we'll send you a link to reset your password.
+      <div className="mb-5 text-center">
+        <h1 className="text-xl font-bold text-foreground">Forgot Password?</h1>
+        <p className="mt-1 text-xs text-muted">
+          Enter your registered admin email and we'll send a reset link.
         </p>
       </div>
 
       {success ? (
-        <div className="space-y-6">
-          <div className="rounded-lg bg-success/10 p-4 text-center border border-success/20">
+        <div className="space-y-5">
+          <div className="rounded-lg border border-success/20 bg-success/8 p-4 text-center">
             <p className="text-sm font-semibold text-success">Reset link sent successfully.</p>
-            <p className="mt-2 text-xs text-success/80">Please check your email to reset your password.</p>
+            <p className="mt-1 text-xs text-success/80">Please check your email to reset your password.</p>
           </div>
           <button
             type="button"
             onClick={() => navigate("/")}
-            className="flex w-full items-center justify-center gap-2 text-xs font-semibold text-primary hover:underline sm:text-sm"
+            className="flex w-full items-center justify-center gap-2 text-xs font-semibold text-primary hover:underline"
           >
-            <ArrowLeft size={16} /> Back to Login
+            <ArrowLeft size={14} /> Back to Login
           </button>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {error && (
-            <div className="text-center text-xs font-medium text-danger">{error}</div>
+            <div className="rounded-lg border border-danger/20 bg-danger/8 px-3 py-2 text-center text-xs font-medium text-danger">
+              {error}
+            </div>
           )}
-          
+
           <div>
-            <label htmlFor="email" className="mb-2 block text-xs font-semibold text-foreground sm:text-sm">
+            <label htmlFor="email" className="mb-1.5 block text-xs font-semibold text-foreground">
               Admin Email Address
             </label>
             <div className="relative">
-              <Mail size={18} strokeWidth={1.8} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted sm:left-4 sm:h-5 sm:w-5" />
+              <Mail
+                size={15}
+                strokeWidth={1.8}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted"
+              />
               <input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Enter your admin email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="h-11 w-full rounded-lg border border-border bg-background pl-10 pr-3 text-xs text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/10 sm:h-12 sm:pl-11 sm:pr-4 sm:text-sm"
+                className={`${inputBase} pl-9 pr-3`}
               />
             </div>
           </div>
@@ -84,7 +91,7 @@ const ForgetPassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className="h-11 w-full rounded-lg bg-primary text-xs font-bold text-white shadow-lg shadow-primary/20 transition hover:bg-primary-hover sm:h-12 sm:text-sm disabled:opacity-50"
+            className="h-10 w-full rounded-lg bg-primary text-xs font-bold text-white shadow-md shadow-primary/20 transition hover:bg-primary-hover disabled:opacity-60"
           >
             {loading ? "Sending..." : "Send Reset Link"}
           </button>
@@ -92,9 +99,9 @@ const ForgetPassword = () => {
           <button
             type="button"
             onClick={() => navigate("/")}
-            className="mt-4 flex w-full items-center justify-center gap-2 text-xs font-semibold text-muted hover:text-foreground sm:text-sm transition-colors"
+            className="flex w-full items-center justify-center gap-2 text-xs font-semibold text-muted transition hover:text-foreground"
           >
-            <ArrowLeft size={16} /> Back to Login
+            <ArrowLeft size={14} /> Back to Login
           </button>
         </form>
       )}

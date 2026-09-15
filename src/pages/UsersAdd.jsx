@@ -5,8 +5,6 @@ import {
   CloudUpload,
   Eye,
   EyeOff,
-  ShieldCheck,
-  UserRound,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import Badge from "../components/ui/Badge";
@@ -15,25 +13,9 @@ import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
 import StatusSelect from "../components/ui/StatusSelect";
 import { createUser, getUserById, updateUser, getUsers } from "../api/usersApi";
-import { fileToBase64 } from "../utils/fileUtils";
+import { validateImage } from "../utils/fileUtils";
 
-const types = [
-  "Select user type",
-  "Customer",
-  "Business",
-  "Delivery Partner",
-  "Merchant",
-];
-const roles = [
-  "Select role",
-  "Admin",
-  "Manager",
-  "Support",
-  "Operations",
-  "User",
-];
 
-const statusOptions = ["Active", "Inactive", "Blocked"];
 
 function RequiredLabel({ text }) {
   return (
@@ -58,9 +40,6 @@ function AddUsers() {
     name: "",
     email: "",
     mobile: "",
-    type: types[0],
-    role: roles[0],
-    status: statusOptions[0],
     password: "",
     confirm: "",
   });
@@ -90,13 +69,10 @@ function AddUsers() {
         name: data.name || "",
         email: data.email || "",
         mobile: data.mobileNumber || "",
-        type: data.userType || types[0],
-        role: data.role || roles[0],
-        status: data.status ? toTitleCase(data.status) : statusOptions[0],
-        password: "", // Never populate plaintext password
+        password: "",
         confirm: "",
       });
-      setEmailVerified(data.isVerified || false);
+
       setImagePreview(data.profileImage || data.image || null);
     } catch (err) {
       setError("Unable to load user details.");
@@ -106,26 +82,32 @@ function AddUsers() {
   };
   const update = (key) => (event) =>
     setForm({ ...form, [key]: event.target.value });
-  const field = (id, labelText, key, type = "text", placeholder = "") => (
+  const field = (id, labelText, key, type = "text", placeholder = "", readOnly = false) => (
     <Input
       id={id}
-      label={<RequiredLabel text={labelText} />}
+      label={readOnly ? labelText : <RequiredLabel text={labelText} />}
       type={type}
       value={form[key]}
       onChange={update(key)}
       placeholder={placeholder}
+      required={!readOnly}
+      readOnly={readOnly}
+      disabled={readOnly}
       error={formErrors[key]}
     />
   );
 
   const handleImageChange = async (e) => {
+    setError("");
     const file = e.target.files[0];
     if (file) {
       try {
-        const base64 = await fileToBase64(file);
-        setImagePreview(base64);
+        await validateImage(file);
+        const objectUrl = URL.createObjectURL(file);
+        setImagePreview(objectUrl);
       } catch (err) {
         console.error("Failed to read file", err);
+        setError(err.message);
       }
     }
   };
@@ -184,28 +166,28 @@ function AddUsers() {
 
       if (isEditing) {
         const existing = await getUserById(userId);
-        await updateUser(userDbId, {
-          ...existing,
+        let validImage = existing.profileImage || existing.image;
+        if (imagePreview && !imagePreview.startsWith("blob:")) {
+          validImage = imagePreview;
+        } else if (imagePreview && imagePreview.startsWith("blob:")) {
+          console.warn("MISSING REQUIREMENT: Real image upload infrastructure is unavailable. Blob URL not saved.");
+        }
+
+        const updatePayload = {
           name: form.name,
           email: form.email,
-          mobileNumber: form.mobile,
-          userType: form.type,
-          role: form.role,
-          status: form.status,
-          password: form.password || existing.password,
-          isVerified: emailVerified,
-          profileImage: imagePreview,
-        });
+        };
+        if (validImage) {
+          updatePayload.profileImage = validImage;
+        }
+
+        await updateUser(userDbId, updatePayload);
       } else {
         await createUser({
           name: form.name,
           email: form.email,
           mobileNumber: form.mobile,
-          userType: form.type,
-          role: form.role,
           password: form.password,
-          status: form.status,
-          profileImage: imagePreview,
         });
       }
 
@@ -220,7 +202,7 @@ function AddUsers() {
   return (
     <section className="min-h-full bg-background p-4 sm:p-6">
       <div className="mx-auto max-w-7xl space-y-4">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,2.2fr)_minmax(300px,0.8fr)] items-stretch">
+        <div className="items-stretch">
           <form
             onSubmit={handleSubmit}
             className="flex flex-col rounded-xl border border-border bg-surface shadow-sm h-full"
@@ -246,28 +228,14 @@ function AddUsers() {
                     "email",
                     "Enter email address",
                   )}
-                  
-                  <div className="w-full">
-                    <label className="mb-1.5 block text-sm font-medium text-foreground"><RequiredLabel text="Mobile Number" /></label>
-                    <div className={`flex w-full rounded-lg border bg-surface ${formErrors.mobile ? "border-danger focus-within:border-danger" : "border-border focus-within:border-primary"} transition-colors overflow-hidden`}>
-                      <div className="flex items-center justify-center bg-muted/10 px-3 border-r border-border text-sm text-foreground font-medium select-none">
-                        +91
-                      </div>
-                      <input
-                        type="tel"
-                        value={form.mobile}
-                        onChange={(e) => {
-                          let val = e.target.value.replace(/\D/g, "");
-                          if (val.length > 10 && val.startsWith("91")) val = val.slice(2);
-                          if (val.length > 10) val = val.slice(0, 10);
-                          setForm({ ...form, mobile: val });
-                        }}
-                        placeholder="9876543210"
-                        className="flex-1 px-3.5 py-2.5 text-sm text-foreground outline-none bg-transparent placeholder:text-subtle"
-                      />
-                    </div>
-                    {formErrors.mobile && <p className="mt-1.5 text-xs text-danger">{formErrors.mobile}</p>}
-                  </div>
+                  {field(
+                    "mobile",
+                    "Mobile Number",
+                    "mobile",
+                    "tel",
+                    "Enter mobile number",
+                    isEditing
+                  )}
                 </div>
 
                 <div className="flex flex-col">
@@ -304,7 +272,7 @@ function AddUsers() {
                         </p>
                         <p className="mt-1 text-xs text-muted">or drag and drop</p>
                         <p className="mt-2 text-[10px] text-muted">
-                          JPG, PNG or WEBP (Max 2MB)
+                          JPG, PNG or WEBP (Max 2MP)
                         </p>
                       </div>
                     )}
@@ -312,99 +280,52 @@ function AddUsers() {
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-8 md:grid-cols-2">
-                <StatusSelect
-                  id="user-type"
-                  label={<RequiredLabel text="User Type" />}
-                  value={form.type}
-                  options={types}
-                  onChange={update("type")}
-                  required
-                />
 
-                <StatusSelect
-                  id="user-role"
-                  label={<RequiredLabel text="Role" />}
-                  value={form.role}
-                  options={roles}
-                  onChange={update("role")}
-                  required
-                />
+            </div>
 
-                <StatusSelect
-                  id="user-status"
-                  label={<RequiredLabel text="Status" />}
-                  value={form.status}
-                  options={statusOptions}
-                  onChange={update("status")}
-                  required
-                />
-
-                <div className="flex flex-col pt-1">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="block text-sm font-medium text-foreground">
-                      Email Verified
-                    </span>
+            {!isEditing && (
+              <div className="p-6 sm:p-8">
+                <h2 className="text-lg font-semibold text-foreground">
+                  Password
+                </h2>
+                <div className="mt-8 grid gap-8 md:grid-cols-2">
+                  <div className="relative">
+                    {field(
+                      "password",
+                      "Password",
+                      "password",
+                      showPassword ? "text" : "password",
+                      "Enter password",
+                    )}
                     <button
                       type="button"
-                      onClick={() => setEmailVerified(!emailVerified)}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${emailVerified ? "bg-primary" : "bg-border"}`}
-                      role="switch"
-                      aria-checked={emailVerified}
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 bottom-2.5 text-muted hover:text-foreground transition-colors"
+                      aria-label="Toggle password"
                     >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${emailVerified ? "translate-x-2" : "-translate-x-2"}`}
-                      />
+                      {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
                     </button>
                   </div>
-                  <span className="text-xs text-muted mt-0.5">
-                    If enabled, the user will be marked as email verified.
-                  </span>
+                  <div className="relative">
+                    {field(
+                      "confirm-password",
+                      "Confirm Password",
+                      "confirm",
+                      showConfirm ? "text" : "password",
+                      "Confirm password",
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm(!showConfirm)}
+                      className="absolute right-3 bottom-2.5 text-muted hover:text-foreground transition-colors"
+                      aria-label="Toggle confirm password"
+                    >
+                      {showConfirm ? <Eye size={18} /> : <EyeOff size={18} />}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className="p-6 sm:p-8">
-              <h2 className="text-lg font-semibold text-foreground">
-                Password
-              </h2>
-              <div className="mt-8 grid gap-8 md:grid-cols-2">
-                <div className="relative">
-                  {field(
-                    "password",
-                    "Password",
-                    "password",
-                    showPassword ? "text" : "password",
-                    "Enter password",
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 bottom-2.5 text-muted hover:text-foreground transition-colors"
-                    aria-label="Toggle password"
-                  >
-                    {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
-                  </button>
-                </div>
-                <div className="relative">
-                  {field(
-                    "confirm-password",
-                    "Confirm Password",
-                    "confirm",
-                    showConfirm ? "text" : "password",
-                    "Confirm password",
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3 bottom-2.5 text-muted hover:text-foreground transition-colors"
-                    aria-label="Toggle confirm password"
-                  >
-                    {showConfirm ? <Eye size={18} /> : <EyeOff size={18} />}
-                  </button>
-                </div>
-              </div>
-            </div>
+            )}
 
             <div className="mt-auto flex justify-end gap-4 border-t border-border p-6 bg-surface-hover/30 rounded-b-xl">
               <Button
@@ -425,92 +346,7 @@ function AddUsers() {
             </div>
           </form>
 
-          <aside className="flex flex-col gap-6 h-full">
-            <div className="rounded-xl border border-border bg-surface p-6 shadow-sm">
-              <h2 className="text-base font-semibold text-foreground border-b border-border pb-4 mb-4">
-                User Type & Role Guide
-              </h2>
-              <div className="space-y-2">
-                {[
-                  [
-                    "Customer",
-                    "Normal app users who can place orders and avail services.",
-                  ],
-                  [
-                    "Delivery Partner",
-                    "Delivery partners who can accept and deliver orders.",
-                  ],
-                  [
-                    "Admin",
-                    "System administrators who can access the admin panel.",
-                  ],
-                ].map(([title, text]) => (
-                  <div
-                    key={title}
-                    className="rounded-lg bg-background p-4 border border-border/50"
-                  >
-                    <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                      <UserRound size={16} className="text-primary" />
-                      {title}
-                    </p>
-                    <p className="mt-1.5 text-xs text-muted leading-relaxed">
-                      {text}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
 
-            <div className="rounded-xl border border-border bg-surface p-6 shadow-sm flex-1">
-              <h2 className="text-base font-semibold text-foreground border-b border-border pb-4 mb-4">
-                Status Guide
-              </h2>
-              <div className="space-y-3">
-                {[
-                  {
-                    title: "Active",
-                    text: "User can login and access the system.",
-                    color: "text-success",
-                    bg: "bg-success",
-                    varName: "success",
-                  },
-                  {
-                    title: "Inactive",
-                    text: "User cannot login and access the system.",
-                    color: "text-warning",
-                    bg: "bg-warning",
-                    varName: "warning",
-                  },
-                  {
-                    title: "Blocked",
-                    text: "User is blocked and cannot access the system.",
-                    color: "text-danger",
-                    bg: "bg-danger",
-                    varName: "danger",
-                  },
-                ].map(({ title, text, color, bg, varName }) => (
-                  <div
-                    key={title}
-                    className="rounded-lg bg-background p-4 border-l-[3px] shadow-sm"
-                    style={{
-                      borderLeftColor: `var(--color-${varName})`,
-                      borderTop: "1px solid var(--color-border)",
-                      borderRight: "1px solid var(--color-border)",
-                      borderBottom: "1px solid var(--color-border)",
-                    }}
-                  >
-                    <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                      <span className={`h-2.5 w-2.5 rounded-full ${bg}`}></span>
-                      <span className={color}>{title}</span>
-                    </p>
-                    <p className="mt-1.5 text-xs text-muted leading-relaxed">
-                      {text}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </aside>
         </div>
       </div>
     </section>
