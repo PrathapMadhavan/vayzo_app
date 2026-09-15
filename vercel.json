@@ -1,0 +1,22 @@
+{
+  "rewrites": [
+    {
+      "source": "/settings/:path*",
+      "destination": "/api/settings/:path*"
+    },
+    {
+      "source": "/deliveryPartners",
+      "destination": "/api/deliveryPartners"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/[[...path]].js": {
+      "includeFiles": "db.json",
+      "maxDuration": 30
+    }
+  }
+}
