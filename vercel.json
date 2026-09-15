@@ -3,12 +3,24 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/v1/:path*",
+      "destination": "/api?p=/api/v1/:path*"
+    },
+    {
+      "source": "/api/settings/:path*",
+      "destination": "/api?p=/api/settings/:path*"
+    },
+    {
+      "source": "/api/deliveryPartners",
+      "destination": "/api?p=/api/deliveryPartners"
+    },
+    {
       "source": "/settings/:path*",
-      "destination": "/api/settings/:path*"
+      "destination": "/api?p=/settings/:path*"
     },
     {
       "source": "/deliveryPartners",
-      "destination": "/api/deliveryPartners"
+      "destination": "/api?p=/deliveryPartners"
     },
     {
       "source": "/((?!api/).*)",
@@ -16,9 +28,12 @@
     }
   ],
   "functions": {
-    "api/**/*.js": {
+    "api/index.js": {
       "includeFiles": "db.json",
       "maxDuration": 30
+    },
+    "api/hello.js": {
+      "maxDuration": 10
     }
   }
 }
