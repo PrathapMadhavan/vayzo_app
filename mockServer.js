@@ -188,6 +188,17 @@ app.use('/api/v1/admin', (req, res, next) => {
 
 app.use(middlewares);
 
+// json-server's rewriter matches req.url including the query string, so
+// Vercel rewrites like /api?p=/api/v1/admin/dashboard never hit a rule.
+app.use((req, _res, next) => {
+  const parsed = new URL(req.url, "http://localhost");
+  parsed.searchParams.delete("p");
+  parsed.searchParams.delete("orig");
+  req._qs = parsed.searchParams.toString();
+  req.url = parsed.pathname;
+  next();
+});
+
 // Add the rewriter to support existing API paths
 app.use(jsonServer.rewriter({
   '/api/v1/admin/customers/*': '/users/$1',
@@ -241,6 +252,11 @@ app.use(jsonServer.rewriter({
   '/api/settings': '/settings',
   '/api/deliveryPartners': '/deliveryPartners',
 }));
+
+app.use((req, _res, next) => {
+  if (req._qs) req.url += `?${req._qs}`;
+  next();
+});
 
 app.use(router);
 
