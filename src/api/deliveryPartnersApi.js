@@ -34,35 +34,26 @@ export async function getDeliveryPartners(filters = {}) {
 }
 
 export async function getDeliveryPartnerById(partnerId) {
-  // Try matching by partnerId or json-server's id
-  let data = await apiRequest(`${ENDPOINT}?partnerId=${partnerId}`, {}, "Unable to load delivery partner");
+  // Use the new aggregated endpoint
+  const result = await apiRequest(`${ENDPOINT}/${partnerId}`, {}, "Unable to load delivery partner");
+  const response = result.data || result;
   
-  if (!data || !data.length) {
-    data = await apiRequest(`${ENDPOINT}?id=${partnerId}`, {}, "Unable to load delivery partner");
-  }
-
-  if (!data || !data.length) {
-    throw new Error("Delivery partner not found");
-  }
-
-  const partner = data[0];
-
-  // Fetch associated models
+  // Also fetch related endpoints
   try {
-    // For these sub-resources, we should probably map them too if they existed, but
-    // since we only listed the primary endpoints, let's map them to the same admin structure
-    const documents = await apiRequest(`/api/v1/admin/partner-documents?partnerId=${partner.partnerId}`);
-    const vehicles = await apiRequest(`/api/v1/admin/partner-vehicles?partnerId=${partner.partnerId}`);
-    const banks = await apiRequest(`/api/v1/admin/partner-bank-accounts?partnerId=${partner.partnerId}`);
+    const activityResult = await apiRequest(`${ENDPOINT}/${partnerId}/activity`);
+    const reviewsResult = await apiRequest(`${ENDPOINT}/${partnerId}/reviews`);
     
-    partner.documents = documents || [];
-    partner.vehicles = vehicles || [];
-    partner.bank_accounts = banks || [];
+    // Attach to the main response for convenience
+    if (response) {
+      response.activity = activityResult?.data?.content || [];
+      response.reviews = reviewsResult?.data?.reviews || [];
+      response.reviewSummary = reviewsResult?.data?.summary || {};
+    }
   } catch (err) {
-    console.error("Failed to load associated partner data", err);
+    console.error("Failed to load associated partner activity/reviews", err);
   }
 
-  return partner;
+  return response;
 }
 
 export async function createDeliveryPartner(partnerData) {

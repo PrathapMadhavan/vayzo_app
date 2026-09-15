@@ -280,6 +280,72 @@ server.get('/api/v1/wallet/transactions', (req, res) => {
   res.json(transactions);
 });
 
+const { getPartnerAggregatedData } = require('./partner-aggregation.cjs');
+
+server.get('/api/v1/admin/partners/:id', (req, res) => {
+  const db = router.db.getState();
+  const data = getPartnerAggregatedData(db, req.params.id);
+  if (!data) return res.status(404).json({ success: false, message: "Partner not found" });
+  res.json({ success: true, data });
+});
+
+server.get('/api/v1/admin/partners/:id/documents', (req, res) => {
+  const db = router.db.getState();
+  const data = getPartnerAggregatedData(db, req.params.id);
+  if (!data) return res.status(404).json({ success: false, message: "Partner not found" });
+  res.json({ success: true, data: data.documents });
+});
+
+server.get('/api/v1/admin/partners/:id/activity', (req, res) => {
+  const db = router.db.getState();
+  const pId = req.params.id;
+  
+  const profile = db.partner_profiles ? db.partner_profiles.find(p => p.id === pId || p.partner_code === pId) : null;
+  const internalId = profile ? profile.id : pId;
+  
+  let activities = [];
+  const assignments = db.request_assignments ? db.request_assignments.filter(a => a.partner_id === internalId) : [];
+  const requestIds = assignments.map(a => a.request_id);
+  
+  if (db.request_status_history) {
+    const history = db.request_status_history.filter(h => requestIds.includes(h.request_id));
+    activities = history.map(h => ({
+      id: h.id,
+      type: 'REQUEST_STATUS',
+      action: h.status,
+      timestamp: h.created_at,
+      details: `Request ${h.request_id} changed to ${h.status}`
+    }));
+  }
+  
+  if (db.partner_earnings) {
+    const earnings = db.partner_earnings.filter(e => e.partner_id === internalId);
+    activities.push(...earnings.map(e => ({
+      id: e.id,
+      type: 'EARNING',
+      action: 'Earned',
+      timestamp: e.earned_at || e.created_at || new Date().toISOString(),
+      details: `Earned ₹${e.net_amount}`
+    })));
+  }
+
+  activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  res.json({ success: true, data: { content: activities } });
+});
+
+server.get('/api/v1/admin/partners/:id/reviews', (req, res) => {
+  const db = router.db.getState();
+  const pId = req.params.id; 
+  const profile = db.partner_profiles ? db.partner_profiles.find(p => p.id === pId || p.partner_code === pId) : null;
+  const internalId = profile ? profile.id : pId;
+  
+  const reviews = db.ratings_reviews ? db.ratings_reviews.filter(r => r.partner_id === internalId) : [];
+  const avg = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : 0;
+  
+  res.json({ success: true, data: { summary: { averageRating: avg, reviewCount: reviews.length }, reviews } });
+});
+
 // REWRITE RULES for ratings and new admin endpoints
 server.use(jsonServer.rewriter({
   '/api/v1/admin/customers/*': '/users/$1',

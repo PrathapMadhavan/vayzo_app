@@ -316,17 +316,6 @@
       "joinedOn": "2024-05-12",
       "id": "USR2020",
       "role": "Admin"
-    },
-    {
-      "id": "Y1zeTMOWroc",
-      "name": "HARII",
-      "email": "haripriyan@gmail.com",
-      "mobileNumber": "0987654321",
-      "userType": "Partner",
-      "role": "Delivery Partner",
-      "status": "Active",
-      "isVerified": true,
-      "joinedOn": "2026-09-11T13:23:26.484Z"
     }
   ],
   "orders": [
@@ -5356,35 +5345,5 @@
       "partner_id": "Y1zeTMOWroc"
     }
   ],
-  "$schema": "./node_modules/json-server/schema.json",
-  "partner_profiles": [
-    {
-      "id": "Y1zeTMOWroc",
-      "user_id": "Y1zeTMOWroc",
-      "partner_code": "VYZ-PRT-2032",
-      "verification_status": "VERIFIED",
-      "online_status": "Online",
-      "rating_avg": 0,
-      "rating_count": 0,
-      "joined_at": "2026-09-11T13:23:26.484Z",
-      "dateOfBirth": "15 Aug 1995",
-      "gender": "Male",
-      "alternateMobile": "09751775024",
-      "emergencyContact": "Dias S",
-      "emergencyMobile": "09751775024",
-      "address": "145",
-      "city": "Keelayur"
-    }
-  ],
-  "request_assignments": [
-    {
-      "id": "ASSN_A",
-      "request_id": "REQ_A",
-      "partner_id": "JdrN1XT2DlU",
-      "assignment_status": "unknown",
-      "created_at": "2026-09-11T13:23:26.486Z",
-      "updated_at": "2026-09-11T13:23:26.486Z"
-    }
-  ],
-  "ratings_reviews": []
+  "$schema": "./node_modules/json-server/schema.json"
 }
