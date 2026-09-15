@@ -142,9 +142,9 @@ function Dashboard() {
       bgClass: "bg-info/10",
     },
     {
-      title: "New Users",
-      value: stats.newUsers.value,
-      trend: stats.newUsers.trend,
+      title: "New Customers",
+      value: stats.newCustomers.value,
+      trend: stats.newCustomers.trend,
       icon: Users,
       colorClass: "text-danger",
       bgClass: "bg-danger/10",
@@ -305,11 +305,11 @@ function Dashboard() {
           </div>
         </Card>
 
-        {/* Users Overview (Donut) */}
+        {/* Customers Overview (Donut) */}
         <Card>
           <div className="mb-2 flex items-center justify-between">
-            <h3 className="font-semibold text-foreground">Users Overview</h3>
-            <Link to="/users" className="text-sm font-medium text-primary hover:underline">View All</Link>
+            <h3 className="font-semibold text-foreground">Customers Overview</h3>
+            <Link to="/customers" className="text-sm font-medium text-primary hover:underline">View All</Link>
           </div>
           <div className="relative flex h-48 items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
@@ -323,7 +323,7 @@ function Dashboard() {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute flex flex-col items-center justify-center">
-              <span className="text-xs text-muted">Total Users</span>
+              <span className="text-xs text-muted">Total Customers</span>
               <span className="text-lg font-bold text-foreground">45,231</span>
             </div>
           </div>

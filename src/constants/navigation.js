@@ -13,7 +13,7 @@ import {
   Bell,
   FileBarChart,
   Settings,
-  ShieldUser,
+  ShieldAlert,
   Activity,
 } from "lucide-react";
 
@@ -25,7 +25,7 @@ export const navigationItems = [
   },
   {
     label: "Customers",
-    path: "/users",
+    path: "/customers",
     icon: Users,
   },
   {
@@ -90,9 +90,9 @@ export const navigationItems = [
     icon: Settings,
   },
   {
-    label: "Admin Users",
-    path: "/admin-users",
-    icon: ShieldUser,
+    label: "Admin Customers",
+    path: "/admin-customers",
+    icon: ShieldAlert,
   },
   {
     label: "Activity Logs",
