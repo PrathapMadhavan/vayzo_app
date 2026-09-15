@@ -1,4 +1,6 @@
 {
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/settings/:path*",
@@ -14,7 +16,7 @@
     }
   ],
   "functions": {
-    "api/[...path].js": {
+    "api/**/*.js": {
       "includeFiles": "db.json",
       "maxDuration": 30
     }
