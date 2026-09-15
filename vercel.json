@@ -9,12 +9,12 @@
       "destination": "/api/deliveryPartners"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
   "functions": {
-    "api/[[...path]].js": {
+    "api/[...path].js": {
       "includeFiles": "db.json",
       "maxDuration": 30
     }
