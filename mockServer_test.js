@@ -33,7 +33,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-const SERVER_PORT = process.env.PORT || 3000;
+const SERVER_PORT = process.env.PORT || 3001;
 const SECRET_KEY = 'vayzo-secret-dev'; // simple secret for mock environment
 const OTP_CODE = '123456'; // Development OTP
 
@@ -220,7 +220,6 @@ app.get('/api/v1/admin/partners', (req, res) => {
 
     return {
       id: user.id,
-      partnerId: user.id,
       name: user.name,
       email: user.email,
       mobileNumber: user.mobileNumber || user.phone,
@@ -355,7 +354,7 @@ app.get('/api/v1/admin/partners/:id', (req, res) => {
   const response = {
     partner: {
       id: user.id,
-      partnerId: user.id,
+      partnerId: profile.partner_code || user.id.slice(0,8),
       name: user.name,
       email: user.email,
       mobileNumber: user.mobileNumber || user.phone,
@@ -770,30 +769,6 @@ app.patch('/api/v1/admin/partners/:id', upload.fields([
 
   return res.json({ id, ...data, success: true });
 });
-// GET /api/v1/admin/requests (Orders List + filtered by orderId/id)
-app.get('/api/v1/admin/requests', (req, res) => {
-  const db = router.db.getState();
-  const orders = db.orders || [];
-  const { orderId, id, status, serviceType } = req.query;
-
-  // Single order lookup via query param
-  if (orderId) {
-    const found = orders.find(o => o.orderId === orderId);
-    return found ? res.json([found]) : res.json([]);
-  }
-  if (id) {
-    const found = orders.find(o => String(o.id) === String(id) || o.orderId === id);
-    return found ? res.json([found]) : res.json([]);
-  }
-
-  // Filtered list
-  let result = orders;
-  if (status) result = result.filter(o => o.status?.toLowerCase() === status.toLowerCase());
-  if (serviceType) result = result.filter(o => (o.serviceType || '').toLowerCase() === serviceType.toLowerCase());
-
-  return res.json(result);
-});
-
 // GET /api/v1/admin/customers (Aggregated List)
 app.get('/api/v1/admin/customers', (req, res) => {
   console.log("HIT CUSTOMERS GET ENDPOINT");

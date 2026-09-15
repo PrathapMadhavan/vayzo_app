@@ -16,39 +16,50 @@ import FilterPanel from "../components/ui/FilterPanel";
 
 import ActionMenu from "../components/ui/ActionMenu";
 
-import { getUsers, deleteUser } from "../api/usersApi";
+import { getCustomers, deleteCustomer } from "../api/usersApi";
 import { exportToCSV } from "../utils/exportUtils";
 
+const statusBadgeMap = {
+  Active: "success",
+  Verified: "info",
+  Pending: "warning",
+  Blocked: "danger",
+  Inactive: "danger",
+};
 
-
-
+const statusOptions = [
+  "All Status",
+  "Active",
+  "Verified",
+  "Pending",
+  "Blocked",
+];
 
 const verificationOptions = ["All Verified", "Verified", "Not Verified"];
 
-const userTableHeaders = [
+const customerTableHeaders = [
   "No.",
   "ID",
-  "User",
+  "Customer",
   "Mobile",
   "Email",
-
-
+  "Status",
   "Verified",
   "Joined On",
   "Actions",
 ];
 
-function Users() {
+function Customers() {
   const navigate = useNavigate();
 
-  const [users, setUsers] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
   const [deleteModalId, setDeleteModalId] = useState(null);
 
   const [searchText, setSearchText] = useState("");
-
+  const [statusFilter, setStatusFilter] = useState("All Status");
   const [verificationFilter, setVerificationFilter] = useState("All Verified");
   const [joinedFrom, setJoinedFrom] = useState("");
   const [joinedTo, setJoinedTo] = useState("");
@@ -59,19 +70,19 @@ function Users() {
   useEffect(() => {
     let isMounted = true;
 
-    const loadUsers = async () => {
+    const loadCustomers = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const data = await getUsers();
+        const data = await getCustomers();
 
         if (isMounted) {
-          setUsers(data);
+          setCustomers(data);
         }
       } catch (err) {
         if (isMounted) {
-          setError("Unable to load users.");
+          setError("Unable to load customers.");
         }
       } finally {
         if (isMounted) {
@@ -80,26 +91,28 @@ function Users() {
       }
     };
 
-    loadUsers();
+    loadCustomers();
 
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const filteredUsers = useMemo(() => {
+  const filteredCustomers = useMemo(() => {
     const query = searchText.trim().toLowerCase();
 
-    return users.filter((user) => {
-      const isVerified = user.isVerified === true;
+    return customers.filter((customer) => {
+      const isVerified = customer.isVerified === true;
       const matchesSearch =
         !query ||
-        [user.name, user.email, user.mobileNumber, user.userId, user.userType]
+        [customer.name, customer.email, customer.mobileNumber, customer.public_id]
           .join(" ")
           .toLowerCase()
           .includes(query);
 
-
+      const matchesStatus =
+        statusFilter === "All Status" ||
+        customer.status?.toLowerCase() === statusFilter.toLowerCase();
 
       const matchesVerification =
         verificationFilter === "All Verified" ||
@@ -107,78 +120,81 @@ function Users() {
         (verificationFilter === "Not Verified" && !isVerified);
 
       const matchesJoinedDate =
-        (!joinedFrom || user.joinedOn >= joinedFrom) &&
-        (!joinedTo || user.joinedOn <= joinedTo);
+        (!joinedFrom || customer.joinedOn >= joinedFrom) &&
+        (!joinedTo || customer.joinedOn <= joinedTo);
 
       return (
         matchesSearch &&
+        matchesStatus &&
         matchesVerification &&
         matchesJoinedDate
       );
     });
   }, [
     searchText,
-    users,
+    customers,
+    statusFilter,
     verificationFilter,
     joinedFrom,
     joinedTo,
   ]);
 
   // Pagination Logic
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
-  const paginatedUsers = filteredUsers.slice(
+  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
+  const paginatedCustomers = filteredCustomers.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-
 
   const toTitleCase = (str) => {
     if (!str) return "";
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   };
 
-
+  const maxStatus = useMemo(() => {
+    return paginatedCustomers.reduce((max, u) => {
+      const statusStr = toTitleCase(u.status || "");
+      return statusStr.length > max.length ? statusStr : max;
+    }, "");
+  }, [paginatedCustomers]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchText, verificationFilter, joinedFrom, joinedTo]);
+  }, [searchText, statusFilter, verificationFilter, joinedFrom, joinedTo]);
 
   const hasFilters =
     searchText !== "" ||
+    statusFilter !== "All Status" ||
     verificationFilter !== "All Verified" ||
     joinedFrom !== "" ||
     joinedTo !== "";
 
   const resetFilters = () => {
     setSearchText("");
+    setStatusFilter("All Status");
     setVerificationFilter("All Verified");
     setJoinedFrom("");
     setJoinedTo("");
   };
 
-  const handleDeleteUser = async () => {
+  const handleDeleteCustomer = async () => {
     if (!deleteModalId) return;
     try {
-      await deleteUser(deleteModalId);
-      setUsers((prev) => prev.filter((u) => u.userId !== deleteModalId));
+      await deleteCustomer(deleteModalId);
+      setCustomers((prev) => prev.filter((u) => u.customerId !== deleteModalId));
       setDeleteModalId(null);
       // Pagination handled automatically by recalculated totalPages,
       // but let's ensure we don't end up on an empty page if possible
-      const newFilteredLength = filteredUsers.length - 1;
+      const newFilteredLength = filteredCustomers.length - 1;
       const newTotalPages = Math.ceil(newFilteredLength / itemsPerPage) || 1;
       if (currentPage > newTotalPages) {
         setCurrentPage(newTotalPages);
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to delete user.");
+      alert("Failed to delete customer.");
     }
   };
-
-
-
-
 
   return (
     <section className="min-h-full bg-background p-4 sm:p-6 flex flex-col gap-6">
@@ -187,10 +203,10 @@ function Users() {
         <FilterPanel
           search={
             <SearchInput
-              id="user-search"
+              id="customer-search"
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
-              placeholder="Search users by name, email or mobile..."
+              placeholder="Search customers by name, email or mobile..."
             />
           }
           actions={
@@ -200,26 +216,31 @@ function Users() {
                 size="sm"
                 type="button"
                 className="h-10 w-full sm:w-auto"
-                onClick={() => exportToCSV(filteredUsers, "users.csv")}
+                onClick={() => exportToCSV(filteredCustomers, "customers.csv")}
               >
                 <Download size={14} className="mr-1" /> Export
               </Button>
               <Button
                 size="sm"
-                onClick={() => navigate("/users/add")}
+                onClick={() => navigate("/customers/add")}
                 className="h-10 w-full sm:w-auto flex items-center justify-center gap-2"
               >
                 <Plus size={18} strokeWidth={2.5} />
-                Add User
+                Add Customer
               </Button>
             </>
           }
           filters={
             <>
-
-
               <StatusSelect
-                id="user-verification"
+                id="customer-status"
+                value={statusFilter}
+                options={statusOptions}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                className="w-full lg:w-[150px]"
+              />
+              <StatusSelect
+                id="customer-verification"
                 value={verificationFilter}
                 options={verificationOptions}
                 onChange={(event) => setVerificationFilter(event.target.value)}
@@ -248,9 +269,9 @@ function Users() {
           </div>
         ) : (
           <Table
-            headers={userTableHeaders}
-            currentCount={paginatedUsers.length}
-            totalCount={filteredUsers.length}
+            headers={customerTableHeaders}
+            currentCount={paginatedCustomers.length}
+            totalCount={filteredCustomers.length}
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
@@ -260,90 +281,95 @@ function Users() {
             {loading ? (
               <tr>
                 <td
-                  colSpan={userTableHeaders.length}
+                  colSpan={customerTableHeaders.length}
                   className="p-10 text-center text-sm text-muted"
                 >
-                  Loading users...
+                  Loading customers...
                 </td>
               </tr>
-            ) : paginatedUsers.length > 0 ? (
-              paginatedUsers.map((user, index) => (
+            ) : paginatedCustomers.length > 0 ? (
+              paginatedCustomers.map((customer, index) => (
                 <tr
-                  key={user.userId}
-                  onClick={() => navigate(`/users/${user.userId}`)}
-                  className="border-b border-border last:border-0 transition-colors hover:bg-background cursor-pointer"
+                  key={customer.public_id}
+                  onClick={() => navigate(`/customers/${customer.public_id}`)}
+                  className="border-b border-border last:border-0 transition-colors hover:bg-muted/30 cursor-pointer"
                 >
                   <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
                     {String((currentPage - 1) * itemsPerPage + index + 1).padStart(2, "0")}
                   </td>
 
                   <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
-                    {user.userId}
+                    {customer.public_id}
                   </td>
 
                   <td className="px-3 py-3">
                     <div className="flex min-w-0 items-center gap-2">
                       <Avatar 
-                        src={user.image} 
-                        alt={user.name} 
-                        identifier={user.userId} 
+                        src={customer.image} 
+                        alt={customer.name} 
+                        identifier={customer.public_id} 
                         className="h-8 w-8 rounded-full shadow-sm"
                       />
 
                       <span className="truncate font-medium text-foreground">
-                        {user.name}
+                        {customer.name}
                       </span>
                     </div>
                   </td>
 
                   <td className="whitespace-nowrap px-3 py-3 text-muted">
-                    {user.mobileNumber}
+                    {customer.mobileNumber}
                   </td>
 
                   <td className="truncate px-3 py-3 text-muted">
-                    {user.email}
+                    {customer.email}
                   </td>
 
-
-
-
+                  <td className="px-3 py-3">
+                    <BadgeCell
+                      maxContent={maxStatus}
+                      content={toTitleCase(customer.status)}
+                      variant={statusBadgeMap[toTitleCase(customer.status)] || "default"}
+                      className="px-3"
+                    />
+                  </td>
 
                   <td className="px-3 py-3">
                     <span
                       className={[
                         "flex h-6 w-6 items-center justify-center rounded-full",
-                        user.isVerified
+                        customer.isVerified
                           ? "bg-success/15 text-success"
                           : "bg-danger/15 text-danger",
                       ].join(" ")}
                     >
-                      {user.isVerified ? <Check size={14} strokeWidth={3} /> : <X size={14} strokeWidth={3} />}
+                      {customer.isVerified ? <Check size={14} strokeWidth={3} /> : <X size={14} strokeWidth={3} />}
                     </span>
                   </td>
 
                   <td className="whitespace-nowrap px-3 py-3 text-muted">
-                    {user.joinedOn}
+                    {customer.joinedOn}
                   </td>
 
-                  <td className="px-3 py-3">
+                  <td className="px-3 py-3" onClick={e => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
                       <ActionMenu
                         actions={[
                           {
                             label: "View",
                             icon: Eye,
-                            onClick: () => navigate(`/users/${user.userId}`),
+                            onClick: () => navigate(`/customers/${customer.public_id}`),
                           },
                           {
                             label: "Edit",
                             icon: Edit,
-                            onClick: () => navigate(`/users/edit/${user.userId}`),
+                            onClick: () => navigate(`/customers/edit/${customer.public_id}`),
                           },
                           {
                             label: "Delete",
                             icon: Trash2,
                             danger: true,
-                            onClick: () => setDeleteModalId(user.userId),
+                            onClick: () => setDeleteModalId(customer.public_id),
                           },
                         ]}
                       />
@@ -354,10 +380,10 @@ function Users() {
             ) : (
               <tr>
                 <td
-                  colSpan={userTableHeaders.length}
+                  colSpan={customerTableHeaders.length}
                   className="p-10 text-center text-sm text-muted"
                 >
-                  No users found for the selected search and filters.
+                  No customers found for the selected search and filters.
                 </td>
               </tr>
             )}
@@ -369,16 +395,16 @@ function Users() {
       <Modal 
         isOpen={!!deleteModalId} 
         onClose={() => setDeleteModalId(null)} 
-        title="Delete User"
+        title="Delete Customer"
       >
-        <p className="text-sm text-muted">Are you sure you want to delete this user? This action cannot be undone.</p>
+        <p className="text-sm text-muted">Are you sure you want to delete this customer? This action cannot be undone.</p>
         <div className="mt-6 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteModalId(null)}>Cancel</Button>
-          <Button className="bg-danger hover:bg-danger/90 text-white" onClick={handleDeleteUser}>Delete</Button>
+          <Button className="bg-danger hover:bg-danger/90 text-white" onClick={handleDeleteCustomer}>Delete</Button>
         </div>
       </Modal>
     </section>
   );
 }
 
-export default Users;
+export default Customers;

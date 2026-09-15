@@ -17,11 +17,13 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.33.0",
+    "multer": "^2.4.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.2",
     "recharts": "^3.10.1",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "ulid": "^3.0.2"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
