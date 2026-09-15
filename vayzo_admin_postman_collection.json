@@ -1,0 +1,321 @@
+{
+  "info": {
+    "_postman_id": "87af0037-59c8-4eca-bf0c-3a46dd93fca2",
+    "name": "VAYZO Admin API Collection",
+    "description": "Postman collection for local testing of VAYZO Admin APIs running on the mock backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000/api/v1/admin",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "partner_id",
+      "value": "01M2J2Q297C4AG26BGAKMMFMXN",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Send OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobileNumber\": \"9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/send-otp",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "send-otp"
+              ]
+            },
+            "description": "Initiate login by sending OTP to admin mobile number."
+          }
+        },
+        {
+          "name": "Login (Verify OTP)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.success && jsonData.data.accessToken) {",
+                  "    pm.collectionVariables.set(\"access_token\", jsonData.data.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mobileNumber\": \"9876543210\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Verify OTP and retrieve Bearer Token."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delivery Partners",
+      "item": [
+        {
+          "name": "Get All Delivery Partners",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/partners",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "partners"
+              ]
+            },
+            "description": "Fetch aggregated list of all delivery partners."
+          }
+        },
+        {
+          "name": "Get Partner by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/partners/{{partner_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "partners",
+                "{{partner_id}}"
+              ]
+            },
+            "description": "Fetch unified partner profile, vehicle, earnings, bank, and documents."
+          }
+        },
+        {
+          "name": "Get Partner Activity Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/partners/{{partner_id}}/activity",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "partners",
+                "{{partner_id}}",
+                "activity"
+              ]
+            },
+            "description": "Fetch unified activity timeline for the partner."
+          }
+        },
+        {
+          "name": "Create Delivery Partner",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Raj Kumar\",\n  \"email\": \"raj.kumar@example.com\",\n  \"mobileNumber\": \"9988776655\",\n  \"city\": \"Chennai\",\n  \"status\": \"Active\",\n  \"onlineStatus\": \"Offline\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"gender\": \"Male\",\n  \"alternateMobile\": \"9988776644\",\n  \"emergencyContact\": \"Suresh Kumar (Brother)\",\n  \"emergencyMobile\": \"9988776633\",\n  \"address\": \"No. 15, Nehru Street, Adyar, Chennai\",\n  \"aadhaarNumber\": \"123412341234\",\n  \"panNumber\": \"ABCDE1234F\",\n  \"rcNumber\": \"TN01AA1111\",\n  \"vehicleType\": \"Bike\",\n  \"vehicleName\": \"Honda Activa\",\n  \"vehicleNumber\": \"TN01AA1111\",\n  \"insuranceNumber\": \"INS987654321\",\n  \"insuranceValidTill\": \"2025-12-31\",\n  \"bankName\": \"State Bank of India\",\n  \"accountNumber\": \"000000123456789\",\n  \"ifscCode\": \"SBIN0001234\",\n  \"accountHolderName\": \"Raj Kumar\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/partners",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "partners"
+              ]
+            },
+            "description": "Create a new partner. The API translates this into normalized users, profiles, vehicles, documents, and bank_accounts."
+          }
+        },
+        {
+          "name": "Update Delivery Partner",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Blocked\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/partners/{{partner_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "partners",
+                "{{partner_id}}"
+              ]
+            },
+            "description": "Update specific fields of an existing partner."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Get All Customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "customers"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Restaurants",
+      "item": [
+        {
+          "name": "Get All Restaurants",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/restaurants",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "restaurants"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "System Activity Logs",
+      "item": [
+        {
+          "name": "Create Activity Log",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": \"Admin\",\n  \"action\": \"Sent Message\",\n  \"module\": \"Delivery Partners\",\n  \"details\": \"Sent message to Test Partner (12345): Test message\",\n  \"timestamp\": \"2023-10-27T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/activity-logs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "activity-logs"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

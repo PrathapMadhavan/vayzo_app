@@ -13,7 +13,9 @@ import {
   Star,
   Wallet,
   ArrowLeft,
-  Search
+  Search,
+  User,
+  Building
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -131,13 +133,17 @@ function DeliveryPartner() {
 
   const handleViewDocument = (docName) => {
     let url = null;
+    const findUrl = (type) => {
+      const doc = partnerData?.documents?.find(d => d.document_type === type);
+      return doc?.file_path || null;
+    };
     switch (docName) {
-      case "Aadhaar Card": url = partner.aadhaarDocument; break;
-      case "Driving License": url = partner.drivingLicenseDocument; break;
-      case "PAN Card": url = partner.panDocument; break;
-      case "Profile Photo": url = partner.profileImage; break;
-      case "Vehicle RC Book": url = partner.rcDocument; break;
-      case "Insurance": url = partner.insuranceDocument; break;
+      case "Aadhaar Card": url = findUrl('aadhaar'); break;
+      case "Driving License": url = findUrl('driving_license'); break;
+      case "PAN Card": url = findUrl('pan'); break;
+      case "Profile Photo": url = partner?.profileImage; break;
+      case "Vehicle RC Book": url = findUrl('rc'); break;
+      case "Insurance": url = findUrl('insurance'); break;
       default: url = null;
     }
     setSelectedDocumentName(docName);
@@ -193,13 +199,12 @@ function DeliveryPartner() {
   const { partner, personalDetails, vehicle, earnings, bankAccount, documents, activity } = partnerData;
 
   const stats = [
-    ["Partner ID", partner?.partnerId, <Search size={14} key="search" />],
-    ["Vehicle", vehicle?.vehicleType, <Bike size={14} key="bike" />],
     ["Total Orders", partner?.totalOrders, <FileText size={14} key="file" />],
-    ["Completion Rate", `${partner?.completionRate || 0}%`, <Check size={14} key="check" />],
-    ["Cancellation Rate", `${partner?.cancellationRate || 0}%`, <Ban size={14} key="ban" />],
-    ["Total Earnings", partner?.totalEarnings ? `₹${partner.totalEarnings.toLocaleString()}` : null, <Wallet size={14} key="wallet1" />],
-    ["Today's Earnings", partner?.todayEarnings ? `₹${partner.todayEarnings.toLocaleString()}` : null, <Wallet size={14} key="wallet2" />],
+    ["Completion Rate", partner?.completionRate !== undefined ? `${partner.completionRate}%` : null, <Check size={14} key="check" />],
+    ["Cancellation Rate", partner?.cancellationRate !== undefined ? `${partner.cancellationRate}%` : null, <Ban size={14} key="ban" />],
+    ["Vehicle", vehicle?.vehicleType ? (vehicle.vehicleNumber ? `${vehicle.vehicleType} (${vehicle.vehicleNumber})` : vehicle.vehicleType) : null, <Bike size={14} key="bike" />],
+    ["Total Earnings", partner?.totalEarnings !== undefined ? `₹${Number(partner.totalEarnings).toLocaleString()}` : null, <Wallet size={14} key="wallet1" />],
+    ["Today's Earnings", partner?.todayEarnings !== undefined ? `₹${Number(partner.todayEarnings).toLocaleString()}` : null, <Wallet size={14} key="wallet2" />],
     ["Last Activity", partner?.lastActivityAt, <CalendarDays size={14} key="cal" />],
   ];
 
@@ -208,11 +213,18 @@ function DeliveryPartner() {
     ["Gender", personalDetails.gender],
     ["Alternative Mobile", personalDetails.alternativeMobile],
     ["Emergency Contact Name", personalDetails.emergencyContact],
+    ["Emergency Relationship", personalDetails.emergencyContactRelation],
     ["Emergency Contact Number", personalDetails.emergencyMobile],
-    ["Address", personalDetails.address],
+    ["Address Line 1", personalDetails.addressLine1],
+    ["Address Line 2", personalDetails.addressLine2],
+    ["City", personalDetails.city],
+    ["State", personalDetails.state],
+    ["Postal Code", personalDetails.postalCode],
+    ["Country", personalDetails.country],
+    ["Legacy Address", personalDetails.address],
     ["PAN Number", personalDetails.panNumber],
     ["Aadhaar Number", personalDetails.aadhaarNumber],
-  ] : [];
+  ].filter(([_, val]) => val !== null && val !== undefined && val !== "") : [];
 
   const vehicleInfo = vehicle ? [
     ["Vehicle Type", vehicle.vehicleType],
@@ -222,7 +234,12 @@ function DeliveryPartner() {
     ["Insurance Provider", vehicle.insuranceProvider],
     ["Insurance Number", vehicle.insuranceNumber],
     ["Insurance Valid Till", vehicle.validTill],
-  ] : [];
+  ].filter(([_, val]) => val !== null && val !== undefined && val !== "") : [];
+
+  const drivingInfo = partnerData.driving ? [
+    ["Driving License Number", partnerData.driving.drivingLicenseNumber],
+    ["Driving License Expiry", partnerData.driving.drivingLicenseExpiry],
+  ].filter(([_, val]) => val !== null && val !== undefined && val !== "") : [];
 
   const bankInfo = bankAccount ? [
     ["Bank Name", bankAccount.bankName],
@@ -284,60 +301,69 @@ function DeliveryPartner() {
         </div>
 
         {/* HEADER / SUMMARY */}
-        <div className="grid gap-6 rounded-xl border border-border bg-surface p-5 sm:p-6 shadow-sm lg:grid-cols-[minmax(320px,1.2fr)_2fr]">
-          <div className="flex items-start gap-5">
-            <div className="flex flex-col items-center gap-3">
-              <div className="relative flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-primary/10 text-2xl font-semibold text-primary overflow-hidden border-2 border-primary/20">
-                 <img src={`https://ui-avatars.com/api/?name=${partner?.name || 'P'}&background=random&color=fff&size=200`} alt={partner?.name} className="h-full w-full object-cover" />
-              </div>
+        <div className="flex flex-col lg:flex-row gap-6 rounded-xl border border-border bg-surface p-5 sm:p-6 shadow-sm">
+          {/* Identity & Contact */}
+          <div className="flex flex-col sm:flex-row items-start gap-5 lg:w-1/3 shrink-0">
+            <div className="relative flex h-20 w-20 sm:h-24 sm:w-24 shrink-0 items-center justify-center rounded-full bg-primary/10 text-2xl font-semibold text-primary overflow-hidden border-2 border-primary/20">
+              <img src={partner?.profileImage || `https://ui-avatars.com/api/?name=${partner?.name || 'P'}&background=random&color=fff&size=200`} alt={partner?.name} className="h-full w-full object-cover" />
             </div>
 
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-3">
-                <h2 className="text-xl font-semibold text-foreground">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <h2 className="text-xl font-bold text-foreground">
                   {getValue(partner?.name)}
                 </h2>
-                <Badge variant={partner?.status === "ACTIVE" || partner?.status === "Active" || partner?.status === "VERIFIED" ? "success" : "danger"} className="h-6 px-2">
+                <Badge variant={partner?.status === "ACTIVE" || partner?.status === "Active" || partner?.status === "VERIFIED" ? "success" : "danger"} className="h-5 px-1.5 text-[10px]">
                   {getValue(partner?.status)}
                 </Badge>
               </div>
 
-              <p className="mt-1.5 flex items-center gap-1 text-sm text-foreground font-medium">
+              <div className="mb-2">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-secondary text-xs font-mono text-foreground/80 border border-border">
+                  ID: {getValue(partner?.partnerId)}
+                </span>
+              </div>
+
+              <p className="flex items-center gap-1 text-sm text-foreground font-medium mb-3">
                 <Star size={15} className="text-amber-500" fill="currentColor" />
                 {Number(partner?.rating || 0).toFixed(1)}
                 <span className="text-muted font-normal text-xs ml-1">({partner?.reviewCount || 0} Reviews)</span>
               </p>
 
-              <div className="mt-4 space-y-2.5 text-xs text-muted">
+              <div className="space-y-2 text-[13px] text-muted">
                 <p className="flex items-center gap-2.5">
-                  <Phone size={14} className="text-foreground/70"/>
-                  {getValue(partner?.mobileNumber)}
-                </p>
-                <p className="flex items-center gap-2.5 truncate">
-                  <Mail size={14} className="text-foreground/70"/>
-                  {getValue(partner?.email)}
+                  <Phone size={14} className="text-foreground/60 shrink-0"/>
+                  <span className="truncate">{getValue(partner?.mobileNumber)}</span>
                 </p>
                 <p className="flex items-center gap-2.5">
-                  <CalendarDays size={14} className="text-foreground/70"/>
-                  Joined on {getValue(partner?.joinedAt)}
+                  <Mail size={14} className="text-foreground/60 shrink-0"/>
+                  <span className="truncate">{getValue(partner?.email)}</span>
                 </p>
                 <p className="flex items-center gap-2.5">
-                  <MapPin size={14} className="text-foreground/70 shrink-0"/>
+                  <MapPin size={14} className="text-foreground/60 shrink-0"/>
                   <span className="truncate">{getValue(partner?.location)}</span>
+                </p>
+                <p className="flex items-center gap-2.5">
+                  <CalendarDays size={14} className="text-foreground/60 shrink-0"/>
+                  <span className="truncate">Joined on {getValue(partner?.joinedAt)}</span>
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-6 gap-y-5 border-t border-border pt-5 text-xs sm:grid-cols-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+          {/* Divider for mobile */}
+          <div className="h-px w-full bg-border lg:w-px lg:h-auto lg:mx-2" />
+
+          {/* Stats Grid */}
+          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-6">
             {stats.map(([label, value, icon]) => (
-              <div key={label} className="min-w-0 flex items-start gap-3">
-                <div className="h-8 w-8 rounded-lg bg-primary/5 flex items-center justify-center text-primary shrink-0">
+              <div key={label} className="flex items-start gap-3 min-w-0">
+                <div className={`mt-0.5 h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${label.includes('Earnings') ? 'bg-success/10 text-success' : 'bg-primary/5 text-primary'}`}>
                   {icon}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <p className="text-muted text-[11px] mb-1 truncate">{label}</p>
-                  <p className="font-semibold text-foreground text-[13px] leading-snug break-words">
+                  <p className="text-muted text-[11px] mb-1 font-medium truncate uppercase tracking-wider">{label}</p>
+                  <p className="font-semibold text-foreground text-sm leading-snug break-words">
                     {getValue(value)}
                   </p>
                 </div>
@@ -350,7 +376,7 @@ function DeliveryPartner() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
           
           {/* Section 1: Personal Details */}
-          <DetailCard title="Personal Details" icon={FileText}>
+          <DetailCard title="Personal Details" icon={User}>
             {personalDetails && Object.keys(personalDetails).length > 0 ? (
               <InfoRows items={personalInfo} />
             ) : (
@@ -364,6 +390,15 @@ function DeliveryPartner() {
               <InfoRows items={vehicleInfo} />
             ) : (
               <EmptyState message="No vehicle information available." />
+            )}
+          </DetailCard>
+
+          {/* Section 2.5: Driving Details */}
+          <DetailCard title="Driving Information" icon={FileText}>
+            {drivingInfo.length > 0 ? (
+              <InfoRows items={drivingInfo} />
+            ) : (
+              <EmptyState message="No driving information available." />
             )}
           </DetailCard>
 
