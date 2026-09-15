@@ -7,9 +7,9 @@
     "dev": "vite --host",
     "build": "vite build",
     "lint": "oxlint",
-    "mock-api": "json-server --watch db.json --port 3000 --host 0.0.0.0",
+    "mock-api": "node mockServer.js",
     "preview": "vite preview",
-    "server": "json-server --watch db.json --port 3000"
+    "server": "node mockServer.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
