@@ -15,7 +15,7 @@ import Card from "../components/ui/Card";
 import Select from "../components/ui/Select";
 import Table from "../components/ui/Table";
 import { getOrderById, updateOrder } from "../api/ordersApi";
-import { getDeliveryPartners } from "../api/deliveryPartnersApi";
+import { getDeliveryPartners, getDeliveryPartnerLocation } from "../api/deliveryPartnersApi";
 
 const STATUS_MAP = {
   DELIVERED: "success",
@@ -46,6 +46,7 @@ export default function OrderDetails() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [mapLoading, setMapLoading] = useState(false);
   const [partners, setPartners] = useState([]);
   const [selectedPartner, setSelectedPartner] = useState("");
   const [assignLoading, setAssignLoading] = useState(false);
@@ -94,6 +95,39 @@ export default function OrderDetails() {
       alert("Failed to assign partner");
     } finally {
       setAssignLoading(false);
+    }
+  };
+
+  const handleViewOnMap = async () => {
+    try {
+      setMapLoading(true);
+      if (order.deliveryPartnerId) {
+        try {
+          const res = await getDeliveryPartnerLocation(order.deliveryPartnerId);
+          const { latitude, longitude, address } = res.data;
+          if (latitude && longitude) {
+            window.open(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`, "_blank");
+            return;
+          }
+          if (address) {
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, "_blank");
+            return;
+          }
+        } catch (e) {
+          console.error("Partner location fetch failed", e);
+        }
+      }
+      
+      // Fallback to order delivery address
+      if (order.deliveryAddress) {
+        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${order.deliveryAddress}${order.city ? `, ${order.city}` : ""}`)}`, "_blank");
+        return;
+      }
+      
+      // If neither coordinates nor address exists:
+      alert("Location not available");
+    } finally {
+      setMapLoading(false);
     }
   };
 
@@ -209,15 +243,27 @@ export default function OrderDetails() {
               </div>
               <div className="flex flex-col gap-3 text-sm text-muted">
                 <p className="leading-relaxed">
-                  123, Anna Salai, Teynampet
-                  <br />
-                  {order.city}, Tamil Nadu - 600018
+                  {order.deliveryAddress ? (
+                    <>
+                      {order.deliveryAddress}
+                      {order.city && (
+                        <>
+                          <br />
+                          {order.city}
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <span className="italic">Location not available</span>
+                  )}
                 </p>
                 <Button
                   variant="secondary"
                   className="w-fit text-primary border-primary/30 font-semibold bg-primary/5 hover:bg-primary/10"
+                  onClick={handleViewOnMap}
+                  disabled={mapLoading}
                 >
-                  View on Map
+                  {mapLoading ? "Loading..." : "View on Map"}
                 </Button>
               </div>
             </Card>

@@ -1,0 +1,1574 @@
+{
+    "info": {
+        "name": "Vayzo Admin API",
+        "description": "Postman collection for Vayzo Admin Dashboard API powered by JSON-Server",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "Get all users",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/users",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get users by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/users/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "users",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new users",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"userId\": \"USR1001\",\n    \"name\": \"Prathap M\",\n    \"email\": \"prathap444@gmail.com\",\n    \"mobileNumber\": \"9876543210\",\n    \"status\": \"Blocked\",\n    \"userType\": \"Customer\",\n    \"city\": \"Madurai\",\n    \"lastActive\": \"2 mins ago\",\n    \"totalOrders\": 87,\n    \"walletBalance\": 250,\n    \"isVerified\": true,\n    \"joinedOn\": \"2024-05-12\",\n    \"role\": \"Admin\",\n    \"profileImage\": null\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/users",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "users"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update users",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"userId\": \"USR1001\",\n    \"name\": \"Prathap M\",\n    \"email\": \"prathap444@gmail.com\",\n    \"mobileNumber\": \"9876543210\",\n    \"status\": \"Blocked\",\n    \"userType\": \"Customer\",\n    \"city\": \"Madurai\",\n    \"lastActive\": \"2 mins ago\",\n    \"totalOrders\": 87,\n    \"walletBalance\": 250,\n    \"isVerified\": true,\n    \"joinedOn\": \"2024-05-12\",\n    \"id\": \"3HstH5QBEIk\",\n    \"role\": \"Admin\",\n    \"profileImage\": null\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/users/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "users",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete users",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/users/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "users",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Orders",
+            "item": [
+                {
+                    "name": "Get all orders",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/orders",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "orders"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get orders by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/orders/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "orders",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new orders",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"orderId\": \"ORD1001\",\n    \"customerName\": \"Prathap M\",\n    \"restaurantName\": \"Murugan Kadai\",\n    \"status\": \"IN_TRANSIT\",\n    \"paymentStatus\": \"PAID\",\n    \"amount\": 420,\n    \"orderDate\": \"2026-08-27 11:20\",\n    \"deliveryPartner\": \"Sankar P\",\n    \"city\": \"Madurai\",\n    \"deliveryPartnerVehicle\": \"Bike\",\n    \"deliveryPartnerId\": \"dp-id-0\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/orders",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "orders"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update orders",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"orderId\": \"ORD1001\",\n    \"customerName\": \"Prathap M\",\n    \"restaurantName\": \"Murugan Kadai\",\n    \"status\": \"IN_TRANSIT\",\n    \"paymentStatus\": \"PAID\",\n    \"amount\": 420,\n    \"orderDate\": \"2026-08-27 11:20\",\n    \"deliveryPartner\": \"Sankar P\",\n    \"city\": \"Madurai\",\n    \"id\": \"3wgpK_Fhauk\",\n    \"deliveryPartnerVehicle\": \"Bike\",\n    \"deliveryPartnerId\": \"dp-id-0\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/orders/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "orders",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete orders",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/orders/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "orders",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Dashboard",
+            "item": [
+                {
+                    "name": "Get all dashboard",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/dashboard",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "dashboard"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DeliveryPartners",
+            "item": [
+                {
+                    "name": "Get all deliveryPartners",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/deliveryPartners",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "deliveryPartners"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get deliveryPartners by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/deliveryPartners/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "deliveryPartners",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new deliveryPartners",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"partnerId\": \"DVP12565\",\n    \"name\": \"Murugan K\",\n    \"email\": \"murugan.k@gmail.com\",\n    \"mobileNumber\": \"+91 98765 43210\",\n    \"status\": \"Active\",\n    \"onlineStatus\": \"Offline\",\n    \"vehicleType\": \"Bike\",\n    \"vehicleName\": \"TVS Apache RTR 160\",\n    \"vehicleNumber\": \"TN 59 AB 1234\",\n    \"city\": \"Anna Nagar, Madurai, Tamil Nadu\",\n    \"lastActive\": \"12 May 2024, 10:15 AM\",\n    \"joinedOn\": \"12 May 2024\",\n    \"ordersCompleted\": 1245,\n    \"rating\": 4.8,\n    \"earnings\": 28450,\n    \"todayEarnings\": \"₹1,250\",\n    \"completionRate\": \"96.3%\",\n    \"cancellationRate\": \"2.1%\",\n    \"lastOrder\": \"12 May 2024, 10:15 AM\",\n    \"dateOfBirth\": \"15 Aug 1995\",\n    \"gender\": \"Male\",\n    \"alternateMobile\": \"+91 87654 32109\",\n    \"emergencyContact\": \"Selvam R (Brother)\",\n    \"emergencyMobile\": \"+91 87654 32110\",\n    \"address\": \"12, 3rd Street, Anna Nagar, Madurai - 625020, Tamil Nadu\",\n    \"aadhaarNumber\": \"5678 1234 9876\",\n    \"panNumber\": \"BKZPK1234K\",\n    \"rcNumber\": \"TN592022123456\",\n    \"insuranceProvider\": \"Bajaj Allianz\",\n    \"insuranceNumber\": \"BZJ1234567890\",\n    \"insuranceValidTill\": \"15 Mar 2025\",\n    \"thisWeekEarnings\": \"₹5,680\",\n    \"totalPayouts\": \"₹26,750\",\n    \"bankName\": \"State Bank of India\",\n    \"accountNumber\": \"5010 1234 5678\",\n    \"ifscCode\": \"SBIN0012345\",\n    \"accountHolderName\": \"Murugan K\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/deliveryPartners",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "deliveryPartners"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update deliveryPartners",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"partnerId\": \"DVP12565\",\n    \"name\": \"Murugan K\",\n    \"email\": \"murugan.k@gmail.com\",\n    \"mobileNumber\": \"+91 98765 43210\",\n    \"status\": \"Active\",\n    \"onlineStatus\": \"Offline\",\n    \"vehicleType\": \"Bike\",\n    \"vehicleName\": \"TVS Apache RTR 160\",\n    \"vehicleNumber\": \"TN 59 AB 1234\",\n    \"city\": \"Anna Nagar, Madurai, Tamil Nadu\",\n    \"lastActive\": \"12 May 2024, 10:15 AM\",\n    \"joinedOn\": \"12 May 2024\",\n    \"ordersCompleted\": 1245,\n    \"rating\": 4.8,\n    \"earnings\": 28450,\n    \"todayEarnings\": \"₹1,250\",\n    \"completionRate\": \"96.3%\",\n    \"cancellationRate\": \"2.1%\",\n    \"lastOrder\": \"12 May 2024, 10:15 AM\",\n    \"dateOfBirth\": \"15 Aug 1995\",\n    \"gender\": \"Male\",\n    \"alternateMobile\": \"+91 87654 32109\",\n    \"emergencyContact\": \"Selvam R (Brother)\",\n    \"emergencyMobile\": \"+91 87654 32110\",\n    \"address\": \"12, 3rd Street, Anna Nagar, Madurai - 625020, Tamil Nadu\",\n    \"aadhaarNumber\": \"5678 1234 9876\",\n    \"panNumber\": \"BKZPK1234K\",\n    \"rcNumber\": \"TN592022123456\",\n    \"insuranceProvider\": \"Bajaj Allianz\",\n    \"insuranceNumber\": \"BZJ1234567890\",\n    \"insuranceValidTill\": \"15 Mar 2025\",\n    \"thisWeekEarnings\": \"₹5,680\",\n    \"totalPayouts\": \"₹26,750\",\n    \"bankName\": \"State Bank of India\",\n    \"accountNumber\": \"5010 1234 5678\",\n    \"ifscCode\": \"SBIN0012345\",\n    \"accountHolderName\": \"Murugan K\",\n    \"id\": \"dp-id-0\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/deliveryPartners/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "deliveryPartners",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete deliveryPartners",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/deliveryPartners/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "deliveryPartners",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Complaints",
+            "item": [
+                {
+                    "name": "Get all complaints",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/complaints",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "complaints"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get complaints by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/complaints/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "complaints",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new complaints",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"complaintId\": \"CMP-2459\",\n    \"date\": \"28 May 2024\",\n    \"userType\": \"Delivery Partner\",\n    \"userName\": \"Sankar M\",\n    \"issueType\": \"Payment Issue\",\n    \"status\": \"In Progress\",\n    \"priority\": \"Medium\",\n    \"description\": \"Last week payout is still pending in my account.\",\n    \"resolution\": \"Finance team is processing.\",\n    \"assignTo\": \"Unassigned\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/complaints",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "complaints"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update complaints",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"CMP002\",\n    \"complaintId\": \"CMP-2459\",\n    \"date\": \"28 May 2024\",\n    \"userType\": \"Delivery Partner\",\n    \"userName\": \"Sankar M\",\n    \"issueType\": \"Payment Issue\",\n    \"status\": \"In Progress\",\n    \"priority\": \"Medium\",\n    \"description\": \"Last week payout is still pending in my account.\",\n    \"resolution\": \"Finance team is processing.\",\n    \"assignTo\": \"Unassigned\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/complaints/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "complaints",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete complaints",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/complaints/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "complaints",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Categories",
+            "item": [
+                {
+                    "name": "Get all categories",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/categories",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "categories"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get categories by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/categories/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "categories",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new categories",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"categoryId\": \"CAT1001\",\n    \"name\": \"Food\",\n    \"type\": \"Product\",\n    \"itemCount\": 1200,\n    \"status\": \"Active\",\n    \"description\": \"Fresh produce, staples, and daily needs.\",\n    \"createdDate\": \"2024-01-15\",\n    \"parentId\": \"\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/categories",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "categories"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update categories",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"1\",\n    \"categoryId\": \"CAT1001\",\n    \"name\": \"Food\",\n    \"type\": \"Product\",\n    \"itemCount\": 1200,\n    \"status\": \"Active\",\n    \"description\": \"Fresh produce, staples, and daily needs.\",\n    \"createdDate\": \"2024-01-15\",\n    \"parentId\": \"\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/categories/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "categories",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete categories",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/categories/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "categories",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Offers",
+            "item": [
+                {
+                    "name": "Get all offers",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/offers",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "offers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get offers by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/offers/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "offers",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new offers",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"offerId\": \"OFF001\",\n    \"name\": \"FIRST50\",\n    \"title\": \"First Order Offer\",\n    \"type\": \"Percentage\",\n    \"discountText\": \"50% OFF\",\n    \"discountDetail\": \"Max ₹100\",\n    \"usageLimit\": 1245,\n    \"usageMax\": 5000,\n    \"validFrom\": \"2024-05-10\",\n    \"validTo\": \"2024-05-31\",\n    \"status\": \"ACTIVE\",\n    \"color\": \"success\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/offers",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "offers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update offers",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"1\",\n    \"offerId\": \"OFF001\",\n    \"name\": \"FIRST50\",\n    \"title\": \"First Order Offer\",\n    \"type\": \"Percentage\",\n    \"discountText\": \"50% OFF\",\n    \"discountDetail\": \"Max ₹100\",\n    \"usageLimit\": 1245,\n    \"usageMax\": 5000,\n    \"validFrom\": \"2024-05-10\",\n    \"validTo\": \"2024-05-31\",\n    \"status\": \"ACTIVE\",\n    \"color\": \"success\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/offers/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "offers",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete offers",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/offers/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "offers",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Locations",
+            "item": [
+                {
+                    "name": "Get all locations",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/locations",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "locations"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get locations by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/locations/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "locations",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new locations",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Anna Nagar\",\n    \"fullName\": \"Anna Nagar, Madurai, Tamil Nadu\",\n    \"zone\": \"North Zone\",\n    \"city\": \"Madurai\",\n    \"status\": \"ACTIVE\",\n    \"orders30d\": 1250,\n    \"color\": \"primary\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/locations",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "locations"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update locations",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"1\",\n    \"name\": \"Anna Nagar\",\n    \"fullName\": \"Anna Nagar, Madurai, Tamil Nadu\",\n    \"zone\": \"North Zone\",\n    \"city\": \"Madurai\",\n    \"status\": \"ACTIVE\",\n    \"orders30d\": 1250,\n    \"color\": \"primary\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/locations/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "locations",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete locations",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/locations/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "locations",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Earnings",
+            "item": [
+                {
+                    "name": "Get all earnings",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/earnings",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "earnings"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get earnings by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/earnings/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "earnings",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new earnings",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"stats\": {\n        \"total\": 1245678,\n        \"partner\": 876320,\n        \"platform\": 345210,\n        \"refunds\": 75852\n    },\n    \"chartData\": [\n        {\n            \"date\": \"12 May\",\n            \"total\": 80000,\n            \"partner\": 50000,\n            \"commission\": 20000\n        },\n        {\n            \"date\": \"13 May\",\n            \"total\": 100000,\n            \"partner\": 65000,\n            \"commission\": 25000\n        },\n        {\n            \"date\": \"14 May\",\n            \"total\": 95000,\n            \"partner\": 60000,\n            \"commission\": 22000\n        },\n        {\n            \"date\": \"15 May\",\n            \"total\": 120000,\n            \"partner\": 75000,\n            \"commission\": 30000\n        },\n        {\n            \"date\": \"16 May\",\n            \"total\": 135000,\n            \"partner\": 85000,\n            \"commission\": 35000\n        },\n        {\n            \"date\": \"17 May\",\n            \"total\": 110000,\n            \"partner\": 70000,\n            \"commission\": 28000\n        },\n        {\n            \"date\": \"18 May\",\n            \"total\": 145000,\n            \"partner\": 90000,\n            \"commission\": 38000\n        },\n        {\n            \"date\": \"19 May\",\n            \"total\": 160000,\n            \"partner\": 100000,\n            \"commission\": 45000\n        },\n        {\n            \"date\": \"20 May\",\n            \"total\": 155000,\n            \"partner\": 95000,\n            \"commission\": 42000\n        }\n    ],\n    \"summary\": {\n        \"partner\": {\n            \"current\": 876320,\n            \"previous\": 772310\n        },\n        \"platform\": {\n            \"current\": 345210,\n            \"previous\": 290850\n        },\n        \"other\": {\n            \"current\": 24148,\n            \"previous\": 19632\n        },\n        \"refunds\": {\n            \"current\": 75852,\n            \"previous\": 61254\n        }\n    },\n    \"topPartners\": [\n        {\n            \"name\": \"Murugan K\",\n            \"id\": \"DVP12563\",\n            \"orders\": 156,\n            \"earnings\": 18760\n        },\n        {\n            \"name\": \"Selvam R\",\n            \"id\": \"DVP12562\",\n            \"orders\": 132,\n            \"earnings\": 15230\n        },\n        {\n            \"name\": \"Kannan P\",\n            \"id\": \"DVP12561\",\n            \"orders\": 128,\n            \"earnings\": 13890\n        },\n        {\n            \"name\": \"Vikram J\",\n            \"id\": \"DVP12559\",\n            \"orders\": 110,\n            \"earnings\": 12340\n        },\n        {\n            \"name\": \"Sangeetha M\",\n            \"id\": \"DVP12558\",\n            \"orders\": 98,\n            \"earnings\": 10450\n        }\n    ]\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/earnings",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "earnings"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update earnings",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"1\",\n    \"stats\": {\n        \"total\": 1245678,\n        \"partner\": 876320,\n        \"platform\": 345210,\n        \"refunds\": 75852\n    },\n    \"chartData\": [\n        {\n            \"date\": \"12 May\",\n            \"total\": 80000,\n            \"partner\": 50000,\n            \"commission\": 20000\n        },\n        {\n            \"date\": \"13 May\",\n            \"total\": 100000,\n            \"partner\": 65000,\n            \"commission\": 25000\n        },\n        {\n            \"date\": \"14 May\",\n            \"total\": 95000,\n            \"partner\": 60000,\n            \"commission\": 22000\n        },\n        {\n            \"date\": \"15 May\",\n            \"total\": 120000,\n            \"partner\": 75000,\n            \"commission\": 30000\n        },\n        {\n            \"date\": \"16 May\",\n            \"total\": 135000,\n            \"partner\": 85000,\n            \"commission\": 35000\n        },\n        {\n            \"date\": \"17 May\",\n            \"total\": 110000,\n            \"partner\": 70000,\n            \"commission\": 28000\n        },\n        {\n            \"date\": \"18 May\",\n            \"total\": 145000,\n            \"partner\": 90000,\n            \"commission\": 38000\n        },\n        {\n            \"date\": \"19 May\",\n            \"total\": 160000,\n            \"partner\": 100000,\n            \"commission\": 45000\n        },\n        {\n            \"date\": \"20 May\",\n            \"total\": 155000,\n            \"partner\": 95000,\n            \"commission\": 42000\n        }\n    ],\n    \"summary\": {\n        \"partner\": {\n            \"current\": 876320,\n            \"previous\": 772310\n        },\n        \"platform\": {\n            \"current\": 345210,\n            \"previous\": 290850\n        },\n        \"other\": {\n            \"current\": 24148,\n            \"previous\": 19632\n        },\n        \"refunds\": {\n            \"current\": 75852,\n            \"previous\": 61254\n        }\n    },\n    \"topPartners\": [\n        {\n            \"name\": \"Murugan K\",\n            \"id\": \"DVP12563\",\n            \"orders\": 156,\n            \"earnings\": 18760\n        },\n        {\n            \"name\": \"Selvam R\",\n            \"id\": \"DVP12562\",\n            \"orders\": 132,\n            \"earnings\": 15230\n        },\n        {\n            \"name\": \"Kannan P\",\n            \"id\": \"DVP12561\",\n            \"orders\": 128,\n            \"earnings\": 13890\n        },\n        {\n            \"name\": \"Vikram J\",\n            \"id\": \"DVP12559\",\n            \"orders\": 110,\n            \"earnings\": 12340\n        },\n        {\n            \"name\": \"Sangeetha M\",\n            \"id\": \"DVP12558\",\n            \"orders\": 98,\n            \"earnings\": 10450\n        }\n    ]\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/earnings/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "earnings",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete earnings",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/earnings/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "earnings",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "OtpSessions",
+            "item": [
+                {
+                    "name": "Get all otpSessions",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/otpSessions",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "otpSessions"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get otpSessions by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/otpSessions/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "otpSessions",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new otpSessions",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"contact\": \"9876543210\",\n    \"otp\": \"123456\",\n    \"createdAt\": 1788439698135\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/otpSessions",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "otpSessions"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update otpSessions",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"contact\": \"9876543210\",\n    \"otp\": \"123456\",\n    \"createdAt\": 1788439698135,\n    \"id\": \"ewCg5gQ3AKA\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/otpSessions/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "otpSessions",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete otpSessions",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/otpSessions/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "otpSessions",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Restaurants",
+            "item": [
+                {
+                    "name": "Get all restaurants",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/restaurants",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "restaurants"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get restaurants by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/restaurants/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "restaurants",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new restaurants",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Murugan Kadai\",\n    \"ownerName\": \"Murugan S\",\n    \"cuisineType\": \"South Indian\",\n    \"address\": \"12, Anna Salai, Chennai - 600002\",\n    \"city\": \"Chennai\",\n    \"phone\": \"+91 98765 43210\",\n    \"email\": \"murugan@kadai.com\",\n    \"status\": \"Active\",\n    \"rating\": 4.7,\n    \"totalOrders\": 3420,\n    \"deliveryTime\": \"25-35 mins\",\n    \"minimumOrder\": 80,\n    \"deliveryCharge\": 20,\n    \"openingTime\": \"07:00 AM\",\n    \"closingTime\": \"10:00 PM\",\n    \"joinedOn\": \"2023-01-15\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/restaurants",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "restaurants"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update restaurants",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"RST001\",\n    \"name\": \"Murugan Kadai\",\n    \"ownerName\": \"Murugan S\",\n    \"cuisineType\": \"South Indian\",\n    \"address\": \"12, Anna Salai, Chennai - 600002\",\n    \"city\": \"Chennai\",\n    \"phone\": \"+91 98765 43210\",\n    \"email\": \"murugan@kadai.com\",\n    \"status\": \"Active\",\n    \"rating\": 4.7,\n    \"totalOrders\": 3420,\n    \"deliveryTime\": \"25-35 mins\",\n    \"minimumOrder\": 80,\n    \"deliveryCharge\": 20,\n    \"openingTime\": \"07:00 AM\",\n    \"closingTime\": \"10:00 PM\",\n    \"joinedOn\": \"2023-01-15\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/restaurants/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "restaurants",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete restaurants",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/restaurants/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "restaurants",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "ReportsSummary",
+            "item": [
+                {
+                    "name": "Get all reportsSummary",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/reportsSummary",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "reportsSummary"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get reportsSummary by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/reportsSummary/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "reportsSummary",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new reportsSummary",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"totalRevenue\": 248750,\n    \"totalOrders\": 1245,\n    \"totalUsers\": 892,\n    \"totalCommission\": 37420,\n    \"trends\": {\n        \"totalRevenue\": \"+12.5%\",\n        \"totalOrders\": \"+8.3%\",\n        \"totalUsers\": \"+6.1%\",\n        \"totalCommission\": \"+10.2%\"\n    }\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/reportsSummary",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "reportsSummary"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update reportsSummary",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"1\",\n    \"totalRevenue\": 248750,\n    \"totalOrders\": 1245,\n    \"totalUsers\": 892,\n    \"totalCommission\": 37420,\n    \"trends\": {\n        \"totalRevenue\": \"+12.5%\",\n        \"totalOrders\": \"+8.3%\",\n        \"totalUsers\": \"+6.1%\",\n        \"totalCommission\": \"+10.2%\"\n    }\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/reportsSummary/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "reportsSummary",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete reportsSummary",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/reportsSummary/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "reportsSummary",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Reports",
+            "item": [
+                {
+                    "name": "Get all reports",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/reports",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "reports"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get reports by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/reports/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "reports",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new reports",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"date\": \"2025-05-22\",\n    \"reportType\": \"Sales\",\n    \"title\": \"Daily Sales Report\",\n    \"totalAmount\": 48750,\n    \"orders\": 124,\n    \"users\": 89,\n    \"status\": \"Completed\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/reports",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "reports"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update reports",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"REP001\",\n    \"date\": \"2025-05-22\",\n    \"reportType\": \"Sales\",\n    \"title\": \"Daily Sales Report\",\n    \"totalAmount\": 48750,\n    \"orders\": 124,\n    \"users\": 89,\n    \"status\": \"Completed\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/reports/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "reports",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete reports",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/reports/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "reports",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "AdminUsers",
+            "item": [
+                {
+                    "name": "Get all adminUsers",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/adminUsers",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "adminUsers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get adminUsers by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/adminUsers/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "adminUsers",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new adminUsers",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"userId\": \"ADM1001\",\n    \"name\": \"Pradhap\",\n    \"email\": \"admin@vayzo.com\",\n    \"role\": \"Super Admin\",\n    \"department\": \"Management\",\n    \"status\": \"Active\",\n    \"phone\": \"+919876543210\",\n    \"lastLogin\": \"2026-09-07 10:30\",\n    \"joinedDate\": \"2025-01-10\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/adminUsers",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "adminUsers"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update adminUsers",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"ADM1001\",\n    \"userId\": \"ADM1001\",\n    \"name\": \"Pradhap\",\n    \"email\": \"admin@vayzo.com\",\n    \"role\": \"Super Admin\",\n    \"department\": \"Management\",\n    \"status\": \"Active\",\n    \"phone\": \"+919876543210\",\n    \"lastLogin\": \"2026-09-07 10:30\",\n    \"joinedDate\": \"2025-01-10\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/adminUsers/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "adminUsers",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete adminUsers",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/adminUsers/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "adminUsers",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "ActivityLogs",
+            "item": [
+                {
+                    "name": "Get all activityLogs",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/activityLogs",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "activityLogs"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get activityLogs by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/activityLogs/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "activityLogs",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new activityLogs",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"user\": \"Pradhap\",\n    \"action\": \"LOGIN\",\n    \"module\": \"System\",\n    \"details\": \"Logged into the system successfully.\",\n    \"timestamp\": \"2026-09-07T10:30:00Z\",\n    \"ipAddress\": \"192.168.1.10\",\n    \"status\": \"Success\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/activityLogs",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "activityLogs"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update activityLogs",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"ACT1001\",\n    \"user\": \"Pradhap\",\n    \"action\": \"LOGIN\",\n    \"module\": \"System\",\n    \"details\": \"Logged into the system successfully.\",\n    \"timestamp\": \"2026-09-07T10:30:00Z\",\n    \"ipAddress\": \"192.168.1.10\",\n    \"status\": \"Success\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/activityLogs/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "activityLogs",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete activityLogs",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/activityLogs/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "activityLogs",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Settings",
+            "item": [
+                {
+                    "name": "Get all settings",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/settings",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "settings"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get settings by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:3000/settings/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "settings",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Create new settings",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"platformName\": \"VAYZO\",\n    \"platformTagline\": \"You Ask. We Get It.\",\n    \"supportEmail\": \"support@vayzo.com\",\n    \"supportPhone\": \"+919876543210\",\n    \"timezone\": \"Asia/Kolkata\",\n    \"dateFormat\": \"DD/MM/YYYY\",\n    \"timeFormat\": \"12h\",\n    \"defaultCurrency\": \"INR\",\n    \"currencyPosition\": \"prefix\",\n    \"numberFormat\": \"1,234.56\",\n    \"language\": \"English\",\n    \"contactAddress\": \"123, Anna Salai\",\n    \"facebook\": \"https://facebook.com/vayzo\",\n    \"instagram\": \"https://instagram.com/vayzo\",\n    \"twitter\": \"https://twitter.com/vayzo\",\n    \"platformStatus\": true,\n    \"maintenanceMode\": false\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/settings",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "settings"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update settings",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"id\": \"general\",\n    \"platformName\": \"VAYZO\",\n    \"platformTagline\": \"You Ask. We Get It.\",\n    \"supportEmail\": \"support@vayzo.com\",\n    \"supportPhone\": \"+919876543210\",\n    \"timezone\": \"Asia/Kolkata\",\n    \"dateFormat\": \"DD/MM/YYYY\",\n    \"timeFormat\": \"12h\",\n    \"defaultCurrency\": \"INR\",\n    \"currencyPosition\": \"prefix\",\n    \"numberFormat\": \"1,234.56\",\n    \"language\": \"English\",\n    \"contactAddress\": \"123, Anna Salai\",\n    \"facebook\": \"https://facebook.com/vayzo\",\n    \"instagram\": \"https://instagram.com/vayzo\",\n    \"twitter\": \"https://twitter.com/vayzo\",\n    \"platformStatus\": true,\n    \"maintenanceMode\": false\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:3000/settings/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "settings",
+                                "1"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete settings",
+                    "request": {
+                        "method": "DELETE",
+                        "url": {
+                            "raw": "http://localhost:3000/settings/1",
+                            "host": [
+                                "http://localhost:3000"
+                            ],
+                            "path": [
+                                "settings",
+                                "1"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

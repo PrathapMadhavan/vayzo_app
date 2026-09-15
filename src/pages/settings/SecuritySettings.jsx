@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/button";
 import Select from "../../components/ui/Select";
+import { getSecuritySettings, saveSecuritySettings } from "../../api/settingsApi";
 import { 
   ShieldCheck,
   Monitor,
@@ -15,29 +16,84 @@ import {
   Check,
   Smartphone,
   ArrowRight,
-  CheckCircle
+  CheckCircle,
+  Save
 } from "lucide-react";
 
 function SecuritySettings() {
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState("");
+  
+  const [sessionTimeout, setSessionTimeout] = useState("30");
+
   const [toggles, setToggles] = useState({
-    twoFactor: true,
+    twoFactor: false,
     loginNotification: true,
     forceHttps: true,
     recaptcha: true,
   });
 
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await getSecuritySettings();
+        if (isMounted && data) {
+          setSessionTimeout(data.sessionTimeout ? data.sessionTimeout.toString() : "30");
+          setToggles(prev => ({ ...prev, twoFactor: data.twoFactorAuth || false }));
+        }
+      } catch (err) {
+        console.error("Failed to load security settings", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      await saveSecuritySettings({
+        twoFactorAuth: toggles.twoFactor,
+        sessionTimeout: parseInt(sessionTimeout) || 30
+      });
+      setSaveMessage("Security settings saved successfully.");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save security settings.");
+    }
+  };
+
   const toggleSetting = (key) => {
     setToggles(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
 
   return (
     <>
       <div className="flex-1 space-y-6 pb-10">
         
-        <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Security Settings</h2>
-          <p className="text-xs text-muted">Manage and monitor your platform security to keep your data and users safe.</p>
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Security Settings</h2>
+              <p className="text-xs text-muted">Manage and monitor your platform security to keep your data and users safe.</p>
+            </div>
+            <Button type="button" onClick={handleSave} size="sm" className="bg-primary text-white flex items-center gap-2">
+              <Save size={16} /> Save Changes
+            </Button>
+          </div>
         </div>
+
+        {saveMessage && (
+          <div className="rounded-xl border border-success/30 bg-success/5 p-4 text-sm font-medium text-success">
+            {saveMessage}
+          </div>
+        )}
 
         <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
           
@@ -51,7 +107,7 @@ function SecuritySettings() {
                   <Lock size={18} />
                 </div>
                 <h4 className="font-semibold text-foreground text-sm mb-1">Two Factor Auth</h4>
-                <span className="text-xs font-semibold text-success mb-1">Enabled</span>
+                <span className={`text-xs font-semibold mb-1 ${toggles.twoFactor ? 'text-success' : 'text-muted'}`}>{toggles.twoFactor ? 'Enabled' : 'Disabled'}</span>
                 <p className="text-[10px] text-muted">Protects admin accounts</p>
               </div>
               
@@ -98,7 +154,7 @@ function SecuritySettings() {
                     </div>
                   </div>
                   <button type="button" onClick={() => toggleSetting('twoFactor')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.twoFactor ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.twoFactor ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.twoFactor ? "left-4.5" : "left-0.5"}`} />
                   </button>
                 </div>
 
@@ -123,10 +179,10 @@ function SecuritySettings() {
                       <p className="text-[11px] text-muted mt-0.5">Automatically log out inactive users after a period of time.</p>
                     </div>
                   </div>
-                  <Select defaultValue="30 Minutes" className="h-[38px] text-sm w-40">
-                    <option>15 Minutes</option>
-                    <option>30 Minutes</option>
-                    <option>1 Hour</option>
+                  <Select value={sessionTimeout} onChange={(e) => setSessionTimeout(e.target.value)} className="h-[38px] text-sm w-40">
+                    <option value="15">15 Minutes</option>
+                    <option value="30">30 Minutes</option>
+                    <option value="60">1 Hour</option>
                   </Select>
                 </div>
 
@@ -244,15 +300,9 @@ function SecuritySettings() {
               </div>
 
               {/* Absolute Buttons to match the design spacing */}
-              <div className="absolute right-5 bottom-[70px]">
-                <Button className="bg-primary text-white flex items-center gap-2">
-                  <Edit2 size={14} /> Edit Policy
-                </Button>
-              </div>
-
               <div className="absolute right-5 bottom-5">
                 <Button className="bg-primary text-white flex items-center gap-2">
-                  <Check size={16} /> Save Changes
+                  <Edit2 size={14} /> Edit Policy
                 </Button>
               </div>
             </div>

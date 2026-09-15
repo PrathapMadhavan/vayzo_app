@@ -1,0 +1,32 @@
+import { useState } from "react";
+import { AlertCircle, CheckCircle, Eye, FileText, Headphones, MoreVertical, Timer } from "lucide-react";
+import Badge from "../components/ui/Badge";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import Select from "../components/ui/Select";
+
+const complaints = [
+  ["CMP1208", "Karthik Raj", "Order Complaint", "Late Delivery", "Order #ORD12458", "Open", "High", "21 May 2024, 10:30 AM"],
+  ["CMP1207", "Priya Sharma", "Payment Complaint", "Refund Issue", "Transaction #TXN9854", "In Progress", "Medium", "21 May 2024, 09:15 AM"],
+  ["CMP1206", "Arun Kumar", "Restaurant Complaint", "Food Quality", "ABC Cafe", "In Progress", "Medium", "20 May 2024, 08:45 AM"],
+  ["CMP1205", "Meena Devi", "Delivery Partner", "Behavior", "Partner ID #DPR4587", "Resolved", "Low", "20 May 2024, 07:20 PM"],
+  ["CMP1204", "Vignesh K", "App / Technical", "App Bug", "Android App", "Resolved", "Low", "20 May 2024, 05:10 PM"],
+  ["CMP1203", "Sangeetha M", "Payment Complaint", "Payment Failed", "Transaction #TXN9841", "Closed", "Low", "19 May 2024, 04:20 PM"],
+];
+const stats = [["Total Complaints", "1,256", "12.5%", Headphones], ["Open", "156", "8.3%", AlertCircle], ["In Progress", "312", "15.7%", Timer], ["Resolved", "742", "18.2%", CheckCircle], ["Closed", "624", "10.4%", FileText]];
+const badge = { Open: "danger", "In Progress": "warning", Resolved: "success", Closed: "default" };
+
+function Complaint() {
+  const [selected, setSelected] = useState(complaints[0]);
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("All Status");
+  const filtered = complaints.filter((item) => (!query || item.join(" ").toLowerCase().includes(query.toLowerCase())) && (status === "All Status" || item[5] === status));
+  return <section className="min-h-full bg-background p-4 sm:p-6"><div className="space-y-4">
+    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4"><div><p className="text-xs text-muted">Dashboard &gt; Complaint Management</p><h1 className="mt-1 text-2xl font-semibold text-foreground">Complaint Management</h1></div><Button size="sm">+ New Complaint</Button></header>
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">{stats.map(([label, value, trend, Icon]) => <div key={label} className="rounded-xl border border-border bg-surface p-3 shadow-sm"><div className="flex items-center gap-2"><Icon size={17} className="text-primary" /><span className="text-xs text-muted">{label}</span></div><div className="mt-2 flex items-end justify-between"><b className="text-xl text-foreground">{value}</b><span className="text-[10px] text-emerald-600">↑ {trend}</span></div></div>)}</div>
+    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_290px]"><div className="min-w-0 rounded-xl border border-border bg-surface p-4 shadow-sm"><div className="grid gap-3 md:grid-cols-[1.5fr_0.7fr_0.7fr_auto]"><Input id="complaint-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by complaint ID, name, phone, order ID..." className="h-10 text-xs" /><Select id="complaint-status" value={status} onChange={(event) => setStatus(event.target.value)} className="h-10 text-xs"><option>All Status</option><option>Open</option><option>In Progress</option><option>Resolved</option><option>Closed</option></Select><Select id="complaint-category" className="h-10 text-xs"><option>All Category</option><option>Order</option><option>Payment</option><option>Restaurant</option></Select><Button variant="secondary" size="sm">Export</Button></div><div className="mt-4 overflow-hidden rounded-lg border border-border"><table className="w-full table-fixed border-collapse text-left text-[10px] sm:text-xs"><colgroup><col className="w-[15%]" /><col className="w-[18%]" /><col className="w-[14%]" /><col className="w-[14%]" /><col className="w-[14%]" /><col className="w-[10%]" /><col className="w-[8%]" /><col className="w-[7%]" /></colgroup><thead className="bg-primary-light"><tr>{["Complaint ID", "Raised By", "Type", "Category", "Related To", "Status", "Priority", "Action"].map((head) => <th key={head} className="break-words px-2 py-3 font-semibold text-foreground">{head}</th>)}</tr></thead><tbody>{filtered.map((item) => <tr key={item[0]} onClick={() => setSelected(item)} className="cursor-pointer border-t border-border hover:bg-primary-light/40">{item.slice(0, 7).map((cell, index) => <td key={`${item[0]}-${index}`} className="truncate px-2 py-3 text-muted">{index === 5 ? <Badge variant={badge[cell]} className="h-5 max-w-full truncate px-1 text-[9px]">{cell}</Badge> : index === 0 ? <b className="text-foreground">{cell}</b> : cell}</td>)}<td className="px-2 py-3"><div className="flex gap-1"><button type="button" aria-label="View complaint" className="flex h-7 w-7 items-center justify-center rounded border border-border text-primary"><Eye size={15} /></button><button type="button" aria-label="More complaint actions" className="flex h-7 w-7 items-center justify-center rounded border border-border text-primary"><MoreVertical size={15} /></button></div></td></tr>)}</tbody></table></div><p className="mt-3 text-xs text-muted">Showing 1 to {filtered.length} of 1,256 complaints</p></div>
+      <aside className="rounded-xl border border-border bg-surface p-4 shadow-sm"><div className="flex items-center justify-between"><h2 className="text-sm font-semibold text-foreground">Complaint Details</h2><Badge variant={badge[selected[5]]} className="h-5 text-[10px]">{selected[5]}</Badge></div><p className="mt-4 text-sm font-semibold text-foreground">{selected[0]}</p><div className="mt-3 space-y-2 text-xs">{[["Raised By", selected[1]], ["Type", selected[2]], ["Category", selected[3]], ["Related To", selected[4]], ["Priority", selected[6]], ["Date", selected[7]]].map(([label, value]) => <div key={label} className="flex gap-2"><span className="w-2/5 text-muted">{label}</span><span className="min-w-0 truncate font-medium text-foreground">{value}</span></div>)}</div><div className="mt-5 border-t border-border pt-4"><p className="text-xs font-semibold text-foreground">Description</p><p className="mt-2 text-xs leading-5 text-muted">My order was delayed and the customer needs assistance. Please review and resolve this complaint.</p></div><Button className="mt-5 w-full" size="sm">Update Complaint</Button></aside></div>
+  </div></section>;
+}
+
+export default Complaint;

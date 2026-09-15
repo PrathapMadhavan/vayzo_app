@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   Bell,
   CreditCard,
@@ -20,39 +20,82 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Toggle from "../../components/ui/Toggle";
 import Card from "../../components/ui/Card";
-import { generalSettings } from "../../mock/vayzoApiMock";
+import { getGeneralSettings, saveGeneralSettings } from "../../api/settingsApi";
 
 function GeneralSettings() {
   const location = useLocation();
+  const [loading, setLoading] = useState(true);
   const [formValues, setFormValues] = useState({
-    platformName: generalSettings.platformName,
-    platformTagline: generalSettings.platformTagline,
-    supportEmail: generalSettings.supportEmail,
-    supportPhone: generalSettings.supportPhone,
-    timezone: generalSettings.timezone,
-    dateFormat: generalSettings.dateFormat,
+    platformName: "",
+    platformTagline: "",
+    supportEmail: "",
+    supportPhone: "",
+    timezone: "Asia/Kolkata",
+    dateFormat: "DD/MM/YYYY",
     timeFormat: "12h",
-    defaultCurrency: generalSettings.defaultCurrency,
+    defaultCurrency: "INR",
     currencyPosition: "before",
-    numberFormat: generalSettings.numberFormat,
-    language: generalSettings.language,
-    contactAddress: generalSettings.contactAddress,
-    facebook: generalSettings.socialLinks.facebook,
-    instagram: generalSettings.socialLinks.instagram,
-    twitter: generalSettings.socialLinks.twitter,
+    numberFormat: "1,234.56",
+    language: "English",
+    contactAddress: "",
+    facebook: "",
+    instagram: "",
+    twitter: "",
     platformStatus: true,
-    maintenanceMode: generalSettings.maintenanceMode,
+    maintenanceMode: false,
   });
   const [saveMessage, setSaveMessage] = useState("");
 
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await getGeneralSettings();
+        if (isMounted && data) {
+          setFormValues({
+            platformName: data.platformName || "",
+            platformTagline: data.platformTagline || "",
+            supportEmail: data.supportEmail || "",
+            supportPhone: data.supportPhone || "",
+            timezone: data.timezone || "Asia/Kolkata",
+            dateFormat: data.dateFormat || "DD/MM/YYYY",
+            timeFormat: data.timeFormat || "12h",
+            defaultCurrency: data.defaultCurrency || "INR",
+            currencyPosition: data.currencyPosition || "before",
+            numberFormat: data.numberFormat || "1,234.56",
+            language: data.language || "English",
+            contactAddress: data.contactAddress || "",
+            facebook: data.facebook || "",
+            instagram: data.instagram || "",
+            twitter: data.twitter || "",
+            platformStatus: data.platformStatus ?? true,
+            maintenanceMode: data.maintenanceMode ?? false,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load general settings", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
   const handleChange = (field, value) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
     if (saveMessage) setSaveMessage("");
   };
 
-  const handleSave = (event) => {
-    event.preventDefault();
-    setSaveMessage("Changes saved successfully.");
+  const handleSave = async (event) => {
+    if (event) event.preventDefault();
+    try {
+      await saveGeneralSettings(formValues);
+      setSaveMessage("Changes saved successfully.");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (err) {
+      console.error("Failed to save", err);
+    }
   };
 
   const phonePrefix = (
@@ -61,6 +104,8 @@ function GeneralSettings() {
       <span>+91</span>
     </div>
   );
+
+  if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
 
   return (
     <div className="flex-1 space-y-6">

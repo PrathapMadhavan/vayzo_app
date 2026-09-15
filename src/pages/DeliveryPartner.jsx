@@ -21,7 +21,10 @@ import { useEffect, useState } from "react";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 
-import { getDeliveryPartnerById } from "../api/deliveryPartnersApi";
+import { getDeliveryPartnerById, updateDeliveryPartner, getDeliveryPartnerLocation } from "../api/deliveryPartnersApi";
+import { createActivityLog } from "../api/activityLogsApi";
+import Modal from "../components/ui/Modal";
+import Avatar from "../components/ui/Avatar";
 
 const getValue = (value) => value || "--";
 
@@ -68,9 +71,79 @@ function DeliveryPartner() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Send Message Modal
+  const [messagingModalOpen, setMessagingModalOpen] = useState(false);
+  const [mapLoading, setMapLoading] = useState(false);
+
+  const [messageText, setMessageText] = useState("");
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+
+  // Block Partner Modal
+  const [isBlockModalOpen, setBlockModalOpen] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
+
+  // Document Modal
+  const [isDocumentModalOpen, setDocumentModalOpen] = useState(false);
+  const [selectedDocumentUrl, setSelectedDocumentUrl] = useState(null);
+  const [selectedDocumentName, setSelectedDocumentName] = useState("");
+
   useEffect(() => {
     loadPartner();
   }, [partnerId]);
+
+  const handleSendMessage = async () => {
+    if (!messageText.trim()) {
+      alert("Please enter a message.");
+      return;
+    }
+    try {
+      setIsSendingMessage(true);
+      await createActivityLog({
+        user: "Admin",
+        action: "Sent Message",
+        module: "Delivery Partners",
+        details: `Sent message to ${partner.name} (${partner.partnerId}): ${messageText}`,
+        timestamp: new Date().toISOString()
+      });
+      alert("Message sent successfully");
+      setMessageModalOpen(false);
+      setMessageText("");
+    } catch (err) {
+      alert("Failed to send message. Please try again.");
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
+
+  const handleBlockPartner = async () => {
+    try {
+      setIsBlocking(true);
+      const updated = await updateDeliveryPartner(partner.id, { ...partner, status: "Blocked" });
+      setPartner(updated);
+      alert("Partner blocked successfully");
+      setBlockModalOpen(false);
+    } catch (err) {
+      alert("Failed to block partner.");
+    } finally {
+      setIsBlocking(false);
+    }
+  };
+
+  const handleViewDocument = (docName) => {
+    let url = null;
+    switch (docName) {
+      case "Aadhaar Card": url = partner.aadhaarDocument; break;
+      case "Driving License": url = partner.drivingLicenseDocument; break;
+      case "PAN Card": url = partner.panDocument; break;
+      case "Profile Photo": url = partner.profileImage; break;
+      case "Vehicle RC Book": url = partner.rcDocument; break;
+      case "Insurance": url = partner.insuranceDocument; break;
+      default: url = null;
+    }
+    setSelectedDocumentName(docName);
+    setSelectedDocumentUrl(url);
+    setDocumentModalOpen(true);
+  };
 
   const loadPartner = async () => {
     try {
@@ -82,6 +155,14 @@ function DeliveryPartner() {
       setError(err.message || "Failed to load delivery partner");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleViewOnMap = () => {
+    if (partner?.address) {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(partner.address)}`, "_blank");
+    } else {
+      alert("Location not available");
     }
   };
 
@@ -175,6 +256,7 @@ function DeliveryPartner() {
             <Button
               variant="secondary"
               size="sm"
+              onClick={() => setMessageModalOpen(true)}
               className="border-border bg-surface hover:bg-surface-hover text-foreground shadow-sm"
             >
               <MessageSquare size={16} />
@@ -183,7 +265,9 @@ function DeliveryPartner() {
             <Button
               variant="secondary"
               size="sm"
-              className="border-danger/20 bg-danger/5 hover:bg-danger/10 text-danger shadow-sm"
+              onClick={() => setBlockModalOpen(true)}
+              disabled={partner.status === "Blocked"}
+              className="border-danger/20 bg-danger/5 hover:bg-danger/10 text-danger shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Ban size={16} />
               <span className="ml-2 font-medium">Block</span>
@@ -371,6 +455,63 @@ function DeliveryPartner() {
 
         </div>
       </div>
+
+      {/* Modals */}
+      <Modal isOpen={messagingModalOpen} onClose={() => setMessagingModalOpen(false)} title="Send Message">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 p-3 bg-surface-hover rounded-lg border border-border">
+            <Avatar src={partner.profileImage} identifier={partner.name} className="h-10 w-10 rounded-full shrink-0" />
+            <div>
+              <p className="font-medium text-foreground text-sm">{partner.name}</p>
+              <p className="text-xs text-muted">{partner.partnerId} • {partner.mobileNumber || partner.email}</p>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">Message</label>
+            <textarea
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary min-h-[100px]"
+              placeholder="Customer complaints were received regarding slow delivery for recent orders. Please improve delivery time and avoid further delays."
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+            />
+          </div>
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="secondary" onClick={() => setMessagingModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleSendMessage} disabled={isSendingMessage || !messageText.trim()}>
+              {isSendingMessage ? "Sending..." : "Send Message"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={isBlockModalOpen} onClose={() => setBlockModalOpen(false)} title="Block Partner">
+        <p className="text-sm text-muted">Are you sure you want to block {partner.name}? They will no longer be able to accept orders.</p>
+        <div className="flex justify-end gap-3 mt-6">
+          <Button variant="secondary" onClick={() => setBlockModalOpen(false)}>Cancel</Button>
+          <Button onClick={handleBlockPartner} disabled={isBlocking} className="bg-danger hover:bg-danger/90 text-white border-transparent">
+            {isBlocking ? "Blocking..." : "Confirm Block"}
+          </Button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={isDocumentModalOpen} onClose={() => setDocumentModalOpen(false)} title={`View ${selectedDocumentName}`}>
+        <div className="flex flex-col items-center justify-center min-h-[200px] p-4">
+          {!selectedDocumentUrl ? (
+            <div className="text-center">
+              <FileText size={40} className="mx-auto text-muted mb-3 opacity-50" />
+              <p className="text-muted font-medium">No document available</p>
+              <p className="text-xs text-muted/70 mt-1">This partner hasn't uploaded their {selectedDocumentName} yet.</p>
+            </div>
+          ) : selectedDocumentUrl.toLowerCase().endsWith('.pdf') ? (
+            <iframe src={selectedDocumentUrl} className="w-full h-[400px] rounded border border-border" title={selectedDocumentName} />
+          ) : (
+            <img src={selectedDocumentUrl} alt={selectedDocumentName} className="max-w-full max-h-[400px] rounded object-contain" />
+          )}
+        </div>
+        <div className="flex justify-end mt-4">
+          <Button variant="secondary" onClick={() => setDocumentModalOpen(false)}>Close</Button>
+        </div>
+      </Modal>
     </section>
   );
 }

@@ -1,51 +1,70 @@
 import { API_BASE_URL } from "./config";
 
-export async function apiRequest(
-  endpoint,
-  options = {},
-  customErrorMessage = "API request failed",
-) {
+const pendingRequests = new Map();
+
+export async function apiRequest(endpoint, options = {}, customErrorMessage = "API request failed") {
   const url = `${API_BASE_URL}${endpoint}`;
+  const method = options.method || "GET";
 
-  const headers = {
-    "Content-Type": "application/json",
-    ...(options.headers || {}),
-  };
-
-  const token = localStorage.getItem("vayzo_admin_token");
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  if (method === "GET") {
+    const key = url;
+    if (pendingRequests.has(key)) {
+      return pendingRequests.get(key);
+    }
   }
 
-  const response = await fetch(url, {
-    headers,
-    ...options,
-  });
-
-  if (!response.ok) {
-    let errorMessage = customErrorMessage;
+  const requestPromise = (async () => {
     try {
-      const errorData = await response.json();
-      if (errorData && errorData.message) {
-        errorMessage = errorData.message;
-      }
-    } catch (e) {
-      // Ignore json parse error
-    }
+      const headers = {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+      };
 
-    if (response.status === 401) {
-      localStorage.removeItem("vayzo_admin_logged_in");
-      localStorage.removeItem("vayzo_admin_token");
-      localStorage.removeItem("vayzo_admin_user");
-      // Optional: Redirect to login if unauthenticated
-      if (window.location.pathname !== "/") {
-        window.location.href = "/";
+      const token = localStorage.getItem("vayzo_admin_token");
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(url, {
+        headers,
+        ...options,
+      });
+
+      if (!response.ok) {
+        let errorMessage = customErrorMessage;
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch (e) {
+          // Ignore json parse error
+        }
+
+        if (response.status === 401) {
+          localStorage.removeItem("vayzo_admin_logged_in");
+          localStorage.removeItem("vayzo_admin_token");
+          localStorage.removeItem("vayzo_admin_user");
+          // Optional: Redirect to login if unauthenticated
+          if (window.location.pathname !== "/") {
+            window.location.href = "/";
+          }
+        }
+        throw new Error(errorMessage);
+      }
+
+      const text = await response.text();
+      return text ? JSON.parse(text) : true;
+    } finally {
+      if (method === "GET") {
+        pendingRequests.delete(url);
       }
     }
-    throw new Error(errorMessage);
+  })();
+
+  if (method === "GET") {
+    pendingRequests.set(url, requestPromise);
   }
 
-  // Some operations (like DELETE in json-server) return empty body.
-  const text = await response.text();
-  return text ? JSON.parse(text) : true;
+  return requestPromise;
 }

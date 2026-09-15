@@ -160,7 +160,11 @@ function ActivityLogs() {
   return (
     <section className="min-h-full bg-background p-4 sm:p-6">
       <div className="space-y-4">
-
+        {/* Header */}
+        <div className="mb-4">
+          <h1 className="text-2xl font-semibold text-foreground">Activity Logs</h1>
+          <p className="mt-1 text-xs text-muted">Track and monitor admin activity across the VAYZO platform.</p>
+        </div>
 
         {/* Unified Filter/Action Card */}
         <Card noPadding className="flex flex-col">

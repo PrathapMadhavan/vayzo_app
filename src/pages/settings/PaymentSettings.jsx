@@ -1,19 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Input from "../../components/ui/input";
 import Button from "../../components/ui/button";
-import { paymentSettings } from "../../mock/vayzoApiMock";
-import { Eye, Edit, GripVertical, CheckCircle2, Circle, ArrowRight, Smartphone, Building2, Banknote, HelpCircle, Receipt, RefreshCcw, HandCoins } from "lucide-react";
+import { getPaymentSettings, savePaymentSettings } from "../../api/settingsApi";
+import { Eye, Edit, GripVertical, CheckCircle2, Circle, ArrowRight, Smartphone, Building2, Banknote, HelpCircle, Receipt, RefreshCcw, HandCoins, Save } from "lucide-react";
 
 function PaymentSettings() {
   const [activeTab, setActiveTab] = useState("Payment Gateways");
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState("");
   
   const [gateways, setGateways] = useState({
-    razorpay: { enabled: true, keyId: "rzp_test_***************", keySecret: "***************" },
+    razorpay: { enabled: false, keyId: "", keySecret: "" },
     stripe: { enabled: false, pubKey: "pk_test_***************", secKey: "sk_test_***************" },
     paypal: { enabled: false, clientId: "***************", secret: "***************" },
     cod: { enabled: true },
     razorpayUpi: { enabled: true }
   });
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await getPaymentSettings();
+        if (isMounted && data) {
+          setGateways(prev => ({
+            ...prev,
+            razorpay: {
+              enabled: data.paymentGateway === "Razorpay",
+              keyId: data.apiKey || "",
+              keySecret: data.apiSecret || ""
+            }
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load payment settings", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
 
   const [methods, setMethods] = useState([
     { id: "upi", label: "UPI", enabled: true, icon: <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" className="h-4" /> },
@@ -30,18 +58,42 @@ function PaymentSettings() {
     }));
   };
 
+  const handleGatewayChange = (id, field, value) => {
+    setGateways(prev => ({
+      ...prev,
+      [id]: { ...prev[id], [field]: value }
+    }));
+  };
+
   const toggleMethod = (index) => {
     const newMethods = [...methods];
     newMethods[index].enabled = !newMethods[index].enabled;
     setMethods(newMethods);
   };
 
+  const handleSave = async () => {
+    try {
+      await savePaymentSettings({
+        paymentGateway: gateways.razorpay.enabled ? "Razorpay" : "None",
+        apiKey: gateways.razorpay.keyId,
+        apiSecret: gateways.razorpay.keySecret
+      });
+      setSaveMessage("Payment Settings saved successfully!");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save payment settings.");
+    }
+  };
+
   const tabs = ["Payment Gateways", "UPI Settings", "Wallet Settings", "Refund Settings", "Other Settings"];
+
+  if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
 
   return (
     <section>
-      {/* Header (Already handled by App layout, but we'll include Tabs here) */}
-      <div className="mb-6 border-b border-border">
+      {/* Header */}
+      <div className="mb-6 border-b border-border flex justify-between items-center">
         <div className="flex gap-8">
           {tabs.map((tab) => (
             <button
@@ -57,7 +109,16 @@ function PaymentSettings() {
             </button>
           ))}
         </div>
+        <Button type="button" onClick={handleSave} size="sm" className="bg-primary text-white mb-2 flex items-center gap-2">
+          <Save size={16} /> Save Changes
+        </Button>
       </div>
+
+      {saveMessage && (
+        <div className="mb-4 rounded-xl border border-success/30 bg-success/5 p-4 text-sm font-medium text-success">
+          {saveMessage}
+        </div>
+      )}
 
       <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
         
@@ -90,19 +151,26 @@ function PaymentSettings() {
                       <p className="text-xs text-muted mt-1">Accept Card, UPI, Netbanking, Wallet & EMI payments</p>
                     </div>
 
-                    <div className="flex gap-6">
+                    <div className="flex gap-4">
                       <div>
                         <label className="text-[10px] font-medium text-muted">Key ID</label>
-                        <div className="mt-1 flex items-center rounded-lg border border-border bg-surface px-3 py-1.5 w-48">
-                          <span className="text-xs">{gateways.razorpay.keyId}</span>
-                        </div>
+                        <input
+                          type="text"
+                          value={gateways.razorpay.keyId}
+                          onChange={(e) => handleGatewayChange("razorpay", "keyId", e.target.value)}
+                          className="mt-1 flex items-center rounded-lg border border-border bg-surface px-3 py-1.5 w-48 text-xs outline-none focus:border-primary"
+                          placeholder="rzp_test_..."
+                        />
                       </div>
                       <div>
                         <label className="text-[10px] font-medium text-muted">Key Secret</label>
-                        <div className="mt-1 flex items-center rounded-lg border border-border bg-surface px-3 py-1.5 w-48 justify-between">
-                          <span className="text-xs">{gateways.razorpay.keySecret}</span>
-                          <Eye size={12} className="text-muted cursor-pointer hover:text-foreground" />
-                        </div>
+                        <input
+                          type="password"
+                          value={gateways.razorpay.keySecret}
+                          onChange={(e) => handleGatewayChange("razorpay", "keySecret", e.target.value)}
+                          className="mt-1 flex items-center rounded-lg border border-border bg-surface px-3 py-1.5 w-48 text-xs outline-none focus:border-primary"
+                          placeholder="secret_..."
+                        />
                       </div>
                     </div>
                   </div>
@@ -110,11 +178,8 @@ function PaymentSettings() {
 
                 <div className="flex flex-col items-end gap-6 justify-between h-full">
                   <button type="button" onClick={() => toggleGateway("razorpay")} className={`relative h-5 w-9 rounded-full transition-colors ${gateways.razorpay.enabled ? "bg-success" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${gateways.razorpay.enabled ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${gateways.razorpay.enabled ? "left-4.5" : "left-0.5"}`} />
                   </button>
-                  <Button type="button" variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary-light">
-                    Edit Settings
-                  </Button>
                 </div>
               </div>
             </div>

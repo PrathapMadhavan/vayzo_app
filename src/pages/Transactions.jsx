@@ -24,7 +24,6 @@ import { exportToCSV } from "../utils/exportUtils";
 import { getTransactions } from "../api/financeApi";
 const statusMap = { SUCCESS: "success", PENDING: "warning", FAILED: "danger" };
 const tabs = ["All Transactions", "Success", "Pending", "Failed"];
-
 const label = (item) => String(item || "").replaceAll("_", " ");
 function Transactions() {
   const [query, setQuery] = useState("");

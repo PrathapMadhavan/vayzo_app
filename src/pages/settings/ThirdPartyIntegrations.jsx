@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronRight,
   MapPin,
@@ -16,18 +16,31 @@ import {
   FileText,
   Activity,
   BookOpen,
-  HeadphonesIcon
+  HeadphonesIcon,
+  Save,
+  Check,
+  ChevronDown
 } from "lucide-react";
 import Button from "../../components/ui/button";
+import { getIntegrationSettings, saveIntegrationSettings } from "../../api/settingsApi";
 
-const integrations = [
+const integrationsData = [
   {
-    id: 1,
+    id: "googleMaps",
     name: "Google Maps",
     description: "Enable Google Maps for location services, distance calculation and place autocomplete.",
     status: "Active",
     icon: <MapPin className="text-green-500" size={24} />,
     iconBg: "bg-green-50",
+    action: "Configure"
+  },
+  {
+    id: "firebase",
+    name: "Firebase",
+    description: "Firebase for push notifications and real-time database.",
+    status: "Active",
+    icon: <Flame className="text-orange-500" size={24} />,
+    iconBg: "bg-orange-50",
     action: "Configure"
   },
   {
@@ -37,15 +50,6 @@ const integrations = [
     status: "Active",
     icon: <CreditCard className="text-blue-600" size={24} />,
     iconBg: "bg-blue-50",
-    action: "Configure"
-  },
-  {
-    id: 3,
-    name: "Firebase",
-    description: "Firebase for push notifications and real-time database.",
-    status: "Active",
-    icon: <Flame className="text-orange-500" size={24} />,
-    iconBg: "bg-orange-50",
     action: "Configure"
   },
   {
@@ -88,14 +92,61 @@ const integrations = [
 
 function ThirdPartyIntegrations() {
   const [activeTab, setActiveTab] = useState("All Integrations");
+  
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState("");
 
-  const filteredIntegrations = integrations.filter((item) => {
+  const [googleMapsApiKey, setGoogleMapsApiKey] = useState("");
+  const [firebaseKey, setFirebaseKey] = useState("");
+  
+  const [expandedId, setExpandedId] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await getIntegrationSettings();
+        if (isMounted && data) {
+          setGoogleMapsApiKey(data.googleMapsApiKey || "");
+          setFirebaseKey(data.firebaseKey || "");
+        }
+      } catch (err) {
+        console.error("Failed to load integration settings", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      await saveIntegrationSettings({
+        googleMapsApiKey,
+        firebaseKey
+      });
+      setSaveMessage("Integrations saved successfully.");
+      setTimeout(() => setSaveMessage(""), 3000);
+      setExpandedId(null);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save integration settings.");
+    }
+  };
+
+  const filteredIntegrations = integrationsData.filter((item) => {
     if (activeTab === "All Integrations") return true;
     return item.status === activeTab;
   });
 
   const handleAction = (item) => {
-    alert(`${item.action} action triggered for ${item.name}`);
+    if (item.id === "googleMaps" || item.id === "firebase") {
+      setExpandedId(expandedId === item.id ? null : item.id);
+    } else {
+      alert(`${item.action} action triggered for ${item.name}`);
+    }
   };
 
   const renderTabButton = (name, count, countColor, countBg) => {
@@ -115,8 +166,17 @@ function ThirdPartyIntegrations() {
     );
   };
 
+  if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+
   return (
-    <div className="flex-1 space-y-6">
+    <div className="flex-1 space-y-6 pb-10">
+      
+      {saveMessage && (
+        <div className="rounded-xl border border-success/30 bg-success/5 p-4 text-sm font-medium text-success">
+          {saveMessage}
+        </div>
+      )}
+
       <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr]">
         
         {/* Left Column */}
@@ -153,34 +213,60 @@ function ThirdPartyIntegrations() {
             {/* List */}
             <div className="flex flex-col min-w-0">
               {filteredIntegrations.map((item, index) => (
-                <div key={item.id} className={`flex items-center justify-between p-5 hover:bg-muted/10 transition-colors ${index !== filteredIntegrations.length - 1 ? 'border-b border-border' : ''}`}>
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${item.iconBg}`}>
-                      {item.icon}
+                <div key={item.id} className={`flex flex-col border-border ${index !== filteredIntegrations.length - 1 ? 'border-b' : ''}`}>
+                  <div className="flex items-center justify-between p-5 hover:bg-muted/10 transition-colors">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${item.iconBg}`}>
+                        {item.icon}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-semibold text-foreground truncate">{item.name}</h4>
+                        <p className="text-xs text-muted mt-0.5 truncate">{item.description}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <h4 className="text-sm font-semibold text-foreground truncate">{item.name}</h4>
-                      <p className="text-xs text-muted mt-0.5 truncate">{item.description}</p>
+                    <div className="flex items-center gap-4 shrink-0 ml-4">
+                      {item.status === 'Active' ? (
+                          <span className="hidden sm:flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-600 border border-green-100">
+                              <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span> Active
+                          </span>
+                      ) : (
+                          <span className="hidden sm:flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 border border-red-100">
+                              <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span> Inactive
+                          </span>
+                      )}
+                      
+                      <Button onClick={() => handleAction(item)} variant="outline" size="sm" className="rounded-lg border-primary/20 text-primary hover:bg-primary-light">
+                        {item.action}
+                      </Button>
+                      <button className="text-muted hover:text-foreground">
+                          {expandedId === item.id ? <ChevronDown size={18} /> : <ChevronRight size={18} />}
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 shrink-0 ml-4">
-                    {item.status === 'Active' ? (
-                        <span className="hidden sm:flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium text-green-600 border border-green-100">
-                            <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span> Active
-                        </span>
-                    ) : (
-                        <span className="hidden sm:flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 border border-red-100">
-                            <span className="h-1.5 w-1.5 rounded-full bg-red-500"></span> Inactive
-                        </span>
-                    )}
-                    
-                    <Button onClick={() => handleAction(item)} variant="outline" size="sm" className="rounded-lg border-primary/20 text-primary hover:bg-primary-light">
-                      {item.action}
-                    </Button>
-                    <button className="text-muted hover:text-foreground">
-                        <ChevronRight size={18} />
-                    </button>
-                  </div>
+                  
+                  {/* Expanded Config Panel */}
+                  {expandedId === item.id && (
+                    <div className="bg-muted/5 border-t border-border p-5">
+                      {item.id === "googleMaps" && (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-xs font-medium text-foreground mb-2 block">Google Maps API Key</label>
+                            <input type="text" value={googleMapsApiKey} onChange={(e) => setGoogleMapsApiKey(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+                          </div>
+                          <Button onClick={handleSave} className="bg-primary text-white">Save Changes</Button>
+                        </div>
+                      )}
+                      {item.id === "firebase" && (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-xs font-medium text-foreground mb-2 block">Firebase Server Key</label>
+                            <input type="text" value={firebaseKey} onChange={(e) => setFirebaseKey(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+                          </div>
+                          <Button onClick={handleSave} className="bg-primary text-white">Save Changes</Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
               {filteredIntegrations.length === 0 && (

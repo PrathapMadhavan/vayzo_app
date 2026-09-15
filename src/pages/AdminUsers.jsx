@@ -116,7 +116,11 @@ function AdminUsers() {
   return (
     <section className="min-h-full bg-background p-4 sm:p-6">
       <div className="space-y-4">
-
+        {/* Header */}
+        <div className="mb-4">
+          <h1 className="text-2xl font-semibold text-foreground">Admin Users</h1>
+          <p className="mt-1 text-xs text-muted">Manage admin users and their access.</p>
+        </div>
 
         {totalAdminCount >= 2 && (
           <div className="flex items-start gap-3 rounded-lg bg-danger/10 p-4 border border-danger/20 text-danger-dark">
