@@ -8,10 +8,11 @@ import {
   Trash2,
   Pencil,
   X,
+  CloudUpload,
 } from "lucide-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 
-import Button from "../components/ui/button";
+import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import Card from "../components/ui/Card";
@@ -127,7 +128,12 @@ function RestaurantsAdd() {
           deliveryCharge: data.deliveryCharge ?? "",
           openingTime: data.openingTime || "",
           closingTime: data.closingTime || "",
-          menuItems: data.menuItems || prev.menuItems,
+          menuItems: (data.menuItems || prev.menuItems).map(item => {
+            if (!item.id) {
+              return { ...item, id: `legacy-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` };
+            }
+            return item;
+          }),
         }));
         if (data.logo) setLogoPreview(data.logo);
         if (data.coverImage) setCoverPreview(data.coverImage);
@@ -202,9 +208,6 @@ function RestaurantsAdd() {
       const cleanMenuItems = form.menuItems.map((item) => {
         const cleaned = { ...item };
         delete cleaned.isEditing;
-        if (typeof cleaned.id === "string" && cleaned.id.startsWith("temp-")) {
-          delete cleaned.id;
-        }
         return cleaned;
       });
 
@@ -728,7 +731,9 @@ function RestaurantsAdd() {
                   onChange={(e) => setEditingMenuItem(prev => ({ ...prev, category: e.target.value }))}
                 >
                   <option value="" disabled>Select Category</option>
-                  {categories.map(cat => (
+                  {categories
+                    .filter(cat => cat.type === "Food")
+                    .map(cat => (
                     <option key={cat.id} value={cat.name}>{cat.name}</option>
                   ))}
                 </select>
@@ -745,22 +750,24 @@ function RestaurantsAdd() {
             </div>
 
             <div>
-              <label className="text-xs font-medium text-muted mb-2 block">Menu Item Images</label>
-              <div className="grid grid-cols-2 gap-3">
-                {[0, 1, 2, 3].map((index) => {
+              <label className="text-xs font-medium text-muted mb-2 block">Menu Item Image</label>
+              <div>
+                {[0].map((index) => {
                   const currentImages = editingMenuItem.images || (editingMenuItem.image ? [editingMenuItem.image] : []);
                   const img = currentImages[index];
                   return (
                     <div
                       key={index}
-                      className="border border-dashed border-border rounded-lg h-[90px] bg-background flex items-center justify-center relative overflow-hidden group w-full"
+                      className="border border-dashed border-primary/20 rounded-lg h-[120px] bg-primary/5 flex items-center justify-center relative overflow-visible group w-full"
                     >
                       {img ? (
                         <>
-                          <img
-                            src={img}
-                            className="w-full h-full object-contain bg-white"
-                          />
+                          <div className="w-full h-full rounded-lg overflow-hidden relative">
+                            <img
+                              src={img}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
                           <button
                             type="button"
                             onClick={(e) => {
@@ -771,18 +778,19 @@ function RestaurantsAdd() {
                                 return { ...prev, images: newImages, image: newImages.find(Boolean) || "" };
                               });
                             }}
-                            className="absolute top-1.5 right-1.5 w-6 h-6 bg-surface border border-border text-danger rounded-md flex items-center justify-center opacity-80 hover:opacity-100 hover:bg-danger/10 shadow-sm z-20 transition-all"
+                            className="absolute -top-3 -right-3 w-8 h-8 bg-white text-danger rounded-full flex items-center justify-center shadow-md z-20 transition-all border border-border/10"
                           >
-                            <Trash2 size={12} />
+                            <Trash2 size={14} />
                           </button>
                         </>
                       ) : (
                         <div 
                           onClick={() => document.getElementById(`menuItemImgUpload-${index}`)?.click()}
-                          className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-surface transition-colors"
+                          className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-primary/10 transition-colors rounded-lg"
                         >
-                          <p className="text-xs font-medium text-primary">Image {index + 1}</p>
-                          <p className="text-[10px] text-muted mt-0.5">Click to upload</p>
+                          <CloudUpload size={24} className="text-primary mb-1.5" />
+                          <p className="text-xs font-semibold text-primary">Click to upload</p>
+                          <p className="text-[10px] text-muted/70 mt-0.5">PNG, JPG or WEBP</p>
                           <input
                             id={`menuItemImgUpload-${index}`}
                             type="file"

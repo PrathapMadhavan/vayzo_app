@@ -17,7 +17,7 @@ import {
   Folder,
   CheckSquare
 } from "lucide-react";
-import Button from "../../components/ui/button";
+import Button from "../../components/ui/Button";
 import Input from "../../components/ui/input";
 import Select from "../../components/ui/Select";
 import { getGeneralSettings, saveGeneralSettings } from "../../api/settingsApi";

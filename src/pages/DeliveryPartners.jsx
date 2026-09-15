@@ -4,7 +4,7 @@ import { Plus, RotateCcw, Eye, Pencil as Edit, Trash2, MoreVertical, Download } 
 import Avatar from "../components/ui/Avatar";
 
 import Badge from "../components/ui/badge";
-import Button from "../components/ui/button";
+import Button from "../components/ui/Button";
 import SearchInput from "../components/ui/SearchInput";
 import StatusSelect from "../components/ui/StatusSelect";
 import DateRangeInput from "../components/ui/DateRangeInput";

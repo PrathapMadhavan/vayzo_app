@@ -21,7 +21,7 @@ import {
   Check,
   ChevronDown
 } from "lucide-react";
-import Button from "../../components/ui/button";
+import Button from "../../components/ui/Button";
 import { getIntegrationSettings, saveIntegrationSettings } from "../../api/settingsApi";
 
 const integrationsData = [

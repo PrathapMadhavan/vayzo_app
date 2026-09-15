@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Input from "../../components/ui/input";
 import Select from "../../components/ui/Select";
-import Button from "../../components/ui/button";
+import Button from "../../components/ui/Button";
 import { getCommissionSettings, saveCommissionSettings } from "../../api/settingsApi";
 import { 
   Info, 

@@ -6199,11 +6199,22 @@
       "closingTime": "11:00 PM",
       "menuItems": [
         {
-          "name": "pizza",
-          "category": "pizza",
-          "price": "90",
+          "name": "chicken",
+          "category": "",
+          "price": "50",
           "image": "",
-          "status": true
+          "status": true,
+          "foodType": "Non-Veg",
+          "id": "legacy-1789458596827-bey03lt6c"
+        },
+        {
+          "name": "egg",
+          "category": "",
+          "price": "50",
+          "image": "",
+          "status": false,
+          "foodType": "Non-Veg",
+          "id": "legacy-1789458596827-7xcf6gl5u"
         }
       ],
       "cuisineType": "Italian, Fast Food",
@@ -6228,7 +6239,23 @@
       "deliveryCharge": 15,
       "openingTime": "07:30 AM",
       "closingTime": "10:30 PM",
-      "menuItems": [],
+      "menuItems": [
+        {
+          "id": "temp-1789456290467",
+          "name": "lulhy",
+          "category": "",
+          "price": "24",
+          "foodType": "Non-Veg",
+          "status": true,
+          "image": "",
+          "images": [
+            null,
+            null,
+            null,
+            null
+          ]
+        }
+      ],
       "cuisineType": "South Indian",
       "id": "RST003"
     },

@@ -20,6 +20,9 @@ function Button({
 
     ghost:
       "bg-transparent text-muted hover:bg-primary-light hover:text-primary",
+
+    outline:
+      "border-2 border-primary text-primary bg-transparent hover:bg-primary/5",
   };
 
   const sizes = {

@@ -19,7 +19,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 import Badge from "../components/ui/badge";
-import Button from "../components/ui/button";
+import Button from "../components/ui/Button";
 import Tabs from "../components/ui/Tabs";
 import Card from "../components/ui/Card";
 
