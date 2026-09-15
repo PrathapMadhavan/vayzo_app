@@ -1,0 +1,157 @@
+@import "./variables.css";
+@import "tailwindcss";
+
+@theme {
+  --color-primary: var(--vayzo-primary);
+  --color-primary-hover: var(--vayzo-primary-hover);
+  --color-primary-light: var(--vayzo-primary-light);
+
+  --color-background: var(--vayzo-background);
+  --color-surface: var(--vayzo-surface);
+
+  --color-foreground: var(--vayzo-text-primary);
+  --color-muted: var(--vayzo-text-secondary);
+  --color-subtle: var(--vayzo-text-muted);
+
+  --color-border: var(--vayzo-border);
+
+  --color-success: var(--vayzo-success);
+  --color-warning: var(--vayzo-warning);
+  --color-danger: var(--vayzo-danger);
+  --color-info: var(--vayzo-info);
+  --font-sans: "Instrument Sans", sans-serif;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    margin: 0;
+    min-height: 100%;
+    font-family: "Instrument Sans", sans-serif;
+  }
+
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+}
+
+.sidebar-scroll,
+.main-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.sidebar-scroll:hover,
+.main-scroll:hover {
+  scrollbar-color: var(--vayzo-text-secondary) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar,
+.main-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track,
+.main-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb,
+.main-scroll::-webkit-scrollbar-thumb {
+  background: var(--vayzo-text-secondary);
+  border-radius: 999px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-button,
+.main-scroll::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("../assets/fonts/InstrumentSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("../assets/fonts/InstrumentSans-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("../assets/fonts/InstrumentSans-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Instrument Sans";
+  src: url("../assets/fonts/InstrumentSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* @font-face {
+  font-family: "Inter";
+  src: url("../assets/fonts/Inter-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("../assets/fonts/Inter-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("../assets/fonts/Inter-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+} */

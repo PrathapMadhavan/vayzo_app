@@ -1,0 +1,117 @@
+{
+  "sourceFileUsed": "C:\\Users\\ELCOT\\Desktop\\Tech\\React\\Vayzo-admin\\db.json",
+  "originalPreMigrationBackupVerified": "YES",
+  "freshBackupCreated": "YES",
+  "sourceCounts": {
+    "users": 31,
+    "orders": 26,
+    "deliveryPartners": 31,
+    "complaints": 24,
+    "categories": 29,
+    "offers": 28,
+    "locations": 29,
+    "earnings": 21,
+    "otpSessions": 19,
+    "restaurants": 21,
+    "reportsSummary": 1,
+    "reports": 10,
+    "adminUsers": 1,
+    "activityLogs": 12
+  },
+  "targetCounts": {
+    "users": 31,
+    "orders": 26,
+    "deliveryPartners": 31,
+    "complaints": 24,
+    "categories": 29,
+    "offers": 28,
+    "locations": 29,
+    "earnings": 21,
+    "otpSessions": 19,
+    "restaurants": 21,
+    "reportsSummary": 1,
+    "reports": 10,
+    "adminUsers": 1,
+    "activityLogs": 12,
+    "partners": 30,
+    "partner_documents": 60,
+    "partner_vehicles": 30,
+    "partner_bank_accounts": 30,
+    "restaurant_categories": 0,
+    "restaurant_products": 0,
+    "requests": 26,
+    "request_items": 0,
+    "request_pickups": 0,
+    "request_status_history": 0,
+    "rides": 0,
+    "ride_locations": 0,
+    "payments": 0,
+    "wallets": 0,
+    "wallet_transactions": 0,
+    "partner_earnings": 0,
+    "partner_payouts": 0,
+    "roles": 0,
+    "permissions": 0
+  },
+  "deduplicatedRecords": 1,
+  "preservedCounts": {
+    "users": 31,
+    "orders": 26,
+    "deliveryPartners": 31,
+    "complaints": 24,
+    "categories": 29,
+    "offers": 28,
+    "locations": 29,
+    "earnings": 21,
+    "otpSessions": 19,
+    "restaurants": 21,
+    "reportsSummary": 1,
+    "reports": 10,
+    "adminUsers": 1,
+    "activityLogs": 12
+  },
+  "transformedCounts": {
+    "deliveryPartners -> partners": 30,
+    "orders -> requests": 26
+  },
+  "successfulRelationships": {
+    "customer": 24,
+    "restaurant": 24,
+    "partner": 0
+  },
+  "unresolvedRelationships": {
+    "customer": 2,
+    "restaurant": 2,
+    "partner": 26
+  },
+  "ambiguousRelationships": {
+    "customer": 0,
+    "restaurant": 0,
+    "partner": 0
+  },
+  "idUniquenessValidation": [
+    "SUCCESS: All IDs in populated collections are unique."
+  ],
+  "foreignKeyValidationResults": {
+    "requestFKs": "SUCCESS: 0 errors",
+    "partnerFKs": "SUCCESS: 0 errors",
+    "rideFKs": "SUCCESS: 0 errors"
+  },
+  "statusMappingWarnings": [
+    "Partner DVP12597 unmapped accountStatus: Inactive",
+    "Partner DVP12557 unmapped accountStatus: Inactive",
+    "Order ORD1002 unmapped status: IN_TRANSIT",
+    "Order ORD1003 unmapped status: PENDING",
+    "Order ORD1003 unmapped paymentStatus: PENDING",
+    "Order ORD1004 unmapped status: CANCELLED",
+    "Order ORD1004 unmapped paymentStatus: REFUNDED",
+    "Order ORD1005 unmapped status: PREPARING",
+    "Order ORD2012 unmapped status: IN_TRANSIT"
+  ],
+  "imageSafetyValidation": "SUCCESS: No base64 or blob URLs introduced.",
+  "warnings": [
+    "Skipped exact duplicate delivery partner with ID: DVP12562"
+  ],
+  "errors": [],
+  "dbJsonModified": true
+}

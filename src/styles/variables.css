@@ -1,0 +1,32 @@
+:root {
+  /* Brand */
+  --vayzo-primary: #3d14b8;
+  --vayzo-primary-hover: #4a14d1;
+  --vayzo-primary-light: #ebf1ff;
+
+  /* Surface */
+  --vayzo-background: #f8f8fb;
+  --vayzo-surface: #ffffff;
+
+  /* Text */
+  --vayzo-text-primary: #140f33;
+  --vayzo-text-secondary: #5c5773;
+  --vayzo-text-muted: #8b879d;
+  --vayzo-text-white:#ffffff;
+
+  /* Border */
+  --vayzo-border: #e5e3eb;
+
+  /* Semantic */
+  --vayzo-success: #148c52;
+  --vayzo-warning: #f56e0d;
+  --vayzo-danger: #dc2626;
+  --vayzo-info: #1a52db;
+
+  /* Radius */
+  --vayzo-radius-sm: 6px;
+  --vayzo-radius-md: 8px;
+  --vayzo-radius-lg: 12px;
+  --vayzo-radius-xl: 16px;
+  
+}

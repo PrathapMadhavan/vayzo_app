@@ -1,0 +1,1043 @@
+
+
+
+VAYZO
+
+Software Requirements Specification (SRS)
+
+Phase 1 – On-Demand Local Services Platform
+
+Product
+VAYZO
+Version
+1.0 – Phase 1
+Date
+14 August 2026
+Primary Launch Area
+Melur
+Planned Expansion
+Singampunari, Thirupathur, Karaikudi and other locations
+Customer App
+React Native
+Delivery Partner App
+React Native
+Super Admin Web
+React.js
+Backend
+Laravel REST API
+Database
+MySQL
+Main Tagline
+You Ask. We Get It.
+Marketing Slogan
+Oorula Ellame Ore App!
+
+
+
+1. Document Purpose
+This Software Requirements Specification defines the functional, non-functional, technical, operational and business requirements for VAYZO Phase 1. VAYZO is a local on-demand platform that allows customers to order food, ask partners to purchase and deliver items, and book local bike or car rides.
+
+
+2. Product Vision
+VAYZO is not intended to be only a traditional food-delivery application. Its core differentiator is a request-based service model:
+You Ask. We Get It.
+Customers can type or speak what they need. VAYZO converts the request into an actionable service request that can be assigned to a suitable partner.
+
+
+3. Phase 1 Scope
+Service
+Description
+Phase 1
+Food Delivery
+Order food from registered restaurants and receive delivery.
+Included
+Buy &amp; Get It
+Customer asks VAYZO to buy specified items from one or more local shops and deliver them.
+Included
+Bike Ride
+Local point-to-point bike ride booking.
+Included
+Car Booking
+Local point-to-point car booking.
+Included
+Bus Ticket Booking
+Bus ticket booking service.
+Future
+Train Ticket Booking
+Train ticket booking service.
+Future
+Mobile Recharge
+Mobile recharge and bill payment.
+Future
+Large Grocery Catalogue
+Catalogue-first grocery shopping model.
+Future
+
+
+4. User Roles
+
+
+4.1 Customer
+
+
+Register and log in using mobile number and OTP.
+
+
+Set and manage delivery/pickup locations.
+
+
+Create text or voice-based service requests.
+
+
+Order food.
+
+
+Request purchase and delivery of items from one or multiple shops.
+
+
+Book local bike rides.
+
+
+Book local car rides.
+
+
+Track active requests and rides.
+
+
+Manage wallet and payments.
+
+
+View history, ratings and support tickets.
+
+
+4.2 Delivery / Ride Partner
+
+
+Register and complete KYC.
+
+
+Select one or more eligible service types.
+
+
+Submit vehicle and bank information.
+
+
+Go online/offline.
+
+
+Receive and accept/reject requests.
+
+
+Navigate to pickup/shop/customer.
+
+
+Purchase requested items and upload bills.
+
+
+Complete food deliveries and rides.
+
+
+View earnings, trips and payouts.
+
+
+Raise support requests.
+
+
+4.3 Super Admin
+
+
+Manage customers, partners and restaurants.
+
+
+Approve/reject partner KYC and documents.
+
+
+Monitor all requests and rides.
+
+
+Manage service areas, pricing, commissions and settings.
+
+
+Manage payments, wallets, refunds and settlements.
+
+
+Handle complaints and support tickets.
+
+
+View operational and financial reports.
+
+
+5. Customer Mobile App Requirements
+
+
+5.1 Authentication &amp; Onboarding
+
+
+Splash screen with VAYZO branding.
+
+
+Optional onboarding screens explaining Food Delivery, Buy &amp; Get It and Rides.
+
+
+Mobile number login.
+
+
+OTP verification.
+
+
+New customer registration.
+
+
+Location permission and location selection.
+
+
+5.2 Customer Dashboard
+
+
+Display VAYZO logo, current location, notifications and profile.
+
+
+Primary request input: 'What can we get for you today?'
+
+
+Text request input.
+
+
+Voice request button.
+
+
+Service shortcuts: Food Delivery, Buy &amp; Get It, Bike Ride, Car Booking.
+
+
+Active request card with current status.
+
+
+Recent requests.
+
+
+Offers/promotions where applicable.
+
+
+Help and support entry point.
+
+
+5.3 Text / Voice Request
+
+
+Customer can type a natural-language request.
+
+
+Customer can record a voice request.
+
+
+Speech-to-text should show the recognised text before submission.
+
+
+Customer can edit recognised text.
+
+
+Customer confirms location and submits the request.
+
+
+System generates a unique request ID.
+
+
+5.4 Buy &amp; Get It
+Example request:
+“Murugan Kadai-la 4 idly and Sangeetha Kadai-la 1 litre milk வாங்கிட்டு என் வீட்டுக்கு கொண்டு வாங்க.”
+
+
+Support one or multiple pickup/shop locations.
+
+
+Capture shop name/location and requested items.
+
+
+Capture quantities and special instructions.
+
+
+Display estimated service/delivery charge where available.
+
+
+Assign a suitable partner.
+
+
+Allow partner to update each pickup independently.
+
+
+Allow bill upload after purchase.
+
+
+Show item/purchase status to customer.
+
+
+Use delivery OTP to complete handover.
+
+
+5.5 Food Delivery
+
+
+Browse registered restaurants.
+
+
+View categories and menu items.
+
+
+Add items to cart.
+
+
+Review order and delivery address.
+
+
+Confirm payment/order.
+
+
+Track partner and delivery status.
+
+
+Rate restaurant/partner after completion.
+
+
+5.6 Bike Ride &amp; Car Booking
+
+
+Select pickup and destination.
+
+
+Display estimated fare where available.
+
+
+Request a bike or car.
+
+
+Match and assign an eligible partner.
+
+
+Show partner and vehicle information.
+
+
+Live-track the ride.
+
+
+Start trip after required verification/OTP.
+
+
+Complete trip and show final fare.
+
+
+Allow rating and support.
+
+
+5.7 My Requests
+
+
+Active requests.
+
+
+Completed requests.
+
+
+Cancelled requests.
+
+
+Request detail view.
+
+
+Status timeline.
+
+
+Pickup and destination details.
+
+
+Partner information.
+
+
+Payment and bill details.
+
+
+5.8 Wallet &amp; Payments
+
+
+Wallet balance.
+
+
+Add money.
+
+
+Wallet transaction history.
+
+
+Service payment records.
+
+
+Refund records.
+
+
+Payment status and receipts.
+
+
+5.9 Profile
+
+
+Personal information.
+
+
+Saved addresses.
+
+
+Payment methods.
+
+
+Wallet.
+
+
+Notifications.
+
+
+Help &amp; Support.
+
+
+Terms &amp; Conditions.
+
+
+Privacy Policy.
+
+
+About VAYZO.
+
+
+Logout.
+
+
+6. Delivery Partner App Requirements
+
+
+6.1 Registration &amp; Verification
+
+
+Mobile OTP authentication.
+
+
+Personal information.
+
+
+Partner type selection.
+
+
+KYC document upload.
+
+
+Vehicle details.
+
+
+Bank account details.
+
+
+Verification status: Pending, Approved, Rejected, Suspended.
+
+
+6.2 Partner Dashboard
+
+
+Online/offline toggle.
+
+
+Today's earnings.
+
+
+Today's trips/requests.
+
+
+Rating.
+
+
+New request alerts.
+
+
+Active request.
+
+
+Earnings shortcut.
+
+
+Trip history.
+
+
+6.3 Partner Request Flow
+
+
+Receive new request.
+
+
+View request type and estimated earning.
+
+
+Accept or reject.
+
+
+Navigate to pickup/shop.
+
+
+Mark arrived.
+
+
+Perform pickup/purchase/ride.
+
+
+Update status.
+
+
+Upload purchase bill when required.
+
+
+Navigate to customer/destination.
+
+
+Complete using delivery/trip verification.
+
+
+6.4 Buy &amp; Get It Partner Flow
+
+
+Receive request.
+
+
+Accept request.
+
+
+View all pickup locations and requested items.
+
+
+Navigate to Shop 1.
+
+
+Purchase requested items.
+
+
+Upload bill and update actual purchase amount.
+
+
+Navigate to Shop 2 or next pickup.
+
+
+Repeat purchase and bill update as required.
+
+
+Navigate to customer.
+
+
+Complete delivery using OTP.
+
+
+6.5 Partner Earnings
+
+
+Today, week and month earnings.
+
+
+Trip/request-wise earning details.
+
+
+Commission and adjustments.
+
+
+Incentives and bonuses.
+
+
+Payout/withdrawal request.
+
+
+Payout history.
+
+
+7. Super Admin Web Requirements
+
+
+7.1 Admin Dashboard
+
+
+Total customers.
+
+
+Total partners.
+
+
+Restaurants.
+
+
+Active requests.
+
+
+Food orders.
+
+
+Buy &amp; Get requests.
+
+
+Bike rides.
+
+
+Car rides.
+
+
+Revenue.
+
+
+Commission.
+
+
+Partner payout.
+
+
+Operational charts.
+
+
+7.2 Customer Management
+
+
+Customer list and search.
+
+
+Customer details.
+
+
+Requests and history.
+
+
+Wallet and transactions.
+
+
+Complaints.
+
+
+Block/unblock.
+
+
+7.3 Partner Management
+
+
+Pending/approved/rejected/suspended partners.
+
+
+Partner profile.
+
+
+KYC and documents.
+
+
+Vehicle.
+
+
+Bank account.
+
+
+Trips.
+
+
+Earnings.
+
+
+Ratings and complaints.
+
+
+Approve/reject/suspend/activate.
+
+
+7.4 Restaurant Management
+
+
+Restaurant list.
+
+
+Add/edit restaurant.
+
+
+Operating hours.
+
+
+Commission.
+
+
+Categories.
+
+
+Products/menu.
+
+
+Pricing.
+
+
+Availability.
+
+
+7.5 Request &amp; Ride Management
+
+
+Filter by Food, Buy &amp; Get, Bike and Car.
+
+
+Filter by Pending, Active, Completed and Cancelled.
+
+
+View customer, partner, pickup, destination, status and payment.
+
+
+Live location monitoring where available.
+
+
+Buy &amp; Get multi-pickup visibility.
+
+
+Bill verification.
+
+
+7.6 Finance
+
+
+Payments.
+
+
+Wallet transactions.
+
+
+Refunds.
+
+
+Partner earnings.
+
+
+Commission.
+
+
+Settlement.
+
+
+Withdrawal requests.
+
+
+7.7 Service Area &amp; Pricing
+
+
+Manage serviceable areas.
+
+
+Delivery radius.
+
+
+Ride zones.
+
+
+Minimum fare.
+
+
+Per-km charges.
+
+
+Delivery charges.
+
+
+Cancellation charges.
+
+
+Commission settings.
+
+
+7.8 Support &amp; Notifications
+
+
+Customer support tickets.
+
+
+Partner support tickets.
+
+
+Request disputes.
+
+
+Refund cases.
+
+
+Push notifications.
+
+
+SMS/email integration where required.
+
+
+8. Request Lifecycle
+Common request state model:
+REQUESTED → SEARCHING_PARTNER → PARTNER_ASSIGNED → ACCEPTED → GOING_TO_PICKUP → ARRIVED_PICKUP → PURCHASING / PICKED_UP → GOING_TO_CUSTOMER → ARRIVED_CUSTOMER → DELIVERED → COMPLETED
+
+
+9. Recommended Data Model
+Module
+Initial Tables
+Users
+users, customers, partners
+Partner
+partner_documents, partner_vehicles, partner_bank_accounts
+Locations
+addresses, service_areas
+Food
+restaurants, restaurant_categories, restaurant_products
+Requests
+requests, request_items, request_pickups, request_status_history
+Rides
+rides, ride_locations
+Finance
+payments, wallets, wallet_transactions, partner_earnings, partner_payouts
+Engagement
+ratings, reviews, notifications
+Support
+support_tickets
+Admin
+admin_users, roles, permissions
+
+
+10. Recommended Core Request Architecture
+A common requests table should be used rather than creating completely separate order systems for every service. The request_type field can distinguish:
+
+
+FOOD
+
+
+BUY_GET
+
+
+BIKE_RIDE
+
+
+CAR_RIDE
+This architecture will simplify partner assignment, tracking, notifications, reporting and future expansion.
+
+
+11. API Structure
+
+
+/api/v1/auth
+
+
+/api/v1/customer
+
+
+/api/v1/requests
+
+
+/api/v1/food
+
+
+/api/v1/buy-get
+
+
+/api/v1/rides
+
+
+/api/v1/wallet
+
+
+/api/v1/payments
+
+
+/api/v1/partners
+
+
+/api/v1/notifications
+
+
+/api/v1/support
+
+
+/api/v1/admin/*
+
+
+12. Technology Stack
+Layer
+Technology
+Customer Mobile
+React Native
+Partner Mobile
+React Native
+Super Admin Web
+React.js
+Backend
+Laravel REST API
+Database
+MySQL
+Authentication
+Laravel Sanctum / secure token-based API authentication
+Maps &amp; Location
+Google Maps or equivalent
+Push Notifications
+Firebase Cloud Messaging
+Payments
+Razorpay / Cashfree or equivalent
+Storage
+AWS S3 or equivalent
+
+
+13. Non-Functional Requirements
+
+
+Normal API responses should target under approximately 2 seconds under expected load.
+
+
+All list APIs must support pagination.
+
+
+HTTPS must be enforced in production.
+
+
+Role-based authorization must be implemented.
+
+
+All user input must be validated server-side.
+
+
+File uploads must validate type, size and access permissions.
+
+
+Payment data must be handled through the payment gateway; sensitive card data must not be stored by VAYZO.
+
+
+Rate limiting and abuse protection should be enabled for authentication and public APIs.
+
+
+System architecture should support expansion from Melur to multiple towns without redesigning the core request model.
+
+
+Audit logs should be maintained for critical admin and financial actions.
+
+
+14. Phase 1 Development Priorities
+Priority
+Modules
+P0 – Must Have
+Auth, Customer Dashboard, Text/Voice Request, Buy &amp; Get, Partner Assignment, Partner App, Request Tracking, Food Delivery, Bike, Car
+P0 – Must Have
+Admin Customer/Partner/Request Management
+P1
+Wallet, Payment, Refund, Earnings, Settlement
+P1
+Restaurant/Menu Management
+P1
+Support and Notifications
+P2 – Future
+Bus/Train Ticketing, Recharge, Bill Payment, Large Grocery Catalogue
+
+
+15. Suggested 30-Day Development Plan
+Days
+Focus
+1–2
+Repositories, Laravel, MySQL, React Native, React Admin, authentication and database foundation
+3–7
+Customer authentication, location, dashboard, text/voice request, My Requests
+8–12
+Partner registration, KYC, dashboard, online/offline, request assignment
+13–16
+Buy &amp; Get multi-pickup, purchase flow, bill upload, delivery OTP
+17–20
+Restaurant, menu, cart, food order and delivery
+21–24
+Bike and car booking, matching, trip lifecycle
+25–27
+Wallet, payments, refunds, earnings and settlement
+28–30
+Admin reports, support, integration testing, UAT and bug fixing
+
+
+16. Key VAYZO Differentiator
+Don't make the customer search for everything. Let the customer ask VAYZO.
+The product should make text/voice requests the central interaction model while still supporting traditional food ordering and structured ride booking.
+
+
+17. Brand Messaging
+Usage
+Message
+Primary Tagline
+You Ask. We Get It.
+Local Marketing Slogan
+Oorula Ellame Ore App!
+Dashboard Prompt
+What can we get for you today?
+
+
+18. Phase 1 Acceptance Criteria
+
+
+Customer can register/login and reach the dashboard.
+
+
+Customer can submit a text request and a voice-to-text request.
+
+
+Customer can create a Buy &amp; Get request with multiple pickup locations.
+
+
+Eligible partner can receive, accept and complete a request.
+
+
+Partner can upload purchase bills for Buy &amp; Get requests.
+
+
+Customer can track active requests.
+
+
+Customer can place a food order through registered restaurants.
+
+
+Customer can request a local bike or car ride.
+
+
+Partner can complete a bike/car trip.
+
+
+Admin can manage customers, partners, restaurants and requests.
+
+
+Admin can monitor payments, commissions and partner earnings.
+
+
+Core request statuses are stored in history and visible to authorized users.
+
+
+19. Out of Scope for Phase 1
+
+
+Bus ticket booking.
+
+
+Train ticket booking.
+
+
+Mobile recharge.
+
+
+Utility bill payment.
+
+
+Flight/hotel booking.
+
+
+Large catalogue-based grocery marketplace.
+
+
+Inter-city transportation marketplace.
+
+
+Advanced subscription/membership plans unless separately approved.
+
+
+20. Approval / Sign-off
+Role
+Name
+Status
+Product Owner / Founder
+Kannan MP
+Pending Approval
+Technical Lead
+Prathap M
+Pending
+Development Team
+
+Pending
+
