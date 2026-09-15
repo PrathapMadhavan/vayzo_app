@@ -7,7 +7,7 @@
     "dev": "vite --host",
     "build": "vite build",
     "lint": "oxlint",
-    "mock-api": "json-server --watch db.json --port 3001 --host 0.0.0.0",
+    "mock-api": "json-server --watch db.json --port 3000 --host 0.0.0.0",
     "preview": "vite preview"
   },
   "dependencies": {
