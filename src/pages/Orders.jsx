@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { exportToCSV } from "../utils/exportUtils";
 import Avatar from "../components/ui/Avatar";
 
 import Badge from "../components/ui/Badge";
