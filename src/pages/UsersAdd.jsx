@@ -12,7 +12,7 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
 import StatusSelect from "../components/ui/StatusSelect";
-import { createUser, getUserById, updateUser } from "../api/usersApi";
+import { createUser, getUserById, updateUser, getUsers } from "../api/usersApi";
 import { validateImage } from "../utils/fileUtils";
 
 
@@ -47,6 +47,7 @@ function AddUsers() {
   const [userDbId, setUserDbId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     if (isEditing) {
@@ -92,6 +93,7 @@ function AddUsers() {
       required={!readOnly}
       readOnly={readOnly}
       disabled={readOnly}
+      error={formErrors[key]}
     />
   );
 
@@ -113,14 +115,54 @@ function AddUsers() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (form.password && form.password !== form.confirm) {
-      setError("Passwords do not match.");
-      return;
+    const errors = {};
+    if (!form.name.trim()) errors.name = "Full Name is required.";
+    
+    // Email Validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form.email.trim()) {
+      errors.email = "Email Address is required.";
+    } else if (!emailRegex.test(form.email.trim())) {
+      errors.email = "Enter a valid email address.";
     }
+
+    // Mobile Validation
+    if (!form.mobile) {
+      errors.mobile = "Mobile Number is required.";
+    } else if (form.mobile.length !== 10 || !/^\d{10}$/.test(form.mobile)) {
+      errors.mobile = "Enter a valid 10-digit Indian mobile number.";
+    }
+
+    // Password Validation
+    if (form.password) {
+      const pwdRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+      if (!pwdRegex.test(form.password)) {
+        errors.password = "Password must be at least 8 characters and include uppercase, lowercase, and a number.";
+      }
+      if (form.password !== form.confirm) {
+        errors.confirm = "Passwords do not match.";
+      }
+    } else if (!isEditing) {
+      errors.password = "Password is required.";
+    }
+
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     try {
       setLoading(true);
       setError("");
+
+      const allUsers = await getUsers();
+      const duplicateEmail = allUsers.find(
+        (u) => u.email.toLowerCase() === form.email.trim().toLowerCase() && u.userId !== userId
+      );
+      
+      if (duplicateEmail) {
+        setFormErrors(prev => ({ ...prev, email: "This email is already registered." }));
+        setLoading(false);
+        return;
+      }
 
       if (isEditing) {
         const existing = await getUserById(userId);

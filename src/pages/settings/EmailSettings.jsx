@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/button";
 import Select from "../../components/ui/Select";
+import { getEmailSettings, saveEmailSettings } from "../../api/settingsApi";
 import { 
   Eye, 
   Mail, 
@@ -9,10 +10,21 @@ import {
   XCircle, 
   CheckCircle, 
   Lightbulb,
-  ChevronRight
+  ChevronRight,
+  Save
 } from "lucide-react";
 
 function EmailSettings() {
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState("");
+  
+  const [smtp, setSmtp] = useState({
+    host: "smtp.mailtrap.io",
+    port: "2525",
+    user: "",
+    pass: "",
+  });
+
   const [toggles, setToggles] = useState({
     enableSending: true,
     htmlEmail: true,
@@ -20,19 +32,78 @@ function EmailSettings() {
     emailLogging: true,
   });
 
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await getEmailSettings();
+        if (isMounted && data) {
+          setSmtp({
+            host: data.smtpHost || "",
+            port: data.smtpPort || "",
+            user: data.smtpUser || "",
+            pass: data.smtpPass || "",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load email settings", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleSmtpChange = (field, value) => {
+    setSmtp(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSave = async () => {
+    try {
+      await saveEmailSettings({
+        smtpHost: smtp.host,
+        smtpPort: smtp.port,
+        smtpUser: smtp.user,
+        smtpPass: smtp.pass,
+      });
+      setSaveMessage("Email settings saved successfully.");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save email settings.");
+    }
+  };
+
   const toggleSetting = (key) => {
     setToggles(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
 
   return (
     <>
       <div className="flex-1 space-y-6">
         
         {/* Page Header */}
-        <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Email Settings</h2>
-          <p className="text-xs text-muted">Configure global email preferences.</p>
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Email Settings</h2>
+              <p className="text-xs text-muted">Configure global email preferences.</p>
+            </div>
+            <Button type="button" onClick={handleSave} size="sm" className="bg-primary text-white flex items-center gap-2">
+              <Save size={16} /> Save Changes
+            </Button>
+          </div>
         </div>
+
+        {saveMessage && (
+          <div className="rounded-xl border border-success/30 bg-success/5 p-4 text-sm font-medium text-success">
+            {saveMessage}
+          </div>
+        )}
 
         <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
           
@@ -63,7 +134,7 @@ function EmailSettings() {
                 </div>
                 <div>
                   <label className="text-xs font-medium text-foreground mb-2 block">Host</label>
-                  <input type="text" defaultValue="smtp.mailtrap.io" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+                  <input type="text" value={smtp.host} onChange={(e) => handleSmtpChange("host", e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-foreground mb-2 block">From Name</label>
@@ -71,7 +142,7 @@ function EmailSettings() {
                 </div>
                 <div>
                   <label className="text-xs font-medium text-foreground mb-2 block">Port</label>
-                  <input type="text" defaultValue="587" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+                  <input type="text" value={smtp.port} onChange={(e) => handleSmtpChange("port", e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-foreground mb-2 block">From Email</label>
@@ -79,12 +150,12 @@ function EmailSettings() {
                 </div>
                 <div>
                   <label className="text-xs font-medium text-foreground mb-2 block">Username</label>
-                  <input type="text" defaultValue="vayzo@mailtrap.io" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+                  <input type="text" value={smtp.user} onChange={(e) => handleSmtpChange("user", e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-foreground mb-2 block">Password</label>
                   <div className="relative">
-                    <input type="password" defaultValue="************************" className="w-full rounded-md border border-border bg-surface pl-3 pr-10 py-2 text-sm focus:border-primary outline-none" />
+                    <input type="password" value={smtp.pass} onChange={(e) => handleSmtpChange("pass", e.target.value)} className="w-full rounded-md border border-border bg-surface pl-3 pr-10 py-2 text-sm focus:border-primary outline-none" />
                     <Eye size={16} className="absolute right-3 top-2.5 text-muted cursor-pointer hover:text-foreground" />
                   </div>
                 </div>

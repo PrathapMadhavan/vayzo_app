@@ -1,19 +1,22 @@
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
 import Login from "./pages/Login";
-import Forgetpassword from "./pages/Forgetpassword";
+import ForgetPassword from "./pages/Forgetpassword";
 import OtpVerification from "./pages/OtpVerification";
 import ResetPassword from "./pages/ResetPassword";
+
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import AdminLayout from "./components/layout/AdminLayout";
 
 import Dashboard from "./pages/Dashboard";
+
+// Users
 import Users from "./pages/Users";
 import UsersAdd from "./pages/UsersAdd";
 import UsersDetails from "./pages/UsersDetails";
+
+// Orders
 import Orders from "./pages/Orders";
-import Notifications from "./pages/Notifications";
-import Complaints from "./pages/Complaints";
 import OrderDetails from "./pages/OrderDetails";
 
 import { NotificationProvider } from "./context/NotificationContext";
@@ -34,6 +37,9 @@ import Locations from "./pages/Locations";
 import LocationsAdd from "./pages/LocationsAdd";
 
 import Earnings from "./pages/Earnings";
+
+import Notifications from "./pages/Notifications";
+import Complaints from "./pages/Complaints";
 
 import Restaurants from "./pages/Restaurants";
 import RestaurantsAdd from "./pages/RestaurantsAdd";
@@ -69,14 +75,12 @@ function App() {
     <BrowserRouter>
       <NotificationProvider>
         <Routes>
-          {/* Public Routes */}
           <Route path="/" element={<Login />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/forgetpassword" element={<Forgetpassword />} />
+          <Route path="/forgetpassword" element={<ForgetPassword />} />
           <Route path="/otp" element={<OtpVerification />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Protected Admin Routes */}
           <Route element={<ProtectedRoute />}>
             <Route element={<AdminLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />

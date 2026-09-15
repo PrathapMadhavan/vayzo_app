@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/button";
 import Select from "../../components/ui/Select";
+import { getSMSSettings, saveSMSSettings } from "../../api/settingsApi";
 import { 
   MessageSquare,
   Mail,
@@ -14,10 +15,17 @@ import {
   BarChart2,
   XCircle,
   Info,
-  ChevronRight
+  ChevronRight,
+  Save
 } from "lucide-react";
 
 function SMSSettings() {
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState("");
+  
+  const [provider, setProvider] = useState("Twilio");
+  const [apiKey, setApiKey] = useState("");
+
   const [toggles, setToggles] = useState({
     deliveryReport: true,
     enableSms: true,
@@ -26,18 +34,67 @@ function SMSSettings() {
     urlShorten: false,
   });
 
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await getSMSSettings();
+        if (isMounted && data) {
+          setProvider(data.provider || "Twilio");
+          setApiKey(data.apiKey || "");
+        }
+      } catch (err) {
+        console.error("Failed to load SMS settings", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      await saveSMSSettings({
+        provider,
+        apiKey,
+      });
+      setSaveMessage("SMS settings saved successfully.");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save SMS settings.");
+    }
+  };
+
   const toggleSetting = (key) => {
     setToggles(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
 
   return (
     <>
       <div className="flex-1 space-y-6">
         
-        <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">SMS Settings</h2>
-          <p className="text-xs text-muted">Configure global SMS preferences.</p>
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">SMS Settings</h2>
+              <p className="text-xs text-muted">Configure global SMS preferences.</p>
+            </div>
+            <Button type="button" onClick={handleSave} size="sm" className="bg-primary text-white flex items-center gap-2">
+              <Save size={16} /> Save Changes
+            </Button>
+          </div>
         </div>
+
+        {saveMessage && (
+          <div className="rounded-xl border border-success/30 bg-success/5 p-4 text-sm font-medium text-success">
+            {saveMessage}
+          </div>
+        )}
 
         <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
           
@@ -63,7 +120,7 @@ function SMSSettings() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="text-xs font-medium text-foreground mb-2 block">SMS Gateway</label>
-                    <Select defaultValue="Twilio" className="h-[38px] text-sm">
+                    <Select value={provider} onChange={(e) => setProvider(e.target.value)} className="h-[38px] text-sm">
                       <option>Twilio</option>
                       <option>MessageBird</option>
                       <option>Nexmo</option>
@@ -82,9 +139,9 @@ function SMSSettings() {
                     <input type="text" defaultValue="https://admin.vayzo.com/sms/callback" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-foreground mb-2 block">Auth Token</label>
+                    <label className="text-xs font-medium text-foreground mb-2 block">Auth Token (API Key)</label>
                     <div className="relative">
-                      <input type="password" defaultValue="************************" className="w-full rounded-md border border-border bg-surface pl-3 pr-10 py-2 text-sm focus:border-primary outline-none" />
+                      <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} className="w-full rounded-md border border-border bg-surface pl-3 pr-10 py-2 text-sm focus:border-primary outline-none" />
                       <Eye size={16} className="absolute right-3 top-2.5 text-muted cursor-pointer hover:text-foreground" />
                     </div>
                   </div>
@@ -94,7 +151,7 @@ function SMSSettings() {
                       <p className="text-[11px] text-muted">Receive delivery status for sent SMS</p>
                     </div>
                     <button type="button" onClick={() => toggleSetting('deliveryReport')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.deliveryReport ? "bg-success" : "bg-muted"}`}>
-                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.deliveryReport ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.deliveryReport ? "left-4.5" : "left-0.5"}`} />
                     </button>
                   </div>
                   <div>

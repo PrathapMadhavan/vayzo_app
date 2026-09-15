@@ -4,7 +4,6 @@ const ENDPOINT = "/api/v1/admin/reports";
 const SUMMARY_ENDPOINT = "/api/v1/admin/reports-summary";
 
 export async function getReports(filters = {}) {
-  // Construct query parameters
   const queryParams = new URLSearchParams();
   
   if (filters.reportType && filters.reportType !== "All") {
@@ -16,14 +15,12 @@ export async function getReports(filters = {}) {
 
   const data = await apiRequest(fetchUrl, {}, "Unable to load reports");
   
-  // Custom client-side date filtering (since json-server date filtering can be tricky)
   let filteredData = data;
   if (filters.startDate && filters.endDate) {
     const start = new Date(filters.startDate).getTime();
     const end = new Date(filters.endDate).getTime();
     
     filteredData = filteredData.filter(report => {
-      // Parse "2026-09-01 10:00" format
       const reportDate = new Date(report.generatedOn.split(" ")[0]).getTime();
       return reportDate >= start && reportDate <= end;
     });

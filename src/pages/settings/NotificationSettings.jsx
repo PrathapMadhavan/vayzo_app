@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/button";
+import { getNotificationSettings, saveNotificationSettings } from "../../api/settingsApi";
 import { 
   User, 
   ShoppingBag, 
@@ -16,10 +17,14 @@ import {
   List,
   Settings,
   Info,
-  ChevronRight
+  ChevronRight,
+  Save
 } from "lucide-react";
 
 function NotificationSettings() {
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState("");
+  
   const [emailConfig, setEmailConfig] = useState({
     global: true,
     events: [
@@ -42,6 +47,40 @@ function NotificationSettings() {
     ]
   });
 
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await getNotificationSettings();
+        if (isMounted && data) {
+          setEmailConfig(p => ({ ...p, global: data.emailNotifications ?? true }));
+          setPushConfig(p => ({ ...p, global: data.pushNotifications ?? false }));
+        }
+      } catch (err) {
+        console.error("Failed to load notification settings", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      await saveNotificationSettings({
+        emailNotifications: emailConfig.global,
+        pushNotifications: pushConfig.global,
+      });
+      setSaveMessage("Notification settings saved successfully.");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save notification settings.");
+    }
+  };
+
   const toggleEmailGlobal = () => setEmailConfig(p => ({ ...p, global: !p.global }));
   const togglePushGlobal = () => setPushConfig(p => ({ ...p, global: !p.global }));
 
@@ -57,15 +96,30 @@ function NotificationSettings() {
     setPushConfig(p => ({ ...p, events: newEvents }));
   };
 
+  if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+
   return (
     <>
       <div className="flex-1 space-y-6">
         
         {/* Page Header */}
-        <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Notification Configuration</h2>
-          <p className="text-xs text-muted">Manage and configure system notifications.</p>
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Notification Configuration</h2>
+              <p className="text-xs text-muted">Manage and configure system notifications.</p>
+            </div>
+            <Button type="button" onClick={handleSave} size="sm" className="bg-primary text-white flex items-center gap-2">
+              <Save size={16} /> Save Changes
+            </Button>
+          </div>
         </div>
+
+        {saveMessage && (
+          <div className="rounded-xl border border-success/30 bg-success/5 p-4 text-sm font-medium text-success">
+            {saveMessage}
+          </div>
+        )}
 
         <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
           

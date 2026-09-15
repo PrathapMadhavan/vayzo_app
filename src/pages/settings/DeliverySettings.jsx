@@ -1,17 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/button";
 import Select from "../../components/ui/Select";
-import {
-  Info,
-  Lock,
-  MapPin,
-  Banknote,
-  Clock,
+import { getDeliverySettings, saveDeliverySettings } from "../../api/settingsApi";
+import { 
+  Info, 
+  Lock, 
+  MapPin, 
+  Banknote, 
+  Clock, 
   X,
   ChevronDown,
+  Save
 } from "lucide-react";
 
 function DeliverySettings() {
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState("");
+  
+  const [baseFee, setBaseFee] = useState("20.00");
+  const [deliveryRadius, setDeliveryRadius] = useState("10");
+
   const [toggles, setToggles] = useState({
     autoAssign: true,
     scheduleOrder: true,
@@ -27,6 +35,26 @@ function DeliverySettings() {
     "Porur",
   ]);
 
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await getDeliverySettings();
+        if (isMounted && data) {
+          setBaseFee(data.baseFee ? data.baseFee.toString() : "20.00");
+          setDeliveryRadius(data.deliveryRadius ? data.deliveryRadius.toString() : "10");
+        }
+      } catch (err) {
+        console.error("Failed to load delivery settings", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
+
   const toggleSetting = (key) => {
     setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -35,18 +63,43 @@ function DeliverySettings() {
     setDeliveryAreas((prev) => prev.filter((area) => area !== areaToRemove));
   };
 
+  const handleSave = async () => {
+    try {
+      await saveDeliverySettings({
+        baseFee: parseFloat(baseFee) || 0,
+        deliveryRadius: parseFloat(deliveryRadius) || 0,
+      });
+      setSaveMessage("Delivery settings saved successfully.");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save delivery settings.");
+    }
+  };
+
+  if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+
   return (
     <>
       <div className="flex-1 space-y-6">
         {/* Page Header */}
-        <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">
-            Delivery Configuration
-          </h2>
-          <p className="text-xs text-muted">
-            Manage delivery preferences and related settings.
-          </p>
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Delivery Configuration</h2>
+              <p className="text-xs text-muted">Manage delivery preferences and related settings.</p>
+            </div>
+            <Button type="button" onClick={handleSave} size="sm" className="bg-primary text-white flex items-center gap-2">
+              <Save size={16} /> Save Changes
+            </Button>
+          </div>
         </div>
+
+        {saveMessage && (
+          <div className="rounded-xl border border-success/30 bg-success/5 p-4 text-sm font-medium text-success">
+            {saveMessage}
+          </div>
+        )}
 
         <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
           {/* LEFT COLUMN */}
@@ -82,14 +135,8 @@ function DeliverySettings() {
                       Delivery Charge
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-2 text-sm text-muted">
-                        ₹
-                      </span>
-                      <input
-                        type="text"
-                        defaultValue="20.00"
-                        className="w-full rounded-md border border-border bg-surface pl-7 pr-3 py-2 text-sm focus:border-primary outline-none"
-                      />
+                      <span className="absolute left-3 top-2 text-sm text-muted">₹</span>
+                      <input type="text" value={baseFee} onChange={(e) => setBaseFee(e.target.value)} className="w-full rounded-md border border-border bg-surface pl-7 pr-3 py-2 text-sm focus:border-primary outline-none" />
                     </div>
                   </div>
                   <div>
@@ -125,14 +172,11 @@ function DeliverySettings() {
                     </Select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-foreground mb-2 block">
-                      Max Delivery Distance
-                    </label>
-                    <Select defaultValue="10 km" className="h-[38px] text-sm">
-                      <option>5 km</option>
-                      <option>10 km</option>
-                      <option>15 km</option>
-                    </Select>
+                    <label className="text-xs font-medium text-foreground mb-2 block">Max Delivery Distance</label>
+                    <div className="relative">
+                      <input type="text" value={deliveryRadius} onChange={(e) => setDeliveryRadius(e.target.value)} className="w-full rounded-md border border-border bg-surface pl-3 pr-8 py-2 text-sm focus:border-primary outline-none" />
+                      <span className="absolute right-3 top-2 text-sm text-muted">km</span>
+                    </div>
                   </div>
                   <div className="flex items-center justify-between pt-6">
                     <div className="flex items-center gap-1.5">

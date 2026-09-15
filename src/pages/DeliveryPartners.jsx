@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Plus, RotateCcw, Eye, Pencil as Edit, Trash2, MoreVertical, Download } from "lucide-react";
 import Avatar from "../components/ui/Avatar";
 
-import Badge from "../components/ui/Badge";
-import Button from "../components/ui/Button";
+import Badge from "../components/ui/badge";
+import Button from "../components/ui/button";
 import SearchInput from "../components/ui/SearchInput";
 import StatusSelect from "../components/ui/StatusSelect";
 import DateRangeInput from "../components/ui/DateRangeInput";

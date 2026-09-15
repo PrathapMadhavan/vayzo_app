@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/button";
 import Select from "../../components/ui/Select";
+import { getAppSettings, saveAppSettings } from "../../api/settingsApi";
 import { 
   Wrench,
   UserPlus,
@@ -19,10 +20,18 @@ import {
   Download,
   RotateCcw,
   ChevronRight,
-  RefreshCw
+  RefreshCw,
+  Save,
+  AlertTriangle
 } from "lucide-react";
 
 function AppSettings() {
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState("");
+  
+  const [version, setVersion] = useState("2.4.0");
+  const [forceUpdate, setForceUpdate] = useState(false);
+
   const [toggles, setToggles] = useState({
     maintenanceMode: false,
     userRegistration: true,
@@ -33,18 +42,67 @@ function AppSettings() {
     darkMode: false,
   });
 
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await getAppSettings();
+        if (isMounted && data) {
+          setVersion(data.version || "2.4.0");
+          setForceUpdate(data.forceUpdate || false);
+        }
+      } catch (err) {
+        console.error("Failed to load app settings", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      await saveAppSettings({
+        version,
+        forceUpdate
+      });
+      setSaveMessage("App settings saved successfully.");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save app settings.");
+    }
+  };
+
   const toggleSetting = (key) => {
     setToggles(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
 
   return (
     <>
       <div className="flex-1 space-y-6">
         
-        <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">App Settings</h2>
-          <p className="text-xs text-muted">Manage your application basic information.</p>
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">App Settings</h2>
+              <p className="text-xs text-muted">Manage your application basic information.</p>
+            </div>
+            <Button type="button" onClick={handleSave} size="sm" className="bg-primary text-white flex items-center gap-2">
+              <Save size={16} /> Save Changes
+            </Button>
+          </div>
         </div>
+
+        {saveMessage && (
+          <div className="rounded-xl border border-success/30 bg-success/5 p-4 text-sm font-medium text-success">
+            {saveMessage}
+          </div>
+        )}
 
         <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
           
@@ -83,7 +141,7 @@ function AppSettings() {
                   </div>
                   <div>
                     <label className="text-xs font-medium text-foreground mb-2 block">Application Version</label>
-                    <input type="text" defaultValue="2.4.0" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+                    <input type="text" value={version} onChange={(e) => setVersion(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-foreground mb-2 block">Support Email</label>
@@ -230,14 +288,14 @@ function AppSettings() {
               <h3 className="font-semibold text-foreground text-sm mb-1">App Update</h3>
               <p className="text-xs text-muted mb-4">Check for the latest version of the application.</p>
               
-              <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 flex items-center justify-between max-w-2xl">
+              <div className="rounded-lg bg-primary/5 border border-primary/20 p-4 flex items-center justify-between max-w-2xl mb-4">
                 <div className="flex items-center gap-3">
                   <div className="bg-primary/20 text-primary p-1.5 rounded-full">
                     <CheckCircle size={16} />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-foreground">You are using the latest version</p>
-                    <p className="text-xs text-muted mt-0.5">Current Version 2.4.0</p>
+                    <p className="text-xs text-muted mt-0.5">Current Version {version}</p>
                   </div>
                 </div>
                 <Button variant="outline" className="h-[36px] text-primary border-primary hover:bg-primary-light flex items-center gap-2">
@@ -246,12 +304,19 @@ function AppSettings() {
                 </Button>
               </div>
 
-              {/* Position absolute to match the design placing save at bottom right */}
-              <div className="absolute right-5 bottom-5">
-                <Button type="button" className="bg-primary text-white px-6">
-                  Save Changes
-                </Button>
+              <div className="flex items-center justify-between pb-4 max-w-2xl border-t border-border pt-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-red-500/10 text-red-500 p-2 rounded-lg"><AlertTriangle size={18} /></div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Force Update</p>
+                    <p className="text-[11px] text-muted mt-0.5">Force all users to update their app to the latest version.</p>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setForceUpdate(!forceUpdate)} className={`relative h-5 w-9 rounded-full transition-colors ${forceUpdate ? "bg-primary" : "bg-muted"}`}>
+                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${forceUpdate ? "left-4.5" : "left-0.5"}`} />
+                </button>
               </div>
+
             </div>
 
           </div>

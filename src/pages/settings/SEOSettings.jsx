@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/button";
 import Select from "../../components/ui/Select";
+import { getSEOSettings, saveSEOSettings } from "../../api/settingsApi";
 import { 
   ExternalLink,
   Image as ImageIcon,
@@ -20,27 +21,89 @@ import {
   Lightbulb,
   Check,
   ArrowRight,
-  ChevronRight
+  ChevronRight,
+  Save
 } from "lucide-react";
 
 function SEOSettings() {
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState("");
+  
+  const [metaTitle, setMetaTitle] = useState("Vayzo - Fast Food Delivery");
+  const [metaDescription, setMetaDescription] = useState("Order food from the best restaurants.");
+  const [metaKeywords, setMetaKeywords] = useState("food, delivery, fast");
+  const [googleAnalyticsId, setGoogleAnalyticsId] = useState("G-12345");
+
   const [toggles, setToggles] = useState({
     engineIndexing: true,
     enableSitemap: true,
   });
 
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await getSEOSettings();
+        if (isMounted && data) {
+          setMetaTitle(data.metaTitle || "");
+          setMetaDescription(data.metaDescription || "");
+          setMetaKeywords(data.metaKeywords || "");
+          setGoogleAnalyticsId(data.googleAnalyticsId || "");
+        }
+      } catch (err) {
+        console.error("Failed to load SEO settings", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      await saveSEOSettings({
+        metaTitle,
+        metaDescription,
+        metaKeywords,
+        googleAnalyticsId
+      });
+      setSaveMessage("SEO settings saved successfully.");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save SEO settings.");
+    }
+  };
+
   const toggleSetting = (key) => {
     setToggles(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
 
   return (
     <>
       <div className="flex-1 space-y-6 pb-10">
         
-        <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">SEO Settings</h2>
-          <p className="text-xs text-muted">Manage your website's search engine optimization.</p>
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">SEO Settings</h2>
+              <p className="text-xs text-muted">Manage your website's search engine optimization.</p>
+            </div>
+            <Button type="button" onClick={handleSave} size="sm" className="bg-primary text-white flex items-center gap-2">
+              <Save size={16} /> Save Changes
+            </Button>
+          </div>
         </div>
+
+        {saveMessage && (
+          <div className="rounded-xl border border-success/30 bg-success/5 p-4 text-sm font-medium text-success">
+            {saveMessage}
+          </div>
+        )}
 
         <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
           
@@ -64,8 +127,8 @@ function SEOSettings() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="text-xs font-medium text-foreground mb-2 block">Site Title</label>
-                    <input type="text" defaultValue="Vayzo Delivery - Fast. Reliable. Delivered." className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
-                    <p className="text-[10px] text-muted text-right mt-1">43 / 60</p>
+                    <input type="text" value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+                    <p className="text-[10px] text-muted text-right mt-1">{metaTitle.length} / 60</p>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-foreground mb-2 block">Site Tagline</label>
@@ -77,13 +140,13 @@ function SEOSettings() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="text-xs font-medium text-foreground mb-2 block">Meta Description</label>
-                    <textarea rows="3" defaultValue="Vayzo Delivery connects you with the best restaurants and delivers your favorite food fast and fresh." className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none resize-none" />
-                    <p className="text-[10px] text-muted text-right mt-1">121 / 160</p>
+                    <textarea rows="3" value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none resize-none" />
+                    <p className="text-[10px] text-muted text-right mt-1">{metaDescription.length} / 160</p>
                   </div>
                   <div>
                     <label className="text-xs font-medium text-foreground mb-2 block">Meta Keywords</label>
-                    <textarea rows="3" defaultValue="food delivery, online food order, restaurants, fast delivery, vayzo, takeaway, home delivery" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none resize-none" />
-                    <p className="text-[10px] text-muted text-right mt-1">77 / 200</p>
+                    <textarea rows="3" value={metaKeywords} onChange={(e) => setMetaKeywords(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none resize-none" />
+                    <p className="text-[10px] text-muted text-right mt-1">{metaKeywords.length} / 200</p>
                   </div>
                 </div>
 
@@ -101,23 +164,12 @@ function SEOSettings() {
                       <Button variant="outline" className="h-[32px] px-4 text-primary border-primary text-xs shrink-0">Change Image</Button>
                     </div>
                   </div>
-                  
                   <div>
-                    <label className="text-xs font-medium text-foreground mb-2 block">Favicon</label>
-                    <div className="flex items-center gap-6 mt-4">
-                      <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-white text-2xl font-bold shadow-md">
-                        V
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <Button variant="outline" className="h-[30px] px-3 text-primary border-primary text-xs">Change Icon</Button>
-                          <button className="flex items-center gap-1 text-danger text-xs font-medium hover:underline">
-                            <Trash2 size={12} /> Remove
-                          </button>
-                        </div>
-                        <p className="text-[10px] text-muted mt-2">Recommended: 512x512px (PNG, ICO)</p>
-                      </div>
-                    </div>
+                    <label className="text-xs font-medium text-foreground mb-2 block">Google Analytics ID</label>
+                    <input type="text" value={googleAnalyticsId} onChange={(e) => setGoogleAnalyticsId(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none mb-4" />
+                    
+                    <label className="text-xs font-medium text-foreground mb-2 block">Google Site Verification</label>
+                    <input type="text" defaultValue="GTM-XXXXXXX" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
                   </div>
                 </div>
 

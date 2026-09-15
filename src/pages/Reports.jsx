@@ -129,7 +129,12 @@ function Reports() {
     return new Intl.NumberFormat("en-IN").format(val || 0);
   };
 
-
+  const statCards = summaryData ? [
+    { label: "Total Revenue", value: formatCurrency(summaryData.totalRevenue), trend: summaryData.trends?.totalRevenue, icon: DollarSign, colorClass: "text-success", bgClass: "bg-success/10" },
+    { label: "Total Orders", value: formatNumber(summaryData.totalOrders), trend: summaryData.trends?.totalOrders, icon: Package, colorClass: "text-primary", bgClass: "bg-primary/10" },
+    { label: "Total Users", value: formatNumber(summaryData.totalUsers), trend: summaryData.trends?.totalUsers, icon: Users, colorClass: "text-info", bgClass: "bg-info/10" },
+    { label: "Total Commission", value: formatCurrency(summaryData.totalCommission), trend: summaryData.trends?.totalCommission, icon: Percent, colorClass: "text-warning", bgClass: "bg-warning/10" },
+  ] : [];
 
   // Pagination logic
   const totalPages = Math.ceil(reportsData.length / itemsPerPage);
@@ -222,6 +227,21 @@ function Reports() {
             </div>
           ) : (
             <div className="flex-1 w-full flex flex-col min-h-0 overflow-hidden border-t border-border">
+              {/* Stat Cards */}
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 p-4 border-b border-border bg-surface-50">
+                 {statCards.map((stat, i) => (
+                   <StatCard
+                     key={i}
+                     title={stat.label}
+                     value={stat.value}
+                     trend={stat.trend}
+                     icon={stat.icon}
+                     colorClass={stat.colorClass}
+                     bgClass={stat.bgClass}
+                     variant="horizontal"
+                   />
+                 ))}
+              </div>
               <Table
                 headers={tableHeaders}
                 currentCount={currentData.length}

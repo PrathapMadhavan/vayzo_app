@@ -1,20 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
-  GripVertical,
   Plus,
   MapPin,
   Clock,
   Lightbulb,
   Trash2,
+  Pencil,
   X,
 } from "lucide-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 
-import Button from "../components/ui/Button";
+import Button from "../components/ui/button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import Card from "../components/ui/Card";
+import Modal from "../components/ui/Modal";
 import {
   createRestaurant,
   getRestaurantById,
@@ -22,6 +23,7 @@ import {
 } from "../api/restaurantsApi";
 import { validateImage } from "../utils/fileUtils";
 import { RESTAURANT_CUISINES } from "./Restaurants";
+import { getCategories } from "../api/categoriesApi";
 
 function RequiredLabel({ text }) {
   return (
@@ -75,9 +77,28 @@ function RestaurantsAdd() {
     menuItems: [],
   });
 
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(isEditing);
   const [error, setError] = useState("");
+  const [menuSearch, setMenuSearch] = useState("");
+  const [editingMenuItem, setEditingMenuItem] = useState(null);
+
+  useEffect(() => {
+    const fetchAllCategories = async () => {
+      try {
+        const data = await getCategories();
+        setCategories(data);
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+    fetchAllCategories();
+  }, []);
 
   useEffect(() => {
     if (!isEditing) return;
@@ -124,6 +145,7 @@ function RestaurantsAdd() {
 
 
 
+
   const removeCuisine = (c) => {
     setForm((prev) => ({
       ...prev,
@@ -146,6 +168,15 @@ function RestaurantsAdd() {
     setLoading(true);
     setError("");
     try {
+      const cleanMenuItems = form.menuItems.map((item) => {
+        const cleaned = { ...item };
+        delete cleaned.isEditing;
+        if (typeof cleaned.id === "string" && cleaned.id.startsWith("temp-")) {
+          delete cleaned.id;
+        }
+        return cleaned;
+      });
+
       const payload = {
         ...form,
         cuisineType: form.cuisines.join(", "),
@@ -192,7 +223,7 @@ function RestaurantsAdd() {
     <section className="min-h-full bg-background p-4 sm:p-6 lg:p-8">
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-1 xl:grid-cols-[1fr_400px] gap-6 items-start"
+        className="grid grid-cols-1 xl:grid-cols-[1fr_minmax(320px,400px)] gap-6 items-start"
       >
         {/* Left Column */}
         <div className="space-y-6">
@@ -309,7 +340,9 @@ function RestaurantsAdd() {
                         <span className="text-xs text-muted">No Logo</span>
                       )}
                     </div>
-                    <label className="border border-dashed border-border rounded-lg h-[120px] flex-1 bg-background flex flex-col items-center justify-center p-4 text-center cursor-pointer hover:bg-surface transition-colors relative overflow-hidden group">
+                    <div 
+                      onClick={() => logoInputRef.current?.click()}
+                      className="border border-dashed border-border rounded-lg h-[120px] flex-1 bg-background flex flex-col items-center justify-center p-4 text-center cursor-pointer hover:bg-surface transition-colors relative overflow-hidden group">
                       <input
                         type="file"
                         className="hidden"
@@ -341,7 +374,7 @@ function RestaurantsAdd() {
                       <p className="text-[10px] text-muted mt-0.5">
                         PNG, JPG or WEBP (Max 2MP)
                       </p>
-                    </label>
+                    </div>
                   </div>
                 </div>
 
@@ -349,7 +382,9 @@ function RestaurantsAdd() {
                   <label className="block text-xs font-medium text-foreground">
                     <RequiredLabel text="Cover Image" />
                   </label>
-                  <label className="border border-dashed border-border rounded-lg h-[160px] bg-background flex items-center justify-center relative overflow-hidden group cursor-pointer block w-full">
+                  <div 
+                    onClick={() => coverInputRef.current?.click()}
+                    className="border border-dashed border-border rounded-lg h-[160px] bg-background flex items-center justify-center relative overflow-hidden group cursor-pointer block w-full">
                     <input
                       type="file"
                       className="hidden"
@@ -373,14 +408,9 @@ function RestaurantsAdd() {
                       }}
                     />
                     <div className="absolute inset-0 bg-surface/50 hidden group-hover:flex items-center justify-center z-10 backdrop-blur-sm transition-all">
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        type="button"
-                        className="pointer-events-none"
-                      >
+                      <div className="px-3 py-1.5 text-sm font-medium rounded-md bg-secondary text-secondary-foreground shadow-sm pointer-events-none">
                         Change Image
-                      </Button>
+                      </div>
                     </div>
                     {coverPreview ? (
                       <img
@@ -392,7 +422,7 @@ function RestaurantsAdd() {
                         Click to select cover image
                       </div>
                     )}
-                  </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -537,7 +567,7 @@ function RestaurantsAdd() {
               className="px-6 bg-primary"
               disabled={loading}
             >
-              {loading ? "Saving..." : "Save Restaurant"}
+              {loading ? "Saving..." : (isEditing ? "Save Restaurant" : "Add Restaurant")}
             </Button>
             <Button
               variant="secondary"
@@ -559,12 +589,20 @@ function RestaurantsAdd() {
           </div>
 
           <Card className="p-0 overflow-hidden border-border bg-surface/50">
-            <div className="border-b border-border">
+            <div className="border-b border-border flex items-center justify-between pr-4">
               <div className="flex border-b-[2px] border-primary w-fit px-4 py-3">
-                <span className="text-xs font-bold text-primary">
+                <span className="text-xs font-semibold text-primary">
                   Menu Items ({form.menuItems.length})
                 </span>
               </div>
+            </div>
+
+            <div className="p-4 border-b border-border">
+              <Input
+                placeholder="Search menu items..."
+                value={menuSearch}
+                onChange={(e) => setMenuSearch(e.target.value)}
+              />
             </div>
 
             <div className="p-4 space-y-4">

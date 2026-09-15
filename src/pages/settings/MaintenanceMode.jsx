@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/button";
 import Select from "../../components/ui/Select";
+import { getMaintenanceModeSettings, saveMaintenanceModeSettings } from "../../api/settingsApi";
 import { 
   Shield, 
   Sun, 
@@ -22,23 +23,89 @@ import {
 } from "lucide-react";
 
 function MaintenanceMode() {
-  const [maintenanceOn, setMaintenanceOn] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [saveMessage, setSaveMessage] = useState("");
+  
+  const [maintenanceOn, setMaintenanceOn] = useState(false);
   const [bgStyle, setBgStyle] = useState("light");
   const [deviceView, setDeviceView] = useState("monitor");
   const [ips, setIps] = useState(["127.0.0.1"]);
+  const [newIp, setNewIp] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await getMaintenanceModeSettings();
+        if (isMounted && data) {
+          setMaintenanceOn(data.maintenanceOn || false);
+          setBgStyle(data.bgStyle || "light");
+          setDeviceView(data.deviceView || "monitor");
+          if (data.ips) {
+            setIps(data.ips.split(',').filter(ip => ip.trim() !== ''));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load maintenance settings", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      await saveMaintenanceModeSettings({
+        maintenanceOn,
+        bgStyle,
+        deviceView,
+        ips: ips.join(',')
+      });
+      setSaveMessage("Maintenance settings saved successfully.");
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save maintenance settings.");
+    }
+  };
 
   const removeIp = (ipToRemove) => {
     setIps(ips.filter(ip => ip !== ipToRemove));
   };
 
+  const handleAddIp = () => {
+    if (newIp.trim() && !ips.includes(newIp.trim())) {
+      setIps([...ips, newIp.trim()]);
+      setNewIp("");
+    }
+  };
+
+  if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+
   return (
     <>
       <div className="flex-1 space-y-6 pb-10">
         
-        <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-foreground">Maintenance Mode</h2>
-          <p className="text-xs text-muted">Manage your website's maintenance state.</p>
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="flex justify-between items-center w-full">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Maintenance Mode</h2>
+              <p className="text-xs text-muted">Manage your website's maintenance state.</p>
+            </div>
+            <Button type="button" onClick={handleSave} size="sm" className="bg-primary text-white flex items-center gap-2">
+              <Save size={16} /> Save Changes
+            </Button>
+          </div>
         </div>
+
+        {saveMessage && (
+          <div className="rounded-xl border border-success/30 bg-success/5 p-4 text-sm font-medium text-success">
+            {saveMessage}
+          </div>
+        )}
 
         <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
           
@@ -59,9 +126,9 @@ function MaintenanceMode() {
               <div className="flex items-center gap-3 shrink-0 pl-4">
                 <span className="text-xs font-semibold text-foreground">Maintenance Mode</span>
                 <button type="button" onClick={() => setMaintenanceOn(!maintenanceOn)} className={`relative h-6 w-11 rounded-full transition-colors ${maintenanceOn ? "bg-primary" : "bg-muted"}`}>
-                  <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${maintenanceOn ? "left-5.5 translate-x-5" : "left-0.5"}`} />
+                  <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${maintenanceOn ? "left-5.5" : "left-0.5"}`} />
                 </button>
-                <span className={`text-xs font-bold ${maintenanceOn ? "text-primary" : "text-muted"}`}>{maintenanceOn ? "ON" : "OFF"}</span>
+                <span className={`text-xs font-bold w-6 ${maintenanceOn ? "text-primary" : "text-muted"}`}>{maintenanceOn ? "ON" : "OFF"}</span>
               </div>
             </div>
 
@@ -159,8 +226,8 @@ function MaintenanceMode() {
                   <p className="text-[11px] text-muted mt-1 mb-3">Add IP addresses to allow access to the website even in maintenance mode.</p>
                   
                   <div className="flex items-center gap-3 max-w-lg mb-3">
-                    <input type="text" placeholder="Enter IP address" className="flex-1 rounded-md border border-border bg-surface px-3 h-[38px] text-sm focus:border-primary outline-none" />
-                    <Button type="button" className="bg-primary/90 text-white px-6 h-[38px]">
+                    <input type="text" placeholder="Enter IP address" value={newIp} onChange={(e) => setNewIp(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddIp()} className="flex-1 rounded-md border border-border bg-surface px-3 h-[38px] text-sm focus:border-primary outline-none" />
+                    <Button type="button" onClick={handleAddIp} className="bg-primary/90 text-white px-6 h-[38px]">
                       Add
                     </Button>
                   </div>
@@ -184,12 +251,8 @@ function MaintenanceMode() {
                 <Button variant="outline" className="border-border text-foreground hover:bg-surface-50 flex items-center gap-2">
                   <Eye size={14} /> Preview
                 </Button>
-                <Button className="bg-primary text-white flex items-center gap-2">
-                  <Save size={14} /> Save Changes
-                </Button>
               </div>
             </div>
-
           </div>
 
           {/* RIGHT COLUMN */}

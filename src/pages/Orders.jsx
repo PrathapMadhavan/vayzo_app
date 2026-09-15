@@ -30,6 +30,7 @@ import ActionMenu from "../components/ui/ActionMenu";
 import FilterPanel from "../components/ui/FilterPanel";
 import BadgeCell from "../components/ui/BadgeCell";
 import { getOrders, deleteOrder } from "../api/ordersApi";
+import { exportToCSV } from "../utils/exportUtils";
 
 const STATUS_MAP = {
   DELIVERED: "success",
@@ -432,6 +433,7 @@ function Orders() {
                   toValue={toDate}
                   onFromChange={(event) => setFromDate(event.target.value)}
                   onToChange={(event) => setToDate(event.target.value)}
+                  className="w-full lg:w-[260px] shrink-0"
                 />
               </>
             }

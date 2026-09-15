@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Globe,
   Mail,
@@ -14,51 +14,107 @@ import {
   MonitorCog,
   ChevronRight,
   ShieldCheck,
-  Folder
+  Folder,
+  CheckSquare
 } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
-import { generalSettings } from "../../mock/vayzoApiMock";
+import { getGeneralSettings, saveGeneralSettings } from "../../api/settingsApi";
 
 function SiteSettings() {
   const userStr = localStorage.getItem("vayzo_admin_user");
   const user = userStr ? JSON.parse(userStr) : {};
   const [activeTab, setActiveTab] = useState("General");
+  const [loading, setLoading] = useState(true);
   const [formValues, setFormValues] = useState({
-    siteName: generalSettings.platformName,
-    tagline: generalSettings.platformTagline,
-    siteEmail: generalSettings.supportEmail,
-    sitePhone: generalSettings.supportPhone,
-    siteAddress: generalSettings.contactAddress,
-    siteTimezone: generalSettings.timezone,
-    dateFormat: generalSettings.dateFormat,
-    currency: generalSettings.defaultCurrency,
-    currencyPosition: generalSettings.currencyPosition,
+    siteName: "",
+    tagline: "",
+    siteEmail: "",
+    sitePhone: "",
+    siteAddress: "",
+    siteTimezone: "Asia/Kolkata",
+    dateFormat: "DD/MM/YYYY",
+    currency: "INR",
+    currencyPosition: "Prefix",
   });
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await getGeneralSettings();
+        if (isMounted && data) {
+          setFormValues({
+            siteName: data.platformName || "",
+            tagline: data.platformTagline || "",
+            siteEmail: data.supportEmail || "",
+            sitePhone: data.supportPhone || "",
+            siteAddress: data.contactAddress || "",
+            siteTimezone: data.timezone || "Asia/Kolkata",
+            dateFormat: data.dateFormat || "DD/MM/YYYY",
+            currency: data.defaultCurrency || "INR",
+            currencyPosition: data.currencyPosition || "Prefix",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load site settings", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
 
   const handleChange = (field, value) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleReset = () => {
-    setFormValues({
-      siteName: generalSettings.platformName,
-      tagline: generalSettings.platformTagline,
-      siteEmail: generalSettings.supportEmail,
-      sitePhone: generalSettings.supportPhone,
-      siteAddress: generalSettings.contactAddress,
-      siteTimezone: generalSettings.timezone,
-      dateFormat: generalSettings.dateFormat,
-      currency: generalSettings.defaultCurrency,
-      currencyPosition: generalSettings.currencyPosition,
-    });
-    alert("Settings reset to original values.");
+  const handleReset = async () => {
+    try {
+      setLoading(true);
+      const data = await getGeneralSettings();
+      if (data) {
+        setFormValues({
+          siteName: data.platformName || "",
+          tagline: data.platformTagline || "",
+          siteEmail: data.supportEmail || "",
+          sitePhone: data.supportPhone || "",
+          siteAddress: data.contactAddress || "",
+          siteTimezone: data.timezone || "Asia/Kolkata",
+          dateFormat: data.dateFormat || "DD/MM/YYYY",
+          currency: data.defaultCurrency || "INR",
+          currencyPosition: data.currencyPosition || "Prefix",
+        });
+      }
+      alert("Settings reset to original values.");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSave = () => {
-    console.log("Saving settings:", formValues);
-    alert("Site Settings saved successfully!");
+  const handleSave = async () => {
+    try {
+      await saveGeneralSettings({
+        platformName: formValues.siteName,
+        platformTagline: formValues.tagline,
+        supportEmail: formValues.siteEmail,
+        supportPhone: formValues.sitePhone,
+        contactAddress: formValues.siteAddress,
+        timezone: formValues.siteTimezone,
+        dateFormat: formValues.dateFormat,
+        defaultCurrency: formValues.currency,
+        currencyPosition: formValues.currencyPosition,
+      });
+      alert("Site Settings saved successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save site settings.");
+    }
   };
 
   const renderTabButton = (name, icon) => {
@@ -79,47 +135,22 @@ function SiteSettings() {
         
         {/* Left Column */}
         <div className="flex flex-col gap-6 min-w-0">
-          {/* Banner */}
-          <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm flex items-center justify-between overflow-hidden relative min-h-[140px]">
-             <div className="flex items-center gap-4 z-10 w-2/3">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                    <Globe className="text-primary" size={32} />
-                </div>
-                <div>
-                    <h2 className="text-xl font-bold text-foreground">Site Settings</h2>
-                    <p className="text-sm text-muted mt-1 leading-relaxed">Manage your platform's basic details, contact<br/>information, branding and preferences.</p>
-                </div>
-             </div>
-             
-             {/* Decorative Elements - Illustration Mock */}
-             <div className="absolute right-0 top-0 bottom-0 w-[40%] bg-primary/5 pointer-events-none flex items-center justify-end pr-8 overflow-hidden rounded-l-full">
-                 <div className="relative h-24 w-40 bg-white rounded-lg shadow-sm border border-border mr-4 mt-2">
-                    {/* Browser header */}
-                    <div className="h-4 border-b border-border flex items-center gap-1 px-2">
-                        <div className="h-1.5 w-1.5 rounded-full bg-red-400"></div>
-                        <div className="h-1.5 w-1.5 rounded-full bg-yellow-400"></div>
-                        <div className="h-1.5 w-1.5 rounded-full bg-green-400"></div>
-                    </div>
-                    {/* Content mock */}
-                    <div className="p-2 space-y-2">
-                        <div className="h-2 w-1/2 bg-gray-100 rounded"></div>
-                        <div className="h-12 w-full bg-primary/10 rounded flex items-center justify-center text-primary/30">
-                            <ImageIcon size={20} />
-                        </div>
-                    </div>
-                    {/* Floating gear */}
-                    <div className="absolute -bottom-4 -right-4 h-12 w-12 rounded-full bg-primary flex items-center justify-center text-white shadow-lg border-2 border-white">
-                        <MonitorCog size={20} />
-                    </div>
-                 </div>
-                 {/* Leaf decorations */}
-                 <div className="absolute left-4 text-primary/20 top-1/2 -translate-y-1/2 -scale-x-100">
-                    <svg width="40" height="80" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
-                 </div>
-                 <div className="absolute right-2 text-primary/20 top-10">
-                    <svg width="30" height="60" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
-                 </div>
-             </div>
+          {/* Page Header */}
+          <div className="flex flex-col gap-1">
+            <div className="flex justify-between items-center w-full">
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Site Settings</h2>
+                <p className="text-xs text-muted">Manage your platform's basic details, contact information, branding and preferences.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button type="button" onClick={handleReset} size="sm" variant="outline" className="border-border">
+                  Reset
+                </Button>
+                <Button type="button" onClick={handleSave} size="sm" className="bg-primary text-white flex items-center gap-2">
+                  <CheckSquare size={16} /> Save Changes
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Form Container */}
@@ -238,14 +269,7 @@ function SiteSettings() {
                       </div>
                   </div>
 
-                  <div className="flex items-center gap-4 pt-4 border-t border-border mt-6">
-                      <Button type="button" onClick={handleSave} size="md" className="bg-primary text-white px-6 flex items-center gap-2 font-medium">
-                          <Folder size={16} /> Save Changes
-                      </Button>
-                      <Button type="button" onClick={handleReset} size="md" variant="outline" className="border-border px-8 font-medium">
-                          Reset
-                      </Button>
-                  </div>
+                  
                 </>
               ) : (
                 <div className="flex items-center justify-center h-48 text-muted">

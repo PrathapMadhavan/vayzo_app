@@ -4,7 +4,7 @@ import { Plus, RotateCcw, Trash2, Eye, Pencil, Star, ShoppingBag, Store, Trendin
 
 import Badge from "../components/ui/Badge";
 import BadgeCell from "../components/ui/BadgeCell";
-import Button from "../components/ui/Button";
+import Button from "../components/ui/button";
 import SearchInput from "../components/ui/SearchInput";
 import StatusSelect from "../components/ui/StatusSelect";
 import Table from "../components/ui/Table";
@@ -80,7 +80,7 @@ function Restaurants() {
       const matchStatus = status === "All Status" || r.status === status;
       const matchCuisine =
         cuisine === "All Cuisine" ||
-        (r.cuisineType || "").toLowerCase().includes(cuisine.toLowerCase());
+        (r.cuisineType || (r.cuisines && r.cuisines.join(", ")) || "").toLowerCase().includes(cuisine.toLowerCase());
       return matchQ && matchStatus && matchCuisine;
     });
   }, [restaurants, search, status, cuisine]);
@@ -132,10 +132,10 @@ function Restaurants() {
 
       {/* Stat Cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-        <StatCard variant="horizontal" title="Total Restaurants" value={restaurants.length} icon={Store} colorClass="text-primary" bgClass="bg-primary/10" trend="12.5%" />
-        <StatCard variant="horizontal" title="Active Restaurants" value={activeCount} icon={TrendingUp} colorClass="text-success" bgClass="bg-success/10" trend="8.3%" />
-        <StatCard variant="horizontal" title="Total Orders" value={totalOrders.toLocaleString("en-IN")} icon={ShoppingBag} colorClass="text-info" bgClass="bg-info/10" trend="15.7%" />
-        <StatCard variant="horizontal" title="Avg. Rating" value={avgRating} icon={Star} colorClass="text-warning" bgClass="bg-warning/10" trend="2.1%" />
+        <StatCard variant="horizontal" title="Total Restaurants" value={restaurants.length} icon={Store} colorClass="text-primary" bgClass="bg-primary/10" />
+        <StatCard variant="horizontal" title="Active Restaurants" value={activeCount} icon={TrendingUp} colorClass="text-success" bgClass="bg-success/10" />
+        <StatCard variant="horizontal" title="Total Orders" value={totalOrders.toLocaleString("en-IN")} icon={ShoppingBag} colorClass="text-info" bgClass="bg-info/10" />
+        <StatCard variant="horizontal" title="Avg. Rating" value={avgRating} icon={Star} colorClass="text-warning" bgClass="bg-warning/10" />
       </div>
 
       {/* Filters */}
