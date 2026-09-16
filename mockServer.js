@@ -218,6 +218,22 @@ app.get('/api/v1/admin/partners', (req, res) => {
     const pan = userDocs.find(d => d.document_type === 'pan')?.document_number || '';
     const rc = userDocs.find(d => d.document_type === 'rc')?.document_number || '';
 
+    // Calculate today's earnings
+    const earningsList = (db.partner_earnings || []).filter(e => e.partner_id === profile.id);
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const todayEarnings = earningsList
+      .filter(e => {
+        const d = new Date(e.earned_at || e.created_at);
+        return !isNaN(d) && d >= startOfDay;
+      })
+      .reduce((sum, e) => sum + (Number(e.net_amount) || 0), 0);
+      
+    // Format joined date
+    const joinedOn = user.created_at 
+      ? new Date(user.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) 
+      : '10 Sep 2026';
+
     return {
       id: user.id,
       partnerId: user.id,
@@ -226,6 +242,8 @@ app.get('/api/v1/admin/partners', (req, res) => {
       mobileNumber: user.mobileNumber || user.phone,
       status: user.status || 'Active',
       role: user.role,
+      joinedOn,
+      todayEarnings: `₹${Number(todayEarnings).toLocaleString()}`,
       
       // Profile fields
       dateOfBirth: profile.dateOfBirth,
