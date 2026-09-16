@@ -200,14 +200,14 @@ function AddCustomers() {
             onSubmit={handleSubmit}
             className="flex flex-col rounded-xl border border-border bg-surface shadow-sm h-full"
           >
-            <div className="border-b border-border p-6 sm:p-8">
+            <div className="border-b border-border p-4 sm:p-8">
               <h2 className="text-lg font-semibold text-foreground">
                 Customer Information
               </h2>
 
-              <div className="mt-8 grid gap-8 md:grid-cols-2">
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
+              <div className="mt-6 sm:mt-8 grid gap-6 sm:gap-8 md:grid-cols-2">
+                <div className="space-y-5 sm:space-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {field(
                       "first-name",
                       "First Name",
@@ -247,7 +247,7 @@ function AddCustomers() {
                           setForm({ ...form, mobile: val });
                         }}
                         placeholder="9876543210"
-                        className="flex-1 px-3.5 py-2.5 text-sm text-foreground outline-none bg-transparent placeholder:text-subtle"
+                        className="flex-1 min-w-0 px-3.5 py-2.5 text-sm text-foreground outline-none bg-transparent placeholder:text-subtle"
                       />
                     </div>
                     {formErrors.mobile && <p className="mt-1.5 text-xs text-danger">{formErrors.mobile}</p>}
@@ -332,11 +332,11 @@ function AddCustomers() {
             </div>
 
 
-            <div className="mt-auto flex justify-end gap-4 border-t border-border p-6 bg-surface-hover/30 rounded-b-xl">
+            <div className="mt-auto flex justify-end gap-3 sm:gap-4 border-t border-border p-4 sm:p-6 bg-surface-hover/30 rounded-b-xl">
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => navigate("/customers")}
+                onClick={() => navigate(-1)}
                 className="w-full sm:w-auto h-11 px-8 font-medium"
               >
                 Cancel
@@ -351,7 +351,7 @@ function AddCustomers() {
             </div>
           </form>
 
-          <aside className="flex flex-col gap-6 h-full">
+          <aside className="hidden xl:flex flex-col gap-6 h-full">
 
             <div className="rounded-xl border border-border bg-surface p-6 shadow-sm flex-1">
               <h2 className="text-base font-semibold text-foreground border-b border-border pb-4 mb-4">

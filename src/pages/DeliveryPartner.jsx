@@ -34,25 +34,26 @@ import Avatar from "../components/ui/Avatar";
 const getValue = (value) => value || "--";
 
 const InfoRow = ({ label, value }) => (
-  <div className="flex items-start justify-between py-2 border-b border-border/30 last:border-0">
-    <span className="text-sm text-muted min-w-[160px] shrink-0">{label}</span>
-    <span className="text-sm text-foreground font-medium break-all">{getValue(value)}</span>
+  <div className="flex flex-col sm:flex-row sm:items-start py-3 border-b border-border/40 last:border-0 gap-1 sm:gap-4">
+    <span className="text-[13px] sm:text-sm text-muted sm:min-w-[150px] shrink-0">{label}</span>
+    <span className="text-sm sm:text-[15px] text-foreground font-medium break-words">{getValue(value)}</span>
   </div>
 );
 
-const StatBox = ({ label, value, sub, color = 'primary' }) => {
+const StatBox = ({ label, value, sub, color = 'default', className = "" }) => {
   const colorMap = {
     primary: 'text-primary',
     success: 'text-success',
     warning: 'text-warning',
     danger:  'text-danger',
     muted:   'text-muted',
+    default: 'text-foreground'
   };
   return (
-    <div className="flex flex-col gap-0.5 px-4 border-r border-border/40 last:border-0 min-w-[120px]">
-      <p className="text-xs text-muted whitespace-nowrap">{label}</p>
-      <p className={`text-base font-bold text-foreground`}>{getValue(value)}</p>
-      {sub && <p className={`text-xs ${colorMap[color]}`}>{sub}</p>}
+    <div className={`flex flex-col gap-1 px-3 sm:px-4 ${className} min-w-0`}>
+      <p className="text-[11px] sm:text-xs text-muted whitespace-nowrap">{label}</p>
+      <div className={`text-sm sm:text-base font-bold truncate ${colorMap[color] || colorMap.default}`}>{getValue(value)}</div>
+      {sub && <p className={`text-xs ${colorMap[color] || colorMap.muted}`}>{sub}</p>}
     </div>
   );
 };
@@ -173,9 +174,9 @@ export default function DeliveryPartner() {
     { id: 'overview', label: 'Overview' },
     { id: 'documents', label: 'Documents' },
     { id: 'earnings', label: 'Earnings' },
-    { id: 'orders', label: 'Orders' },
+    { id: 'trips', label: 'Trips' },
     { id: 'payouts', label: 'Payouts' },
-    { id: 'performance', label: 'Performance' },
+    { id: 'complaints', label: 'Ratings & Complaints' },
     { id: 'activity', label: 'Activity Logs' },
   ];
 
@@ -188,30 +189,36 @@ export default function DeliveryPartner() {
   return (
     <div className="min-h-full bg-background pb-10">
       {/* ── Top breadcrumb & actions ── */}
-      <div className="px-6 pt-5 pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="px-6 pt-5 pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-1 text-sm text-muted">
+        <div className="flex items-center justify-between w-full sm:w-auto">
           <button onClick={() => navigate('/delivery')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-surface hover:bg-surface-hover text-foreground transition-colors font-medium shadow-sm">
             <ArrowLeft size={15} /> Back to List
           </button>
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm" onClick={() => setMessagingModalOpen(true)} className="flex items-center gap-1.5 border-border bg-surface hover:bg-surface-hover text-foreground shadow-sm">
-            <MessageSquare size={15} /> Send Message
+        <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+          <Button variant="secondary" size="sm" onClick={() => setMessagingModalOpen(true)} className="flex items-center justify-center gap-1.5 text-xs sm:text-sm border-border bg-surface hover:bg-surface-hover text-foreground shadow-sm">
+            <MessageSquare size={14} /> 
+            <span className="hidden sm:inline">Send Message</span>
+            <span className="sm:hidden">Message</span>
           </Button>
           <Button
             size="sm"
             onClick={() => setBlockModalOpen(true)}
             disabled={isBlocked}
             variant="danger"
-            className="flex items-center gap-1.5 shadow-sm"
+            className="flex items-center justify-center gap-1.5 text-xs sm:text-sm shadow-sm"
           >
-            <Ban size={15} /> Block Partner
+            <Ban size={14} /> 
+            <span className="hidden sm:inline">Block Partner</span>
+            <span className="sm:hidden">Block</span>
           </Button>
-          <Button variant="primary" size="sm" onClick={() => navigate(`/delivery/edit/${partnerId}`)} className="flex items-center gap-1.5 shadow-sm">
-            <Pencil size={15} /> Edit Partner
+          <Button variant="primary" size="sm" onClick={() => navigate(`/delivery/edit/${partnerId}`)} className="flex items-center justify-center gap-1.5 text-xs sm:text-sm shadow-sm">
+            <Pencil size={14} /> 
+            <span className="hidden sm:inline">Edit Partner</span>
+            <span className="sm:hidden">Edit</span>
           </Button>
         </div>
       </div>
@@ -276,20 +283,20 @@ export default function DeliveryPartner() {
           <div className="hidden lg:block h-24 w-px bg-border/60 mx-2 shrink-0" />
 
           {/* Stats row */}
-          <div className="flex flex-wrap items-center gap-y-3 gap-x-0 pb-2 lg:pb-0 flex-1 w-full">
-            <StatBox label="Partner ID"        value={partner?.partnerId} />
-            <StatBox label="Vehicle"           value={vehicle?.vehicleType || 'Bike'} />
-            <StatBox label="Total Orders"      value={partner?.totalOrders || 0} />
-            <StatBox label="Completion Rate"   value={partner?.completionRate !== undefined ? `${partner.completionRate}%` : '--'} />
-            <StatBox label="Cancellation Rate" value={partner?.cancellationRate !== undefined ? `${partner.cancellationRate}%` : '--'} />
-            <StatBox label="Total Earnings"    value={partner?.totalEarnings !== undefined ? `₹${Number(partner.totalEarnings).toLocaleString()}` : '--'} color="success" />
-            <StatBox label="Today's Earnings"  value={partner?.todayEarnings !== undefined ? `₹${Number(partner.todayEarnings).toLocaleString()}` : '--'} color="primary" />
-            <StatBox label="Last Order"        value={partner?.lastActivityAt || '--'} />
+          <div className="grid grid-cols-2 gap-x-4 gap-y-5 lg:flex lg:flex-wrap xl:flex-nowrap items-center lg:gap-y-6 lg:divide-x divide-border/40 lg:px-2 flex-1 w-full pb-2 lg:pb-0">
+            <StatBox label="Partner ID"        value={partner?.partnerId} className="border-r border-border/40 lg:border-0" />
+            <StatBox label="Vehicle"           value={vehicle?.vehicleType || 'Bike'} className="lg:border-0" />
+            <StatBox label="Total Orders"      value={partner?.totalOrders || 0} className="border-r border-border/40 lg:border-0" />
+            <StatBox label="Completion Rate"   value={partner?.completionRate !== undefined ? `${partner.completionRate}%` : '--'} className="lg:border-0" />
+            <StatBox label="Cancellation Rate" value={partner?.cancellationRate !== undefined ? `${partner.cancellationRate}%` : '--'} className="border-r border-border/40 lg:border-0" />
+            <StatBox label="Total Earnings"    value={partner?.totalEarnings !== undefined ? `₹${Number(partner.totalEarnings).toLocaleString()}` : '--'} color="success" className="lg:border-0" />
+            <StatBox label="Today's Earnings"  value={partner?.todayEarnings !== undefined ? `₹${Number(partner.todayEarnings).toLocaleString()}` : '--'} color="primary" className="border-r border-border/40 lg:border-0" />
+            <StatBox label="Last Order"        value={partner?.lastActivityAt || '--'} className="lg:border-0" />
           </div>
         </div>
 
         {/* Tabs navigation */}
-        <div className="flex items-center gap-2 px-3 border-t border-border overflow-x-auto hide-scrollbar">
+        <div className="flex items-center gap-2 px-3 border-t border-border overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {tabs.map(tab => (
             <button
               key={tab.id}
@@ -486,15 +493,28 @@ export default function DeliveryPartner() {
           </div>
         )}
 
-        {/* ─ Performance Tab ─ */}
-        {activeTab === 'performance' && (
+        {/* ─ Trips Tab ─ */}
+        {activeTab === 'trips' && (
+          <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
+            <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50 bg-background/50">
+              <Bike size={17} className="text-primary" />
+              <h3 className="font-semibold text-foreground">Trip History</h3>
+            </div>
+            <div className="p-5">
+              <EmptyState message="No trips found for this partner." icon={Bike} />
+            </div>
+          </div>
+        )}
+
+        {/* ─ Ratings & Complaints Tab ─ */}
+        {activeTab === 'complaints' && (
           <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-sm">
             <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50 bg-background/50">
               <Star size={17} className="text-primary" />
-              <h3 className="font-semibold text-foreground">Performance & Ratings</h3>
+              <h3 className="font-semibold text-foreground">Ratings & Complaints</h3>
             </div>
             <div className="p-5">
-              <EmptyState message="Detailed performance metrics will appear here." icon={Star} />
+              <EmptyState message="No ratings or complaints available." icon={Star} />
             </div>
           </div>
         )}
@@ -537,9 +557,9 @@ export default function DeliveryPartner() {
         <div className="space-y-4">
           <div className="flex items-center gap-3 p-3 bg-surface-hover rounded-lg border border-border">
             <Avatar src={partner?.profileImage} identifier={partner?.name} className="h-10 w-10 rounded-full shrink-0" />
-            <div>
-              <p className="font-medium text-foreground text-sm">{partner?.name}</p>
-              <p className="text-xs text-muted">{partner?.partnerId} • {partner?.mobileNumber || partner?.email}</p>
+            <div className="min-w-0">
+              <p className="font-medium text-foreground text-sm truncate">{partner?.name}</p>
+              <p className="text-xs text-muted break-all">{partner?.partnerId} • {partner?.mobileNumber || partner?.email}</p>
             </div>
           </div>
           <div>

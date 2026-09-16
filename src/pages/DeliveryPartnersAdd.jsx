@@ -4,6 +4,7 @@ import {
   CloudUpload,
   Eye,
   EyeOff,
+  FileText,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import Button from "../components/ui/Button";
@@ -40,7 +41,7 @@ function DeliveryPartnersAdd() {
 
   const [form, setForm] = useState({
     // Section 1
-    name: "", email: "", mobileNumber: "", dateOfBirth: "", gender: "Male", alternateMobile: "",
+    firstName: "", lastName: "", email: "", mobileNumber: "", dateOfBirth: "", gender: "Male", alternateMobile: "",
     // Section 2
     emergencyContact: "", emergencyContactRelation: "", emergencyMobile: "",
     // Section 3
@@ -90,8 +91,14 @@ function DeliveryPartnersAdd() {
       const vDetails = data.vehicle || {};
       const bDetails = data.bankAccount || {};
 
+      const fullName = data.partner?.name || "";
+      const nameParts = fullName.split(' ');
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(' ');
+
       setForm({
-        name: data.partner?.name || "",
+        firstName,
+        lastName,
         email: data.partner?.email || "",
         mobileNumber: data.partner?.mobileNumber || "",
         dateOfBirth: pDetails.dateOfBirth || "",
@@ -110,21 +117,35 @@ function DeliveryPartnersAdd() {
         vehicleName: vDetails.vehicleName || "",
         vehicleNumber: vDetails.vehicleNumber || "",
         rcNumber: vDetails.rcNumber || "",
-        drivingLicenseNumber: "",
-        drivingLicenseExpiry: "",
+        drivingLicenseNumber: pDetails.drivingLicenseNumber || "",
+        drivingLicenseExpiry: pDetails.drivingLicenseExpiry || "",
         insuranceProvider: vDetails.insuranceProvider || "",
         insuranceNumber: vDetails.insuranceNumber || "",
         insuranceValidTill: vDetails.validTill || "",
         bankName: bDetails.bankName || "",
         accountHolderName: bDetails.accountHolderName || "",
-        accountNumber: "", // Hidden for security, let user re-enter if editing
+        accountNumber: bDetails.accountNumber || "",
         ifscCode: bDetails.ifscCode || "",
         status: data.partner?.status || statusOptions[0],
-        onlineStatus: data.partner?.onlineStatus || onlineStatusOptions[1],
+        onlineStatus: data.partner?.onlineStatus || data.partner?.online_status || pDetails?.onlineStatus || onlineStatusOptions[1],
         aadhaarNumber: pDetails.aadhaarNumber || "",
         panNumber: pDetails.panNumber || "",
       });
-      setImagePreview(data.partner?.profileImage || null);
+      setImagePreview(data.partner?.profileImage || pDetails.profileImage || null);
+      
+      if (data.documents && Array.isArray(data.documents)) {
+        const previews = {};
+        data.documents.forEach(doc => {
+          if (doc.document_url) {
+            if (doc.document_type === 'aadhaar') previews.aadhaar = doc.document_url;
+            if (doc.document_type === 'pan') previews.pan = doc.document_url;
+            if (doc.document_type === 'rc') previews.rc = doc.document_url;
+            if (doc.document_type === 'driving_license') previews.drivingLicense = doc.document_url;
+            if (doc.document_type === 'insurance') previews.insurance = doc.document_url;
+          }
+        });
+        setDocumentPreviews(previews);
+      }
     } catch (err) {
       setError("Unable to load partner details.");
     } finally {
@@ -135,15 +156,15 @@ function DeliveryPartnersAdd() {
   const update = (key) => (event) =>
     setForm({ ...form, [key]: event.target.value });
 
-  const field = (id, labelText, key, type = "text", placeholder = "") => (
+  const field = (id, labelText, key, type = "text", placeholder = "", required = true) => (
     <Input
       id={id}
-      label={<RequiredLabel text={labelText} />}
+      label={required ? <RequiredLabel text={labelText} /> : labelText}
       type={type}
       value={form[key]}
       onChange={update(key)}
       placeholder={placeholder}
-      required
+      required={required}
     />
   );
 
@@ -167,7 +188,12 @@ function DeliveryPartnersAdd() {
     const file = e.target.files[0];
     if (file) {
       try {
-        await validateImage(file);
+        if (file.type !== "application/pdf") {
+          throw new Error("Invalid file type. Only PDF is allowed.");
+        }
+        if (file.size > 2 * 1024 * 1024) {
+          throw new Error("File size must be less than 2MB.");
+        }
         const objectUrl = URL.createObjectURL(file);
         setDocumentPreviews(prev => ({ ...prev, [key]: objectUrl }));
         setDocumentFiles(prev => ({ ...prev, [key]: file }));
@@ -182,13 +208,28 @@ function DeliveryPartnersAdd() {
     event.preventDefault();
 
     try {
+      if (form.mobileNumber && form.mobileNumber.length !== 10) {
+        setError("Mobile number must be exactly 10 digits.");
+        return;
+      }
+      if (form.alternateMobile && form.alternateMobile.length !== 10) {
+        setError("Alternate mobile number must be exactly 10 digits.");
+        return;
+      }
+      if (form.emergencyMobile && form.emergencyMobile.length !== 10) {
+        setError("Emergency mobile number must be exactly 10 digits.");
+        return;
+      }
+
       setLoading(true);
       setError("");
       
       const formData = new FormData();
       Object.keys(form).forEach(key => {
+        if (key === 'firstName' || key === 'lastName') return;
         formData.append(key, form[key]);
       });
+      formData.append("name", `${form.firstName} ${form.lastName}`.trim());
 
       if (profileImageFile) {
         formData.append("profileImage", profileImageFile);
@@ -227,9 +268,9 @@ function DeliveryPartnersAdd() {
         
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col rounded-xl border border-border bg-surface shadow-sm"
+          className="flex flex-col gap-6"
         >
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
             <div className="mb-6 flex flex-col gap-1">
               <h2 className="text-lg font-semibold text-foreground">
                 Basic Information
@@ -238,34 +279,60 @@ function DeliveryPartnersAdd() {
             </div>
 
             <div className="grid gap-8 lg:grid-cols-[1fr_300px]">
-              <div className="space-y-6">
-                <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-8">
+                <div className="grid gap-8 md:grid-cols-2">
                   <Input
-                    id="full-name"
-                    label={<RequiredLabel text="Full Name" />}
+                    id="first-name"
+                    label={<RequiredLabel text="First Name" />}
                     type="text"
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value.trimStart() })}
-                    placeholder="Enter full name"
+                    value={form.firstName}
+                    onChange={(e) => setForm({ ...form, firstName: e.target.value.trimStart() })}
+                    placeholder="First name"
                     required
                   />
+                  <Input
+                    id="last-name"
+                    label="Last Name"
+                    type="text"
+                    value={form.lastName}
+                    onChange={(e) => setForm({ ...form, lastName: e.target.value.trimStart() })}
+                    placeholder="Last name (optional)"
+                  />
+                </div>
+                
+                <div className="grid gap-8 md:grid-cols-2">
                   <Input
                     id="mobile"
                     label={<RequiredLabel text="Mobile Number" />}
                     type="tel"
+                    prefix={<span className="pl-3.5 pr-2 text-muted border-r border-border/50 text-sm bg-surface">+91</span>}
                     value={form.mobileNumber}
                     onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, '').slice(0, 10);
                       setForm({ ...form, mobileNumber: val });
                     }}
-                    placeholder="10-digit mobile number"
+                    placeholder="10-digit number"
                     required
+                    pattern="[0-9]{10}"
+                    title="Please enter exactly 10 digits"
+                  />
+                  <Input
+                    id="alternateMobile"
+                    label="Alternate Mobile"
+                    type="tel"
+                    prefix={<span className="pl-3.5 pr-2 text-muted border-r border-border/50 text-sm bg-surface">+91</span>}
+                    value={form.alternateMobile}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setForm({ ...form, alternateMobile: val });
+                    }}
+                    placeholder="10-digit number (Optional)"
                     pattern="[0-9]{10}"
                     title="Please enter exactly 10 digits"
                   />
                 </div>
                 
-                <div className="grid gap-6 md:grid-cols-2">
+                <div className="grid gap-8 md:grid-cols-2">
                   <Input
                     id="email"
                     label={<RequiredLabel text="Email Address" />}
@@ -277,8 +344,8 @@ function DeliveryPartnersAdd() {
                   />
                   {field("dateOfBirth", "Date of Birth", "dateOfBirth", "date", "e.g. 15 Aug 1995")}
                 </div>
-                
-                <div className="grid gap-6 md:grid-cols-2">
+
+                <div className="grid gap-8 md:grid-cols-2">
                   <StatusSelect
                     id="gender"
                     label={<RequiredLabel text="Gender" />}
@@ -287,7 +354,6 @@ function DeliveryPartnersAdd() {
                     onChange={update("gender")}
                     required
                   />
-                  {field("alternateMobile", "Alternate Mobile", "alternateMobile", "tel", "Enter alternate mobile")}
                 </div>
               </div>
 
@@ -330,7 +396,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
           
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
             <h2 className="text-lg font-semibold text-foreground">
               Emergency Contact
             </h2>
@@ -338,17 +404,31 @@ function DeliveryPartnersAdd() {
               {field("emergencyContact", "Contact Name", "emergencyContact", "text", "e.g. Selvam R")}
               <StatusSelect
                 id="emergencyContactRelation"
-                label="Relationship (Unsupported)"
+                label="Relationship"
                 value={form.emergencyContactRelation}
                 options={["Select Relationship", "Father", "Mother", "Spouse", "Sibling", "Friend"]}
                 onChange={update("emergencyContactRelation")}
                 required={false}
               />
-              {field("emergencyMobile", "Emergency Mobile", "emergencyMobile", "text", "Enter emergency mobile number")}
+              <Input
+                id="emergencyMobile"
+                label={<RequiredLabel text="Emergency Mobile" />}
+                type="tel"
+                prefix={<span className="pl-3.5 pr-2 text-muted border-r border-border/50 text-sm bg-surface">+91</span>}
+                value={form.emergencyMobile}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  setForm({ ...form, emergencyMobile: val });
+                }}
+                placeholder="10-digit number"
+                required
+                pattern="[0-9]{10}"
+                title="Please enter exactly 10 digits"
+              />
             </div>
           </div>
 
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
             <h2 className="text-lg font-semibold text-foreground">
               Address
             </h2>
@@ -357,7 +437,7 @@ function DeliveryPartnersAdd() {
                 {field("addressLine1", "Address Line 1", "addressLine1", "text", "Flat, House no., Building")}
               </div>
               <div className="md:col-span-2">
-                {field("addressLine2", "Address Line 2 (Optional)", "addressLine2", "text", "Area, Colony, Street")}
+                {field("addressLine2", "Address Line 2 (Optional)", "addressLine2", "text", "Area, Colony, Street", false)}
               </div>
               {field("city", "City", "city", "text", "e.g. Chennai")}
               {field("state", "State", "state", "text", "e.g. Tamil Nadu")}
@@ -385,7 +465,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
 
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
              <h2 className="text-lg font-semibold text-foreground">
               Vehicle Information
             </h2>
@@ -404,30 +484,37 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
           
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
              <h2 className="text-lg font-semibold text-foreground">
               Driving & Insurance
             </h2>
             <div className="mt-8 grid gap-8 md:grid-cols-2">
               {field("drivingLicenseNumber", "Driving License Number", "drivingLicenseNumber", "text", "Enter DL number")}
-              {field("drivingLicenseExpiry", "DL Expiry Date (Unsupported)", "drivingLicenseExpiry", "date", "")}
-              {field("insuranceProvider", "Insurance Provider (Unsupported)", "insuranceProvider", "text", "Enter insurance provider")}
+              {field("drivingLicenseExpiry", "DL Expiry Date", "drivingLicenseExpiry", "date", "")}
+              {field("insuranceProvider", "Insurance Provider", "insuranceProvider", "text", "Enter insurance provider")}
               {field("insuranceNumber", "Insurance Number", "insuranceNumber", "text", "Enter insurance number")}
               {field("insuranceValidTill", "Insurance Valid Till", "insuranceValidTill", "date", "")}
             </div>
           </div>
           
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
              <h2 className="text-lg font-semibold text-foreground">
               Bank Information
             </h2>
             <div className="mt-8 grid gap-8 md:grid-cols-2">
-              {field("bankName", "Bank Name", "bankName", "text", "Enter bank name")}
+              <StatusSelect
+                id="bankName"
+                label={<RequiredLabel text="Bank Name" />}
+                value={form.bankName}
+                options={["Select Bank", "State Bank of India", "Canara Bank", "ICICI Bank", "HDFC Bank", "Axis Bank", "Kotak Mahindra Bank", "Indian Bank", "Other"]}
+                onChange={update("bankName")}
+                required
+              />
               {field("accountHolderName", "Account Holder Name", "accountHolderName", "text", "Enter account holder name")}
               <Input
                 id="accountNumber"
                 label={<RequiredLabel text="Account Number" />}
-                type="password"
+                type="text"
                 value={form.accountNumber}
                 onChange={update("accountNumber")}
                 placeholder="Enter account number"
@@ -437,7 +524,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
           
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
              <h2 className="text-lg font-semibold text-foreground">
               Account Information
             </h2>
@@ -461,7 +548,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
           
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
              <h2 className="text-lg font-semibold text-foreground mb-1">
               Documents
             </h2>
@@ -506,7 +593,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
 
-          <div className="mt-auto flex justify-end gap-4 border-t border-border p-6 bg-surface-hover/30 rounded-b-xl">
+          <div className="flex justify-end gap-3 sm:gap-4 p-0">
             <Button
               variant="secondary"
               type="button"
@@ -525,7 +612,7 @@ function DeliveryPartnersAdd() {
           </div>
         </form>
 
-        <aside className="flex flex-col gap-6">
+        <aside className="hidden xl:flex flex-col gap-6">
           <div className="rounded-xl border border-border bg-surface p-6 shadow-sm">
             <h2 className="text-base font-semibold text-foreground border-b border-border pb-4 mb-4">
               Partner Guidelines
