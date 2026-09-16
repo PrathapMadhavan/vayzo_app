@@ -283,15 +283,15 @@ export default function DeliveryPartner() {
           <div className="hidden lg:block h-24 w-px bg-border/60 mx-2 shrink-0" />
 
           {/* Stats row */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-5 lg:flex lg:flex-wrap xl:flex-nowrap items-center lg:gap-y-6 lg:divide-x divide-border/40 lg:px-2 flex-1 w-full pb-2 lg:pb-0">
-            <StatBox label="Partner ID"        value={partner?.partnerId} className="border-r border-border/40 lg:border-0" />
-            <StatBox label="Vehicle"           value={vehicle?.vehicleType || 'Bike'} className="lg:border-0" />
-            <StatBox label="Total Orders"      value={partner?.totalOrders || 0} className="border-r border-border/40 lg:border-0" />
-            <StatBox label="Completion Rate"   value={partner?.completionRate !== undefined ? `${partner.completionRate}%` : '--'} className="lg:border-0" />
-            <StatBox label="Cancellation Rate" value={partner?.cancellationRate !== undefined ? `${partner.cancellationRate}%` : '--'} className="border-r border-border/40 lg:border-0" />
-            <StatBox label="Total Earnings"    value={partner?.totalEarnings !== undefined ? `₹${Number(partner.totalEarnings).toLocaleString()}` : '--'} color="success" className="lg:border-0" />
-            <StatBox label="Today's Earnings"  value={partner?.todayEarnings !== undefined ? `₹${Number(partner.todayEarnings).toLocaleString()}` : '--'} color="primary" className="border-r border-border/40 lg:border-0" />
-            <StatBox label="Last Order"        value={partner?.lastActivityAt || '--'} className="lg:border-0" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-4 gap-x-4 gap-y-6 lg:gap-y-8 w-full flex-1 pb-2 lg:pb-0">
+            <StatBox label="Partner ID"        value={partner?.partnerId} />
+            <StatBox label="Vehicle"           value={vehicle?.vehicleType || 'Bike'} />
+            <StatBox label="Total Orders"      value={partner?.totalOrders || 0} />
+            <StatBox label="Completion Rate"   value={partner?.completionRate !== undefined ? `${partner.completionRate}%` : '--'} />
+            <StatBox label="Cancellation Rate" value={partner?.cancellationRate !== undefined ? `${partner.cancellationRate}%` : '--'} />
+            <StatBox label="Total Earnings"    value={partner?.totalEarnings !== undefined ? `₹${Number(partner.totalEarnings).toLocaleString()}` : '--'} color="success" />
+            <StatBox label="Today's Earnings"  value={partner?.todayEarnings !== undefined ? `₹${Number(partner.todayEarnings).toLocaleString()}` : '--'} color="primary" />
+            <StatBox label="Last Order"        value={partner?.lastActivityAt || '--'} />
           </div>
         </div>
 
