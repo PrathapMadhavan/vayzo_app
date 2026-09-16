@@ -6467,7 +6467,7 @@
       "id": "01M2JMAM22RWVSAYMP0KTT6H4P",
       "partner_id": "01M2JMAM1DEFHPP004HC4AQGSY",
       "document_type": "aadhaar",
-      "document_number": "5678 1234 9876",
+      "document_number": "**********9876",
       "file_path": "/uploads/01M2JMAM04M7T4Q53KQ6BQSDR7.jpeg",
       "original_filename": "3.jpeg",
       "mime_type": "image/jpeg",
@@ -6477,7 +6477,7 @@
       "id": "01M2JMAM25D5PR180W9D0E3NHG",
       "partner_id": "01M2JMAM1DEFHPP004HC4AQGSY",
       "document_type": "pan",
-      "document_number": "BKZPK1234K",
+      "document_number": "******234K",
       "file_path": "/uploads/01M2JMAM0K2CBGAHH484WVZ2WR.jpeg",
       "original_filename": "11.jpeg",
       "mime_type": "image/jpeg",
@@ -6788,8 +6788,8 @@
       "postal_code": "625106",
       "country": "India",
       "driving_license_number": "24222222222222222",
-      "driving_license_expiry": "2222-02-22",
-      "online_status": "Offline",
+      "driving_license_expiry": "2078-02-22",
+      "online_status": "Online",
       "joined_at": "2026-09-15T13:32:58.295Z"
     }
   ],

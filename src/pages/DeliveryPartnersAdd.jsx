@@ -84,7 +84,7 @@ function DeliveryPartnersAdd() {
     try {
       setLoading(true);
       const data = await getDeliveryPartnerById(partnerId);
-      setPartnerDbId(data.id);
+      setPartnerDbId(data.partner?.id || partnerId);
       
       const pDetails = data.personalDetails || {};
       const vDetails = data.vehicle || {};
@@ -465,7 +465,7 @@ function DeliveryPartnersAdd() {
              <h2 className="text-lg font-semibold text-foreground mb-1">
               Documents
             </h2>
-            <p className="text-sm text-muted mb-8">Upload clear, legible photos of the original documents.</p>
+            <p className="text-sm text-muted mb-8">Upload clear, legible PDF copies of the original documents.</p>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {[
                 { key: 'aadhaar', label: 'Aadhaar Card', inputKey: 'aadhaarNumber', inputLabel: 'Aadhaar Number' },
@@ -477,10 +477,11 @@ function DeliveryPartnersAdd() {
                 <div key={doc.key} className="flex flex-col gap-3 rounded-xl border border-border p-4 bg-background/50">
                   <span className="text-sm font-medium text-foreground">{doc.label}</span>
                   <label className="cursor-pointer flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface hover:bg-surface-hover hover:border-primary/40 transition-all text-center p-2 group h-32 relative overflow-hidden">
-                    <input type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleDocChange(doc.key)} />
+                    <input type="file" className="hidden" accept=".pdf,application/pdf" onChange={handleDocChange(doc.key)} />
                     {documentPreviews[doc.key] ? (
-                      <div className="w-full h-full relative group/img rounded flex items-center justify-center bg-black/5">
-                        <img src={documentPreviews[doc.key]} alt="Preview" className="max-h-full max-w-full object-contain" />
+                      <div className="w-full h-full relative group/img rounded flex flex-col items-center justify-center bg-primary/10 text-primary">
+                        <FileText size={32} className="mb-2" />
+                        <span className="text-xs font-semibold px-2 text-center truncate w-full">Document Selected</span>
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
                           <CloudUpload size={20} className="text-white" />
                         </div>
@@ -488,7 +489,7 @@ function DeliveryPartnersAdd() {
                     ) : (
                       <div className="flex flex-col items-center justify-center">
                         <CloudUpload size={20} className="text-muted mb-2 group-hover:text-primary transition-colors" />
-                        <span className="text-xs text-muted">Upload {doc.label}</span>
+                        <span className="text-xs text-muted">Upload PDF</span>
                       </div>
                     )}
                   </label>
@@ -500,22 +501,6 @@ function DeliveryPartnersAdd() {
                       {form[doc.inputKey] || doc.inputLabel}
                     </div>
                   )}
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="p-6 sm:p-8 bg-surface-hover/30">
-             <h2 className="text-lg font-semibold text-foreground mb-6">
-              System Information
-            </h2>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {['ID', 'Joined On', 'Created At', 'Updated At'].map(lbl => (
-                <div key={lbl}>
-                  <label className="block text-xs font-medium text-muted mb-1.5">{lbl}</label>
-                  <div className="h-10 px-3 rounded-md bg-background border border-border flex items-center text-sm font-mono text-foreground/70 cursor-not-allowed">
-                    {isEditing ? "Loaded from backend" : "Generated after creation"}
-                  </div>
                 </div>
               ))}
             </div>
