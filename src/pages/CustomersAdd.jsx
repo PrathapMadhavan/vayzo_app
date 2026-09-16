@@ -30,7 +30,7 @@ function RequiredLabel({ text }) {
 
 function AddCustomers() {
   const navigate = useNavigate();
-  const { customerId } = useParams();
+  const { publicId: customerId } = useParams();
   const isEditing = !!customerId;
   
   const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +39,8 @@ function AddCustomers() {
   const [imagePreview, setImagePreview] = useState(null);
 
   const [form, setForm] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     mobile: "",
     status: statusOptions[0],
@@ -66,8 +67,17 @@ function AddCustomers() {
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
       };
 
+      let fName = "";
+      let lName = "";
+      if (data.name) {
+        const parts = data.name.trim().split(" ");
+        fName = parts[0] || "";
+        lName = parts.slice(1).join(" ") || "";
+      }
+
       setForm({
-        name: data.name || "",
+        firstName: fName,
+        lastName: lName,
         email: data.email || "",
         mobile: data.mobileNumber || "",
         status: data.status ? toTitleCase(data.status) : statusOptions[0],
@@ -110,7 +120,8 @@ function AddCustomers() {
     event.preventDefault();
 
     const errors = {};
-    if (!form.name.trim()) errors.name = "Full name is required.";
+    if (!form.firstName.trim()) errors.firstName = "First name is required.";
+    if (!form.lastName.trim()) errors.lastName = "Last name is required.";
     
     if (!form.email.trim()) {
       errors.email = "Email address is required.";
@@ -133,7 +144,7 @@ function AddCustomers() {
 
       const allCustomers = await getCustomers();
       const duplicateEmail = allCustomers.find(
-        (u) => u.email.toLowerCase() === form.email.trim().toLowerCase() && u.customerId !== customerId
+        (u) => u.email?.toLowerCase() === form.email.trim().toLowerCase() && u.public_id !== customerId
       );
       
       if (duplicateEmail) {
@@ -142,8 +153,18 @@ function AddCustomers() {
         return;
       }
 
+      const duplicateMobile = allCustomers.find(
+        (u) => u.mobileNumber === form.mobile.trim() && u.public_id !== customerId
+      );
+      
+      if (duplicateMobile) {
+        setFormErrors(prev => ({ ...prev, mobile: "This mobile number is already registered." }));
+        setLoading(false);
+        return;
+      }
+
       const formData = new FormData();
-      formData.append("name", form.name);
+      formData.append("name", `${form.firstName.trim()} ${form.lastName.trim()}`.trim());
       formData.append("email", form.email);
       formData.append("mobileNumber", form.mobile);
       formData.append("status", form.status);
@@ -186,13 +207,22 @@ function AddCustomers() {
 
               <div className="mt-8 grid gap-8 md:grid-cols-2">
                 <div className="space-y-6">
-                  {field(
-                    "full-name",
-                    "Full Name",
-                    "name",
-                    "text",
-                    "Enter full name",
-                  )}
+                  <div className="grid grid-cols-2 gap-4">
+                    {field(
+                      "first-name",
+                      "First Name",
+                      "firstName",
+                      "text",
+                      "First name",
+                    )}
+                    {field(
+                      "last-name",
+                      "Last Name",
+                      "lastName",
+                      "text",
+                      "Last name",
+                    )}
+                  </div>
                   {field(
                     "email",
                     "Email Address",
@@ -230,7 +260,7 @@ function AddCustomers() {
                   </span>
                   <label
                     htmlFor="profile-image"
-                    className="cursor-pointer flex flex-1 flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background hover:bg-surface-hover hover:border-primary/40 transition-all text-center p-2 group overflow-hidden relative"
+                    className="cursor-pointer flex h-full min-h-[160px] max-h-[220px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-background hover:bg-surface-hover hover:border-primary/40 transition-all text-center p-2 group overflow-hidden relative"
                   >
                     <input
                       type="file"
@@ -240,8 +270,8 @@ function AddCustomers() {
                       onChange={handleImageChange}
                     />
                     {imagePreview ? (
-                      <div className="w-full h-full min-h-[140px] relative group/img rounded-lg overflow-hidden flex items-center justify-center bg-black/5">
-                        <img src={imagePreview} alt="Preview" className="max-h-full max-w-full object-contain" />
+                      <div className="absolute inset-2 group/img rounded-lg overflow-hidden flex items-center justify-center bg-black/5">
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-contain" />
                         <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
                           <CloudUpload size={24} className="text-white mb-2" />
                           <p className="text-xs text-white">Change Image</p>

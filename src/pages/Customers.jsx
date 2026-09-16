@@ -105,7 +105,7 @@ function Customers() {
       const isVerified = customer.isVerified === true;
       const matchesSearch =
         !query ||
-        [customer.name, customer.email, customer.mobileNumber, customer.public_id]
+        [customer.name, customer.email, customer.mobileNumber, customer.public_id, customer.id]
           .join(" ")
           .toLowerCase()
           .includes(query);
@@ -206,7 +206,7 @@ function Customers() {
               id="customer-search"
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
-              placeholder="Search customers by name, email or mobile..."
+              placeholder="Search customers by ID, name, email or mobile..."
             />
           }
           actions={
@@ -305,7 +305,7 @@ function Customers() {
                   <td className="px-3 py-3">
                     <div className="flex min-w-0 items-center gap-2">
                       <Avatar 
-                        src={customer.image} 
+                        src={customer.profileImage || customer.image} 
                         alt={customer.name} 
                         identifier={customer.public_id} 
                         className="h-8 w-8 rounded-full shadow-sm"

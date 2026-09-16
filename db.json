@@ -5622,11 +5622,22 @@
       "closingTime": "11:00 PM",
       "menuItems": [
         {
-          "name": "pizza",
-          "category": "pizza",
-          "price": "90",
+          "name": "chicken",
+          "category": "",
+          "price": "50",
           "image": "",
-          "status": true
+          "status": true,
+          "foodType": "Non-Veg",
+          "id": "legacy-1789458596827-bey03lt6c"
+        },
+        {
+          "name": "egg",
+          "category": "",
+          "price": "50",
+          "image": "",
+          "status": false,
+          "foodType": "Non-Veg",
+          "id": "legacy-1789458596827-7xcf6gl5u"
         }
       ],
       "cuisineType": "Italian, Fast Food",
@@ -5651,7 +5662,23 @@
       "deliveryCharge": 15,
       "openingTime": "07:30 AM",
       "closingTime": "10:30 PM",
-      "menuItems": [],
+      "menuItems": [
+        {
+          "id": "temp-1789456290467",
+          "name": "lulhy",
+          "category": "",
+          "price": "24",
+          "foodType": "Non-Veg",
+          "status": true,
+          "image": "",
+          "images": [
+            null,
+            null,
+            null,
+            null
+          ]
+        }
+      ],
       "cuisineType": "South Indian",
       "id": "RST003"
     },
@@ -6562,8 +6589,71 @@
       "accountHolderName": "Selvam R"
     }
   ],
-  "restaurant_categories": [],
-  "restaurant_products": [],
+  "restaurant_categories": [
+    {
+      "id": "RC001",
+      "restaurant_id": "RST002",
+      "name": "Starters",
+      "description": "Appetizers and starters",
+      "status": "Active"
+    },
+    {
+      "id": "RC002",
+      "restaurant_id": "RST002",
+      "name": "Main Course",
+      "description": "Main dishes",
+      "status": "Active"
+    },
+    {
+      "id": "RC003",
+      "restaurant_id": "RST002",
+      "name": "Desserts",
+      "description": "Sweet endings",
+      "status": "Active"
+    },
+    {
+      "id": "RC004",
+      "restaurant_id": "RST002",
+      "name": "Beverages",
+      "description": "Drinks and juices",
+      "status": "Active"
+    }
+  ],
+  "restaurant_products": [
+    {
+      "id": "RP001",
+      "restaurant_id": "RST002",
+      "category_id": "RC001",
+      "name": "Paneer Tikka",
+      "price": 220,
+      "description": "Grilled paneer with spices",
+      "isVeg": true,
+      "status": "Active",
+      "isAvailable": true
+    },
+    {
+      "id": "RP002",
+      "restaurant_id": "RST002",
+      "category_id": "RC002",
+      "name": "Paneer Butter Masala",
+      "price": 280,
+      "description": "Rich creamy paneer curry",
+      "isVeg": true,
+      "status": "Active",
+      "isAvailable": true
+    },
+    {
+      "id": "RP003",
+      "restaurant_id": "RST002",
+      "category_id": "RC003",
+      "name": "Gulab Jamun",
+      "price": 80,
+      "description": "Classic Indian sweet",
+      "isVeg": true,
+      "status": "Active",
+      "isAvailable": true
+    }
+  ],
   "requests": [],
   "request_items": [],
   "request_pickups": [],
@@ -6578,6 +6668,13 @@
       "user_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
       "balance": 0,
       "created_at": "2026-09-15T13:00:19.057Z"
+    },
+    {
+      "id": "01M2MTGGFPJSR1PN5A1KH85HGN",
+      "public_id": "01M2MTGGFQJEQVYBYETRN9ECC8",
+      "user_id": "01M2MTGGF4H48H71VWAAWSR30K",
+      "balance": 0,
+      "created_at": "2026-09-16T09:59:31.575Z"
     }
   ],
   "wallet_transactions": [],
@@ -6590,6 +6687,11 @@
       "id": "01M2JJETQ6DG8S2KNZE0GVJT06",
       "user_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
       "created_at": "2026-09-15T13:00:19.053Z"
+    },
+    {
+      "id": "01M2MTGGF4ABD0PDMZYEFNPT7A",
+      "user_id": "01M2MTGGF4H48H71VWAAWSR30K",
+      "created_at": "2026-09-16T09:59:31.568Z"
     }
   ],
   "addresses": [],
@@ -6707,13 +6809,13 @@
       "id": "01M2JJETQ6JT0BAYG8S1M25A0H",
       "public_id": "01M2JJETQ6WJ112WB6SN2KZE6E",
       "name": "Haripriyan N",
-      "email": "dev@yopmail.com",
-      "mobileNumber": "9876543210",
+      "email": "hari@gmail.com",
+      "mobileNumber": "8438285161",
       "role": "Customer",
       "status": "Active",
       "isVerified": true,
       "joinedOn": "2026-09-15",
-      "profileImage": "/uploads/01M2JJETPERHC1F20CPSE23VD6.jpeg"
+      "profileImage": "/uploads/01M2MWRQ98A3HHRJHNHZCDYST4.jpg"
     },
     {
       "id": "01M2JMAM1C56EPQZ6N9VD1G62B",
@@ -6724,6 +6826,18 @@
       "role": "Delivery Partner",
       "status": "Active",
       "profileImage": "/uploads/01M2JMAKZ2V5FQQ7F9B1KBM7FX.jpeg"
+    },
+    {
+      "id": "01M2MTGGF4H48H71VWAAWSR30K",
+      "public_id": "01M2MTGGF4MQG8S9SGPGFSRV43",
+      "name": "Dias S",
+      "email": "dias@gmail.com",
+      "mobileNumber": "9876543210",
+      "role": "Customer",
+      "status": "Active",
+      "isVerified": true,
+      "joinedOn": "2026-09-16",
+      "profileImage": "/uploads/01M2MWS6E6R8XVFXA61RQXB0CQ.png"
     }
   ]
 }
