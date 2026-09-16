@@ -6512,6 +6512,56 @@
       "original_filename": "15.jpeg",
       "mime_type": "image/jpeg",
       "uploaded_at": "2026-09-15T13:32:58.325Z"
+    },
+    {
+      "id": "01M2NF6JK39D9VXKFMN4K10HJQ",
+      "partner_id": "01M2NF6JJKBTY7EDFJ451YT7YS",
+      "document_type": "aadhaar",
+      "document_number": "**********9876",
+      "file_path": "/uploads/01M2NFXEM14AJFMEB5115FSHRW.pdf",
+      "original_filename": "msword_sample.pdf",
+      "mime_type": "application/pdf",
+      "uploaded_at": "2026-09-16T16:13:35.783Z"
+    },
+    {
+      "id": "01M2NF6JK61SB79Z2BZYPVTCT7",
+      "partner_id": "01M2NF6JJKBTY7EDFJ451YT7YS",
+      "document_type": "pan",
+      "document_number": "******234F",
+      "file_path": "/uploads/01M2NFXEM8KRQMRWMM1KMPN8NC.pdf",
+      "original_filename": "msword_sample.pdf",
+      "mime_type": "application/pdf",
+      "uploaded_at": "2026-09-16T16:13:35.786Z"
+    },
+    {
+      "id": "01M2NF6JKARGZYMMR8YQV0D18F",
+      "partner_id": "01M2NF6JJKBTY7EDFJ451YT7YS",
+      "document_type": "rc",
+      "document_number": "TN642022123456",
+      "file_path": "/uploads/01M2NFXEMEC73R6W56VVZE5R2N.pdf",
+      "original_filename": "msword_sample.pdf",
+      "mime_type": "application/pdf",
+      "uploaded_at": "2026-09-16T16:13:35.790Z"
+    },
+    {
+      "id": "01M2NF6JKD636HHA6EJ6DW93H4",
+      "partner_id": "01M2NF6JJKBTY7EDFJ451YT7YS",
+      "document_type": "driving_license",
+      "document_number": "24222222222222222",
+      "file_path": "/uploads/01M2NFXEMNYJC1383M9HJW8M2V.pdf",
+      "original_filename": "msword_sample.pdf",
+      "mime_type": "application/pdf",
+      "uploaded_at": "2026-09-16T16:13:35.792Z"
+    },
+    {
+      "id": "01M2NF6JKGSMD2TCCAWNEXESFB",
+      "partner_id": "01M2NF6JJKBTY7EDFJ451YT7YS",
+      "document_type": "insurance",
+      "document_number": "BZJ1234567890",
+      "file_path": "/uploads/01M2NFXEMR11QDTE2NQNP71T17.pdf",
+      "original_filename": "msword_sample.pdf",
+      "mime_type": "application/pdf",
+      "uploaded_at": "2026-09-16T16:13:35.795Z"
     }
   ],
   "partner_vehicles": [
@@ -6553,6 +6603,16 @@
       "insurance_provider": "Oriental Insurance",
       "insuranceNumber": "HDF1234567890",
       "insuranceValidTill": "3000-02-22"
+    },
+    {
+      "id": "01M2NF6JJZZ6YB2J7D3FAEKYMA",
+      "partner_id": "01M2NF6JJKBTY7EDFJ451YT7YS",
+      "vehicleType": "Bike",
+      "vehicleName": "TVS Apache RTR 160",
+      "vehicleNumber": "TN 75 MN 7890",
+      "insurance_provider": "HDFC ERGO",
+      "insuranceNumber": "BZJ1234567890",
+      "insuranceValidTill": "2060-02-22"
     }
   ],
   "partner_bank_accounts": [
@@ -6587,6 +6647,14 @@
       "accountNumber": "admin123",
       "ifscCode": "i9",
       "accountHolderName": "Selvam R"
+    },
+    {
+      "id": "01M2NF6JKKJQW7GVKW4GDHQG0D",
+      "partner_id": "01M2NF6JJKBTY7EDFJ451YT7YS",
+      "bankName": "State Bank of India",
+      "accountNumber": "4567 8901 2345",
+      "ifscCode": "CNRB0004567",
+      "accountHolderName": "hari"
     }
   ],
   "restaurant_categories": [
@@ -6791,6 +6859,26 @@
       "driving_license_expiry": "2078-02-22",
       "online_status": "Online",
       "joined_at": "2026-09-15T13:32:58.295Z"
+    },
+    {
+      "id": "01M2NF6JJKBTY7EDFJ451YT7YS",
+      "user_id": "01M2NF6JJKFGMSRYV2RKPZ98VM",
+      "dateOfBirth": "2005-02-22",
+      "gender": "Male",
+      "alternateMobile": "9876543210",
+      "emergencyContact": "Dias S",
+      "emergency_contact_relationship": "Friend",
+      "emergencyMobile": "0987654321",
+      "city": "Keelayur",
+      "address_line_1": "145",
+      "address_line_2": "jajwj",
+      "state": "Tamil Nadu",
+      "postal_code": "625106",
+      "country": "India",
+      "driving_license_number": "24222222222222222",
+      "driving_license_expiry": "22222-02-22",
+      "online_status": "Online",
+      "joined_at": "2026-09-16T16:01:06.139Z"
     }
   ],
   "request_assignments": [
@@ -6838,6 +6926,16 @@
       "isVerified": true,
       "joinedOn": "2026-09-16",
       "profileImage": "/uploads/01M2MWS6E6R8XVFXA61RQXB0CQ.png"
+    },
+    {
+      "id": "01M2NF6JJKFGMSRYV2RKPZ98VM",
+      "name": "Hari Priyan",
+      "email": "hari@gmail.com",
+      "mobileNumber": "8438285161",
+      "phone": "8438285161",
+      "role": "Delivery Partner",
+      "status": "Blocked",
+      "profileImage": null
     }
   ]
 }
