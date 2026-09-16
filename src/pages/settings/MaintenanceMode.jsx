@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Button from "../../components/ui/button";
+import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
 import { getMaintenanceModeSettings, saveMaintenanceModeSettings } from "../../api/settingsApi";
 import { 

@@ -4,7 +4,7 @@ import { Plus, RotateCcw, Trash2, Eye, Pencil, Star, ShoppingBag, Store, Trendin
 
 import Badge from "../components/ui/Badge";
 import BadgeCell from "../components/ui/BadgeCell";
-import Button from "../components/ui/button";
+import Button from "../components/ui/Button";
 import SearchInput from "../components/ui/SearchInput";
 import StatusSelect from "../components/ui/StatusSelect";
 import Table from "../components/ui/Table";
