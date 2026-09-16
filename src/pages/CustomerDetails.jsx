@@ -16,6 +16,7 @@ import Badge from '../components/ui/Badge';
 import Modal from '../components/ui/Modal';
 import Avatar from '../components/ui/Avatar';
 import Table from '../components/ui/Table';
+import Input from '../components/ui/Input';
 
 /* ─── helpers ─────────────────────────────────── */
 const InfoRow = ({ label, value }) => (
@@ -70,6 +71,9 @@ export default function CustomerDetails() {
   const [error,        setError]        = useState(null);
   const [activeTab,    setActiveTab]    = useState('overview');
   const [statusModal,  setStatusModal]  = useState(false);
+  const [msgModal,     setMsgModal]     = useState(false);
+  const [msgForm,      setMsgForm]      = useState({ title: '', message: '' });
+  const [imagePreviewModal, setImagePreviewModal] = useState(false);
 
   useEffect(() => {
     if (!publicId) return;
@@ -107,6 +111,13 @@ export default function CustomerDetails() {
     } catch {
       alert('Failed to update customer status.');
     }
+  };
+
+  const handleSendMessage = () => {
+    if (!msgForm.message.trim()) return;
+    alert('Message Sent (Simulated)');
+    setMsgModal(false);
+    setMsgForm({ title: '', message: '' });
   };
 
   if (loading) return (
@@ -147,13 +158,14 @@ export default function CustomerDetails() {
 
         {/* Action buttons */}
         <div className="flex items-center gap-2">
-          <Button variant="secondary" size="sm" className="flex items-center gap-1.5">
+          <Button variant="secondary" size="sm" onClick={() => setMsgModal(true)} className="flex items-center gap-1.5">
             <MessageSquare size={15} /> Send Message
           </Button>
           <Button
             size="sm"
             onClick={() => setStatusModal(true)}
-            className={`flex items-center gap-1.5 text-white ${isBlocked ? 'bg-success hover:bg-success/90' : 'bg-danger hover:bg-danger/90'}`}
+            variant={isBlocked ? 'success' : 'danger'}
+            className="flex items-center gap-1.5"
           >
             {isBlocked
               ? <><ShieldCheck size={15} /> Unblock Customer</>
@@ -172,12 +184,18 @@ export default function CustomerDetails() {
         <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 px-6 py-5">
           {/* Avatar + name */}
           <div className="flex items-center gap-4 shrink-0">
-            <Avatar
-              src={customer.profileImage || customer.image}
-              identifier={customer.public_id}
-              alt={customer.name}
-              className="h-20 w-20 text-2xl rounded-full ring-2 ring-border"
-            />
+            <div 
+              className="cursor-pointer hover:opacity-80 transition-opacity" 
+              onClick={() => (customer.profileImage || customer.image) && setImagePreviewModal(true)}
+              title="View Profile Image"
+            >
+              <Avatar
+                src={customer.profileImage || customer.image}
+                identifier={customer.public_id}
+                alt={customer.name}
+                className="h-20 w-20 text-2xl rounded-full ring-2 ring-border"
+              />
+            </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap mb-1">
                 <h1 className="text-xl font-bold text-foreground">{customer.name}</h1>
@@ -214,8 +232,6 @@ export default function CustomerDetails() {
             <StatBox label="Customer ID"      value={customer.public_id?.slice(0, 14) + '…'} />
             <StatBox label="Wallet Balance"   value={wallet ? `₹${wallet.balance?.toFixed(2)}` : '₹0.00'} color="primary" />
             <StatBox label="Total Requests"   value={requests.length} />
-            <StatBox label="Total Credits"    value={`₹${totalCredits.toFixed(2)}`} color="success" />
-            <StatBox label="Total Debits"     value={`₹${totalDebits.toFixed(2)}`}  color="danger" />
             <StatBox
               label="Verified"
               value={
@@ -302,13 +318,9 @@ export default function CustomerDetails() {
                   <p className="text-xs text-primary font-medium mb-1">Current Balance</p>
                   <p className="text-2xl font-bold text-foreground">₹{wallet?.balance?.toFixed(2) ?? '0.00'}</p>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-success/10 border border-success/20 rounded-xl p-3">
-                    <p className="text-xs text-success font-medium mb-1">Credits</p>
-                    <p className="text-lg font-bold text-foreground">₹{totalCredits.toFixed(2)}</p>
-                  </div>
+                <div className="mt-1">
                   <div className="bg-danger/10 border border-danger/20 rounded-xl p-3">
-                    <p className="text-xs text-danger font-medium mb-1">Debits</p>
+                    <p className="text-xs text-danger font-medium mb-1">Total Debits</p>
                     <p className="text-lg font-bold text-foreground">₹{totalDebits.toFixed(2)}</p>
                   </div>
                 </div>
@@ -372,14 +384,10 @@ export default function CustomerDetails() {
             </div>
             <div className="p-5">
               {/* Balance cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
                   <p className="text-xs text-primary font-medium mb-1">Current Balance</p>
                   <p className="text-2xl font-bold text-foreground">₹{wallet?.balance?.toFixed(2) ?? '0.00'}</p>
-                </div>
-                <div className="bg-success/10 border border-success/20 rounded-xl p-4">
-                  <p className="text-xs text-success font-medium mb-1">Total Credits</p>
-                  <p className="text-2xl font-bold text-foreground">₹{totalCredits.toFixed(2)}</p>
                 </div>
                 <div className="bg-danger/10 border border-danger/20 rounded-xl p-4">
                   <p className="text-xs text-danger font-medium mb-1">Total Debits</p>
@@ -501,11 +509,55 @@ export default function CustomerDetails() {
         <div className="mt-6 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setStatusModal(false)}>Cancel</Button>
           <Button
-            className={isBlocked ? 'bg-success hover:bg-success/90 text-white' : 'bg-danger hover:bg-danger/90 text-white'}
+            variant={isBlocked ? 'success' : 'danger'}
             onClick={handleStatusToggle}
           >
             {isBlocked ? 'Yes, Unblock' : 'Yes, Block'}
           </Button>
+        </div>
+      </Modal>
+
+      {/* ─ Send Message Modal ─ */}
+      <Modal
+        isOpen={msgModal}
+        onClose={() => setMsgModal(false)}
+        title="Send Message to Customer"
+      >
+        <div className="space-y-4">
+          <Input
+            label="Title / Subject (Optional)"
+            placeholder="e.g. Account Update"
+            value={msgForm.title}
+            onChange={(e) => setMsgForm(p => ({ ...p, title: e.target.value }))}
+          />
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Message Description *</label>
+            <textarea
+              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary transition-colors min-h-[100px] resize-y"
+              placeholder="Enter your message here..."
+              value={msgForm.message}
+              onChange={(e) => setMsgForm(p => ({ ...p, message: e.target.value }))}
+            />
+          </div>
+        </div>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setMsgModal(false)}>Cancel</Button>
+          <Button onClick={handleSendMessage} disabled={!msgForm.message.trim()}>Send Message</Button>
+        </div>
+      </Modal>
+
+      {/* ─ Image Preview Modal ─ */}
+      <Modal
+        isOpen={imagePreviewModal}
+        onClose={() => setImagePreviewModal(false)}
+        title="Profile Image"
+      >
+        <div className="flex justify-center p-4">
+          <img 
+            src={customer.profileImage || customer.image} 
+            alt={customer.name} 
+            className="max-w-full max-h-[70vh] rounded-xl object-contain" 
+          />
         </div>
       </Modal>
     </div>
