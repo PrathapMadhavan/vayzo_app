@@ -268,9 +268,9 @@ function DeliveryPartnersAdd() {
         
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col rounded-xl border border-border bg-surface shadow-sm"
+          className="flex flex-col gap-6"
         >
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
             <div className="mb-6 flex flex-col gap-1">
               <h2 className="text-lg font-semibold text-foreground">
                 Basic Information
@@ -396,7 +396,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
           
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
             <h2 className="text-lg font-semibold text-foreground">
               Emergency Contact
             </h2>
@@ -428,7 +428,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
 
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
             <h2 className="text-lg font-semibold text-foreground">
               Address
             </h2>
@@ -465,7 +465,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
 
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
              <h2 className="text-lg font-semibold text-foreground">
               Vehicle Information
             </h2>
@@ -484,7 +484,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
           
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
              <h2 className="text-lg font-semibold text-foreground">
               Driving & Insurance
             </h2>
@@ -497,7 +497,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
           
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
              <h2 className="text-lg font-semibold text-foreground">
               Bank Information
             </h2>
@@ -524,7 +524,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
           
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
              <h2 className="text-lg font-semibold text-foreground">
               Account Information
             </h2>
@@ -548,7 +548,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
           
-          <div className="border-b border-border p-6 sm:p-8">
+          <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
              <h2 className="text-lg font-semibold text-foreground mb-1">
               Documents
             </h2>
@@ -593,7 +593,7 @@ function DeliveryPartnersAdd() {
             </div>
           </div>
 
-          <div className="mt-auto flex justify-end gap-4 border-t border-border p-6 bg-surface-hover/30 rounded-b-xl">
+          <div className="flex justify-end gap-3 sm:gap-4 p-0">
             <Button
               variant="secondary"
               type="button"
@@ -612,7 +612,7 @@ function DeliveryPartnersAdd() {
           </div>
         </form>
 
-        <aside className="flex flex-col gap-6">
+        <aside className="hidden xl:flex flex-col gap-6">
           <div className="rounded-xl border border-border bg-surface p-6 shadow-sm">
             <h2 className="text-base font-semibold text-foreground border-b border-border pb-4 mb-4">
               Partner Guidelines

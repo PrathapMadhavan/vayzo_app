@@ -215,18 +215,19 @@ function Customers() {
                 variant="secondary"
                 size="sm"
                 type="button"
-                className="h-10 w-full sm:w-auto"
+                className="h-10 flex-1 sm:flex-none sm:w-auto flex items-center justify-center text-sm"
                 onClick={() => exportToCSV(filteredCustomers, "customers.csv")}
               >
-                <Download size={14} className="mr-1" /> Export
+                <Download size={14} className="mr-1 hidden sm:inline" /> Export
               </Button>
               <Button
                 size="sm"
                 onClick={() => navigate("/customers/add")}
-                className="h-10 w-full sm:w-auto flex items-center justify-center gap-2"
+                className="h-10 flex-1 sm:flex-none sm:w-auto flex items-center justify-center gap-1.5 text-sm"
               >
-                <Plus size={18} strokeWidth={2.5} />
-                Add Customer
+                <Plus size={16} strokeWidth={2.5} />
+                <span className="hidden sm:inline">Add Customer</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </>
           }
@@ -299,7 +300,9 @@ function Customers() {
                   </td>
 
                   <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
-                    {customer.public_id}
+                    <div className="max-w-[100px] sm:max-w-[150px] truncate" title={customer.public_id}>
+                      {customer.public_id}
+                    </div>
                   </td>
 
                   <td className="px-3 py-3">
