@@ -15,20 +15,40 @@ export async function apiRequest(endpoint, options = {}, customErrorMessage = "A
 
   const requestPromise = (async () => {
     try {
-      const headers = {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-      };
+      const fetchHeaders = new Headers();
+      fetchHeaders.append("Content-Type", "application/json");
 
-      const token = localStorage.getItem("vayzo_admin_token");
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
+      // Attach any custom headers passed in options
+      if (options && options.headers) {
+        Object.entries(options.headers).forEach(([key, value]) => {
+          fetchHeaders.set(key, value);
+        });
       }
 
-      const response = await fetch(url, {
-        headers,
-        ...options,
-      });
+      // Do not attach token for authentication endpoints (e.g. login, otp, forgot-password)
+      if (endpoint && !endpoint.includes("/auth/")) {
+        const token = localStorage.getItem("vayzo_admin_token");
+        if (token) {
+          fetchHeaders.set("Authorization", `Bearer ${token}`);
+        }
+      }
+
+      const fetchOptions = {
+        method: method,
+        headers: fetchHeaders,
+      };
+
+      if (options && options.body) {
+        fetchOptions.body = options.body;
+      }
+
+      let response;
+      try {
+        response = await fetch(url, fetchOptions);
+      } catch (networkError) {
+        console.error("Network or CORS error when fetching from:", url, networkError);
+        throw new Error("Unable to connect to the server. Please check your connection or server status.");
+      }
 
       if (!response.ok) {
         let errorMessage = customErrorMessage;

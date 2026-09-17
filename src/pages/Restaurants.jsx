@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, RotateCcw, Trash2, Eye, Pencil, Star, ShoppingBag, Store, TrendingUp, Download } from "lucide-react";
+import { Plus, RotateCcw, Trash2, Eye, Pencil, Star, ShoppingBag, Store, TrendingUp, TrendingDown, Download } from "lucide-react";
 
 import Badge from "../components/ui/Badge";
 import BadgeCell from "../components/ui/BadgeCell";
@@ -122,10 +122,8 @@ function Restaurants() {
   };
 
   const activeCount = restaurants.filter((r) => r.status === "Active").length;
+  const inactiveCount = restaurants.filter((r) => r.status === "Inactive").length;
   const totalOrders = restaurants.reduce((s, r) => s + (r.totalOrders || 0), 0);
-  const avgRating = restaurants.length
-    ? (restaurants.reduce((s, r) => s + (r.rating || 0), 0) / restaurants.length).toFixed(1)
-    : "0";
 
   return (
     <section className="min-h-full bg-background p-4 sm:p-6">
@@ -134,8 +132,8 @@ function Restaurants() {
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
         <StatCard variant="horizontal" title="Total Restaurants" value={restaurants.length} icon={Store} colorClass="text-primary" bgClass="bg-primary/10" />
         <StatCard variant="horizontal" title="Active Restaurants" value={activeCount} icon={TrendingUp} colorClass="text-success" bgClass="bg-success/10" />
+        <StatCard variant="horizontal" title="Inactive Restaurants" value={inactiveCount} icon={TrendingDown} colorClass="text-danger" bgClass="bg-danger/10" />
         <StatCard variant="horizontal" title="Total Orders" value={totalOrders.toLocaleString("en-IN")} icon={ShoppingBag} colorClass="text-info" bgClass="bg-info/10" />
-        <StatCard variant="horizontal" title="Avg. Rating" value={avgRating} icon={Star} colorClass="text-warning" bgClass="bg-warning/10" />
       </div>
 
       {/* Filters */}

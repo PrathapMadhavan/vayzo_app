@@ -166,6 +166,10 @@ function RestaurantsAdd() {
   };
 
   const handleSaveMenuItem = () => {
+    if (!editingMenuItem.name.trim() || !editingMenuItem.price || !editingMenuItem.category || !editingMenuItem.foodType) {
+      alert("Item Name, Price, Category, and Food Type are required.");
+      return;
+    }
     setForm(prev => {
       const updatedMenuItems = prev.menuItems ? [...prev.menuItems] : [];
       if (editingMenuItem.isNew) {
@@ -183,12 +187,49 @@ function RestaurantsAdd() {
     setEditingMenuItem(null);
   };
 
-  const handleDeleteMenuItem = (itemId) => {
+  const handleDeleteMenuItem = async (itemId) => {
     if (!window.confirm("Are you sure you want to delete this menu item?")) return;
-    setForm(prev => ({
-      ...prev,
-      menuItems: prev.menuItems.filter(item => item.id !== itemId)
-    }));
+    
+    const updatedMenuItems = form.menuItems.filter(item => item.id !== itemId);
+
+    // Persist to backend immediately if editing an existing restaurant
+    if (isEditing && restaurantId) {
+      try {
+        const cleanMenuItems = updatedMenuItems.map((item) => {
+          const cleaned = { ...item };
+          delete cleaned.isEditing;
+          return cleaned;
+        });
+
+        const payload = {
+          ...form,
+          menuItems: cleanMenuItems,
+          cuisineType: form.cuisines.join(", "),
+          minimumOrder: form.minimumOrder !== "" ? Number(form.minimumOrder) : null,
+          deliveryCharge: form.deliveryCharge !== "" ? Number(form.deliveryCharge) : null,
+        };
+        
+        // Remove logo and coverImage if they are blob URLs to avoid saving invalid data during delete
+        if (payload.logo && payload.logo.startsWith("blob:")) payload.logo = null;
+        if (payload.coverImage && payload.coverImage.startsWith("blob:")) payload.coverImage = null;
+
+        await updateRestaurant(restaurantId, payload);
+        
+        // Only update local state if backend succeeds
+        setForm(prev => ({
+          ...prev,
+          menuItems: updatedMenuItems
+        }));
+      } catch (err) {
+        alert("Failed to delete menu item from server. Please try again.");
+      }
+    } else {
+      // If adding a new restaurant, just update local state
+      setForm(prev => ({
+        ...prev,
+        menuItems: updatedMenuItems
+      }));
+    }
   };
   const removeCuisine = (c) => {
     setForm((prev) => ({
@@ -199,6 +240,8 @@ function RestaurantsAdd() {
 
   const validate = () => {
     if (!form.name.trim()) return "Restaurant name is required.";
+    if (!form.address?.trim()) return "Restaurant address is required.";
+    if (!form.menuItems || form.menuItems.length === 0) return "At least one menu item is required.";
     return "";
   };
 
@@ -231,12 +274,16 @@ function RestaurantsAdd() {
         console.warn("MISSING REQUIREMENT: Image upload endpoint unavailable. Logo preview will not be persisted.");
       } else if (logoPreview) {
         payload.logo = logoPreview;
+      } else {
+        payload.logo = null;
       }
       
       if (coverPreview && coverPreview.startsWith("blob:")) {
         console.warn("MISSING REQUIREMENT: Image upload endpoint unavailable. Cover preview will not be persisted.");
       } else if (coverPreview) {
         payload.coverImage = coverPreview;
+      } else {
+        payload.coverImage = null;
       }
       if (isEditing) {
         await updateRestaurant(restaurantId, { ...payload, id: restaurantId });
@@ -369,7 +416,7 @@ function RestaurantsAdd() {
               <div className="space-y-6">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-medium text-foreground">
-                    <RequiredLabel text="Restaurant Logo" />
+                    Restaurant Logo
                   </label>
                   <div className="flex gap-4">
                     <div className="w-[120px] h-[120px] rounded-lg border border-border bg-surface flex items-center justify-center overflow-hidden shrink-0">
@@ -422,7 +469,7 @@ function RestaurantsAdd() {
 
                 <div className="space-y-1.5">
                   <label className="block text-xs font-medium text-foreground">
-                    <RequiredLabel text="Cover Image" />
+                    Cover Image
                   </label>
                   <div 
                     onClick={() => coverInputRef.current?.click()}
@@ -770,21 +817,11 @@ function RestaurantsAdd() {
                   className="w-full bg-transparent py-2.5 pl-3.5 pr-10 text-sm text-foreground outline-none appearance-none cursor-pointer"
                 >
                   <option value="" disabled>Select Category</option>
-                  <option value="South Indian">South Indian</option>
-                  <option value="North Indian">North Indian</option>
-                  <option value="Chinese">Chinese</option>
-                  <option value="Continental">Continental</option>
-                  <option value="Biryani">Biryani</option>
-                  <option value="Starters">Starters</option>
-                  <option value="Main Course">Main Course</option>
-                  <option value="Snacks">Snacks</option>
-                  <option value="Fast Food">Fast Food</option>
-                  <option value="Beverages">Beverages</option>
-                  <option value="Desserts">Desserts</option>
-                  <option value="Salads">Salads</option>
-                  <option value="Soups">Soups</option>
-                  <option value="Breakfast">Breakfast</option>
-                  <option value="Pizza & Pasta">Pizza & Pasta</option>
+                  {categories
+                    .filter(cat => cat.type === "Food")
+                    .map(cat => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  ))}
                 </select>
                 <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
