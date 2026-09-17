@@ -18,12 +18,23 @@ const OTP_CODE = '123456'; // Development OTP
 
 const app = express();
 app.use(cors());
+
+const middlewares = jsonServer.defaults({ static: __dirname, bodyParser: false });
+app.use(middlewares);
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Fix for json-server stream consumed error
+app.use((req, res, next) => {
+  if (req.body) {
+    req._body = true;
+  }
+  next();
+});
+
 // Load db.json via json-server router
 const router = jsonServer.router(path.join(__dirname, 'db.json'));
-const middlewares = jsonServer.defaults({ static: __dirname, bodyParser: false });
+
 
 // Helper to find Admin user by mobile number
 function findAdminByMobile(mobile) {
