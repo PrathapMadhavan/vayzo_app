@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Plus, RotateCcw, Eye, Pencil as Edit, Trash2, MoreVertical, Download } from "lucide-react";
 import Avatar from "../components/ui/Avatar";
 
-import Badge from "../components/ui/Badge";
+import Badge from "../components/ui/badge";
 import Button from "../components/ui/Button";
 import SearchInput from "../components/ui/SearchInput";
 import StatusSelect from "../components/ui/StatusSelect";
@@ -222,18 +222,19 @@ function DeliveryPartners() {
                 variant="secondary"
                 size="sm"
                 type="button"
-                className="h-10 w-full sm:w-auto"
+                className="h-10 flex-1 sm:flex-none sm:w-auto flex items-center justify-center text-sm"
                 onClick={() => exportToCSV(filteredPartners, "delivery-partners.csv")}
               >
-                <Download size={14} className="mr-1" /> Export
+                <Download size={14} className="mr-1 hidden sm:inline" /> Export
               </Button>
               <Button
                 size="sm"
                 onClick={() => navigate("/delivery/add")}
-                className="h-10 w-full sm:w-auto flex items-center justify-center text-[0.8rem] gap-2"
+                className="h-10 flex-1 sm:flex-none sm:w-auto flex items-center justify-center gap-1.5 text-sm"
               >
-                <Plus size={18} strokeWidth={2.5} />
-                Add Delivery Partner
+                <Plus size={16} strokeWidth={2.5} />
+                <span className="hidden sm:inline">Add Partner</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </>
           }
@@ -342,7 +343,9 @@ function DeliveryPartners() {
                   </td>
 
                   <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
-                    {partner.partnerId}
+                    <div className="max-w-[100px] sm:max-w-[150px] truncate" title={partner.partnerId}>
+                      {partner.partnerId}
+                    </div>
                   </td>
 
                   <td className="px-3 py-3">

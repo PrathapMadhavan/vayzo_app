@@ -11,6 +11,7 @@ const types = [
   "Select type",
   "Product",
   "Service",
+  "Food",
 ];
 
 const statusOptions = ["Active", "Inactive"];

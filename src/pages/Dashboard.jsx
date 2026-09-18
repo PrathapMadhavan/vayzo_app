@@ -95,56 +95,65 @@ function Dashboard() {
 
   if (!data) return null;
 
-  const {
-    stats,
-    recentOrders,
-    ordersByService,
-    deliveryPartnerOverview,
-    topRestaurants,
-    recentTransactions,
-    quickSummary,
-    lineChartData,
-    barChartData,
-    pieData,
-  } = data;
+  // Safely destructure with full fallbacks in case API shape differs
+  const raw = Array.isArray(data) ? data[0] : data;
+
+  const stats = raw?.stats ?? {};
+  const recentOrders = raw?.recentOrders ?? [];
+  const ordersByService = raw?.ordersByService ?? [];
+  const deliveryPartnerOverview = raw?.deliveryPartnerOverview ?? {};
+  const topRestaurants = raw?.topRestaurants ?? [];
+  const recentTransactions = raw?.recentTransactions ?? [];
+  const quickSummary = raw?.quickSummary ?? {};
+  const lineChartData = raw?.lineChartData ?? [];
+  const barChartData = raw?.barChartData ?? [];
+  const pieData = raw?.pieData ?? [];
+
+  const safeStats = {
+    totalOrders:       stats.totalOrders       ?? { value: 0, trend: '' },
+    grossRevenue:      stats.grossRevenue       ?? { value: '₹0', trend: '' },
+    commission:        stats.commission         ?? { value: '₹0', trend: '' },
+    netRevenue:        stats.netRevenue         ?? { value: '₹0', trend: '' },
+    newUsers:          stats.newUsers           ?? { value: 0, trend: '' },
+  };
 
   const statCards = [
     {
       title: "Total Orders",
-      value: stats.totalOrders.value,
-      trend: stats.totalOrders.trend,
+      value: safeStats.totalOrders.value,
+      trend: safeStats.totalOrders.trend,
       icon: ShoppingBag,
       colorClass: "text-primary",
       bgClass: "bg-primary-light",
     },
     {
       title: "Gross Revenue",
-      value: stats.grossRevenue.value,
-      trend: stats.grossRevenue.trend,
+      value: safeStats.grossRevenue.value,
+      trend: safeStats.grossRevenue.trend,
       icon: Wallet,
       colorClass: "text-warning",
       bgClass: "bg-warning/10",
     },
     {
       title: "Commission",
-      value: stats.commission.value,
-      trend: stats.commission.trend,
+      value: safeStats.commission.value,
+      trend: safeStats.commission.trend,
       icon: Coins,
       colorClass: "text-success",
       bgClass: "bg-success/10",
     },
     {
       title: "Net Revenue",
-      value: stats.netRevenue.value,
-      trend: stats.netRevenue.trend,
+      value: safeStats.netRevenue.value,
+      trend: safeStats.netRevenue.trend,
       icon: CreditCard,
       colorClass: "text-info",
       bgClass: "bg-info/10",
     },
     {
-      title: "New Users",
-      value: stats.newUsers.value,
-      trend: stats.newUsers.trend,
+      title: "New Customers",
+      value: safeStats.newUsers.value,
+      trend: safeStats.newUsers.trend,
       icon: Users,
       colorClass: "text-danger",
       bgClass: "bg-danger/10",
@@ -182,8 +191,8 @@ function Dashboard() {
           <StatCard
             key={i}
             title={stat.title}
-            value={stat.value}
-            trend={stat.trend}
+            value={loading ? "--" : stat.value}
+            trend={loading ? "--" : stat.trend}
             icon={stat.icon}
             colorClass={stat.colorClass}
             bgClass={stat.bgClass}
@@ -305,11 +314,11 @@ function Dashboard() {
           </div>
         </Card>
 
-        {/* Users Overview (Donut) */}
+        {/* Customers Overview (Donut) */}
         <Card>
           <div className="mb-2 flex items-center justify-between">
-            <h3 className="font-semibold text-foreground">Users Overview</h3>
-            <Link to="/users" className="text-sm font-medium text-primary hover:underline">View All</Link>
+            <h3 className="font-semibold text-foreground">Customers Overview</h3>
+            <Link to="/customers" className="text-sm font-medium text-primary hover:underline">View All</Link>
           </div>
           <div className="relative flex h-48 items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
@@ -323,7 +332,7 @@ function Dashboard() {
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute flex flex-col items-center justify-center">
-              <span className="text-xs text-muted">Total Users</span>
+              <span className="text-xs text-muted">Total Customers</span>
               <span className="text-lg font-bold text-foreground">45,231</span>
             </div>
           </div>

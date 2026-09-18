@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Input from "../../components/ui/Input";
+import Input from "../../components/ui/input";
 import Button from "../../components/ui/Button";
 import { getPaymentSettings, savePaymentSettings } from "../../api/settingsApi";
 import { Eye, Edit, GripVertical, CheckCircle2, Circle, ArrowRight, Smartphone, Building2, Banknote, HelpCircle, Receipt, RefreshCcw, HandCoins, Save } from "lucide-react";

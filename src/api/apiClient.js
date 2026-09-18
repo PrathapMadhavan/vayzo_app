@@ -16,9 +16,13 @@ export async function apiRequest(endpoint, options = {}, customErrorMessage = "A
   const requestPromise = (async () => {
     try {
       const headers = {
-        "Content-Type": "application/json",
         ...(options.headers || {}),
       };
+      if (options.body && options.body instanceof FormData) {
+        // fetch automatically sets multipart/form-data with boundaries
+      } else if (!headers["Content-Type"]) {
+        headers["Content-Type"] = "application/json";
+      }
 
       const token = localStorage.getItem("vayzo_admin_token");
       if (token) {
