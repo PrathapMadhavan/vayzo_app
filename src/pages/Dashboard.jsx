@@ -191,8 +191,8 @@ function Dashboard() {
           <StatCard
             key={i}
             title={stat.title}
-            value={stat.value}
-            trend={stat.trend}
+            value={loading ? "--" : stat.value}
+            trend={loading ? "--" : stat.trend}
             icon={stat.icon}
             colorClass={stat.colorClass}
             bgClass={stat.bgClass}

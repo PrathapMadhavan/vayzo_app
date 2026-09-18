@@ -132,10 +132,10 @@ function Restaurants() {
 
       {/* Stat Cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-        <StatCard variant="horizontal" title="Total Restaurants" value={restaurants.length} icon={Store} colorClass="text-primary" bgClass="bg-primary/10" />
-        <StatCard variant="horizontal" title="Active Restaurants" value={activeCount} icon={TrendingUp} colorClass="text-success" bgClass="bg-success/10" />
-        <StatCard variant="horizontal" title="Total Orders" value={totalOrders.toLocaleString("en-IN")} icon={ShoppingBag} colorClass="text-info" bgClass="bg-info/10" />
-        <StatCard variant="horizontal" title="Avg. Rating" value={avgRating} icon={Star} colorClass="text-warning" bgClass="bg-warning/10" />
+        <StatCard variant="horizontal" title="Total Restaurants" value={loading ? "--" : restaurants.length} icon={Store} colorClass="text-primary" bgClass="bg-primary/10" />
+        <StatCard variant="horizontal" title="Active Restaurants" value={loading ? "--" : activeCount} icon={TrendingUp} colorClass="text-success" bgClass="bg-success/10" />
+        <StatCard variant="horizontal" title="Total Orders" value={loading ? "--" : totalOrders.toLocaleString("en-IN")} icon={ShoppingBag} colorClass="text-info" bgClass="bg-info/10" />
+        <StatCard variant="horizontal" title="Avg. Rating" value={loading ? "--" : avgRating} icon={Star} colorClass="text-warning" bgClass="bg-warning/10" />
       </div>
 
       {/* Filters */}
