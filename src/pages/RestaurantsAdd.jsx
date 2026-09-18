@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 
-import Button from "../components/ui/Button";
+import Button from "../components/ui/button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import Card from "../components/ui/Card";
