@@ -2,45 +2,60 @@ import { apiRequest } from "./apiClient";
 
 const ENDPOINT = "/api/v1/admin/customers";
 
-export async function getUsers() {
-  return apiRequest(`${ENDPOINT}?userType=Customer`, {}, "Unable to load users");
+export async function getCustomers(filters = {}) {
+  const query = new URLSearchParams(filters).toString();
+  return apiRequest(`${ENDPOINT}${query ? `?${query}` : ""}`, {}, "Unable to load customers");
 }
 
-export async function getUserById(userId) {
-  const data = await apiRequest(`${ENDPOINT}?userId=${userId}&userType=Customer`, {}, "Unable to load user");
+export async function getCustomerById(publicId) {
+  const data = await apiRequest(`${ENDPOINT}/${publicId}`, {}, "Unable to load customer");
 
-  if (!data || !data.length) {
-    throw new Error("User not found");
+  if (!data) {
+    throw new Error("Customer not found");
   }
 
-  return data[0];
+  return data;
 }
 
-export async function createUser(userData) {
-  console.warn("MISSING REQUIREMENT: Backend generation of business userId is unavailable.");
-  const newUser = {
-    ...userData,
-    name: userData.name,
-    email: userData.email,
-    mobileNumber: userData.mobileNumber,
-    userType: "Customer",
-  };
-
+export async function createCustomer(formData) {
   return apiRequest(ENDPOINT, {
     method: "POST",
-    body: JSON.stringify(newUser),
-  }, "Unable to create user");
+    body: formData,
+  }, "Unable to create customer");
 }
 
-export async function updateUser(id, userData) {
-  return apiRequest(`${ENDPOINT}/${id}`, {
-    method: "PATCH", // Using PATCH for json-server to preserve existing data (contract is PUT)
-    body: JSON.stringify(userData),
-  }, "Unable to update user");
+export async function updateCustomer(publicId, formData) {
+  return apiRequest(`${ENDPOINT}/${publicId}`, {
+    method: "PATCH",
+    body: formData,
+  }, "Unable to update customer");
 }
 
-export async function deleteUser(id) {
-  return apiRequest(`${ENDPOINT}/${id}`, {
+export async function deleteCustomer(publicId) {
+  return apiRequest(`${ENDPOINT}/${publicId}`, {
     method: "DELETE",
-  }, "Unable to delete user");
+  }, "Unable to delete customer");
+}
+
+export async function getCustomerRequests(publicId) {
+  return apiRequest(`${ENDPOINT}/${publicId}/requests`, {}, "Unable to load customer requests");
+}
+
+export async function getCustomerWallet(publicId) {
+  return apiRequest(`${ENDPOINT}/${publicId}/wallet`, {}, "Unable to load customer wallet");
+}
+
+export async function getCustomerTransactions(publicId) {
+  return apiRequest(`${ENDPOINT}/${publicId}/wallet/transactions`, {}, "Unable to load customer transactions");
+}
+
+export async function getCustomerComplaints(publicId) {
+  return apiRequest(`${ENDPOINT}/${publicId}/complaints`, {}, "Unable to load customer complaints");
+}
+
+export async function updateCustomerStatus(publicId, status) {
+  return apiRequest(`${ENDPOINT}/${publicId}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status })
+  }, "Unable to update customer status");
 }

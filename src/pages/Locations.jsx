@@ -158,7 +158,7 @@ export default function Locations() {
         <StatCard
           variant="horizontal"
           title="Total Locations"
-          value={locations.length > 0 ? locations.length : 256}
+          value={loading ? "--" : locations.length}
           trend="8.5%"
           icon={MapPin}
           colorClass="text-primary"
@@ -167,7 +167,7 @@ export default function Locations() {
         <StatCard
           variant="horizontal"
           title="Active Locations"
-          value={locations.filter((l) => l.status === "ACTIVE").length || 198}
+          value={loading ? "--" : locations.filter((l) => l.status === "ACTIVE").length}
           trend="10.2%"
           icon={Building2}
           colorClass="text-success"
@@ -176,7 +176,7 @@ export default function Locations() {
         <StatCard
           variant="horizontal"
           title="Inactive Locations"
-          value={locations.filter((l) => l.status === "INACTIVE").length || 45}
+          value={loading ? "--" : locations.filter((l) => l.status === "INACTIVE").length}
           trend="5.6%"
           isNegative
           icon={AlertCircle}
@@ -186,7 +186,7 @@ export default function Locations() {
         <StatCard
           variant="horizontal"
           title="Restricted Locations"
-          value={locations.filter((l) => l.status === "RESTRICTED").length || 13}
+          value={loading ? "--" : locations.filter((l) => l.status === "RESTRICTED").length}
           trend="2.1%"
           isNegative
           icon={Trash2}

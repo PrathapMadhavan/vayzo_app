@@ -3,7 +3,7 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Toggle from "../../components/ui/Toggle";
 import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
+import Button from "../../components/ui/button";
 import { getCommissionSettings, saveCommissionSettings } from "../../api/settingsApi";
 import { 
   Info, 

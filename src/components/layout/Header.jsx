@@ -90,6 +90,14 @@
     }
     
     if (action === "edit") {
+      const id = segments[2];
+      if (id) {
+        return { 
+          title: `Edit ${singularLabel}`, 
+          parent: `${singularLabel} Details`, 
+          parentPath: `${mainRoute.path}/${id}` 
+        };
+      }
       return { title: `Edit ${singularLabel}`, parent: mainRoute.label, parentPath: mainRoute.path };
     }
 
@@ -162,50 +170,50 @@
           <Menu size={25} strokeWidth={2.8} />
         </button>
 
-        <div>
-          <p className="text-lg font-semibold text-foreground">{pageTitle}</p>
+        <div className="flex-1 min-w-0 px-3 sm:px-4">
+          <p className="text-lg font-semibold text-foreground truncate">{pageTitle}</p>
 
           {parentPage && (
-            <div className="flex items-center gap-1 text-xs text-muted">
+            <div className="flex items-center gap-1 text-[11px] sm:text-xs text-muted overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <NavLink
                 to="/dashboard"
-                className="transition-colors hover:text-primary"
+                className="transition-colors hover:text-primary shrink-0"
               >
                 Dashboard
               </NavLink>
 
-              <ChevronRight size={14} strokeWidth={1.8} />
+              <ChevronRight size={12} className="shrink-0 sm:w-3.5 sm:h-3.5" strokeWidth={1.8} />
 
               <NavLink
                 to={parentPath}
-                className="transition-colors hover:text-primary"
+                className="transition-colors hover:text-primary shrink-0"
               >
                 {parentPage}
               </NavLink>
 
-              <ChevronRight size={14} strokeWidth={1.8} />
+              <ChevronRight size={12} className="shrink-0 sm:w-3.5 sm:h-3.5" strokeWidth={1.8} />
 
-              <span>{pageTitle}</span>
+              <span className="shrink-0 text-foreground/80">{pageTitle}</span>
             </div>
           )}
 
           {!parentPage && pageTitle !== "Dashboard" && (
-            <div className="flex items-center gap-1 text-xs text-muted">
+            <div className="flex items-center gap-1 text-[11px] sm:text-xs text-muted overflow-x-auto whitespace-nowrap [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <NavLink
                 to="/dashboard"
-                className="transition-colors hover:text-primary"
+                className="transition-colors hover:text-primary shrink-0"
               >
                 Dashboard
               </NavLink>
 
-              <ChevronRight size={14} strokeWidth={1.8} />
+              <ChevronRight size={12} className="shrink-0 sm:w-3.5 sm:h-3.5" strokeWidth={1.8} />
 
-              <span>{pageTitle}</span>
+              <span className="shrink-0 text-foreground/80">{pageTitle}</span>
             </div>
           )}
         </div>
 
-        <div className="ml-auto flex items-center gap-3 sm:gap-4">
+        <div className="ml-auto flex items-center gap-2 sm:gap-4 shrink-0">
           <NavLink
             to="/notifications"
             className="relative rounded-lg p-2 text-muted transition hover:bg-primary-light hover:text-primary"

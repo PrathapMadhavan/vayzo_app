@@ -1,1 +1,1 @@
-@import "./styles/global.css";
+@import "./styles/global.css";`n.hide-scrollbar::-webkit-scrollbar { display: none; }`n.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

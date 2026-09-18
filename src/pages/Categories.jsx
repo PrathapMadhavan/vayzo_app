@@ -153,7 +153,7 @@ export default function Categories() {
         <StatCard
           variant="horizontal"
           title="Total Categories"
-          value={categories.length > 0 ? categories.length : 48}
+          value={loading ? "--" : categories.length}
           trend="12.5%"
           icon={LayoutGrid}
           colorClass="text-primary"
@@ -162,7 +162,7 @@ export default function Categories() {
         <StatCard
           variant="horizontal"
           title="Active Categories"
-          value={categories.length > 0 ? categories.filter((c) => c.status === "Active").length : 42}
+          value={loading ? "--" : categories.filter((c) => c.status === "Active").length}
           trend="10.3%"
           icon={CheckCircle}
           colorClass="text-success"
@@ -171,7 +171,7 @@ export default function Categories() {
         <StatCard
           variant="horizontal"
           title="Inactive Categories"
-          value={categories.length > 0 ? categories.filter((c) => c.status === "Inactive").length : 5}
+          value={loading ? "--" : categories.filter((c) => c.status === "Inactive").length}
           trend="8.2%"
           isNegative
           icon={AlertCircle}
@@ -181,7 +181,7 @@ export default function Categories() {
         <StatCard
           variant="horizontal"
           title="Deleted Categories"
-          value="1"
+          value={loading ? "--" : 0}
           trend="50%"
           isNegative
           icon={Trash2}
