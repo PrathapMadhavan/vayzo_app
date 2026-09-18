@@ -391,6 +391,36 @@ function RestaurantsDetails() {
           </div>
         )}
 
+        {activeTab === "Orders" && (
+          <div className="text-center py-20 px-4 bg-surface rounded-xl border border-border border-dashed">
+            <ShoppingBag size={48} strokeWidth={1.5} className="mx-auto text-muted/30 mb-4" />
+            <h3 className="text-base font-semibold text-foreground mb-1">No Orders Available</h3>
+            <p className="text-sm text-muted max-w-sm mx-auto">
+              This restaurant currently has no order history to display.
+            </p>
+          </div>
+        )}
+
+        {activeTab === "Offers & Coupons" && (
+          <div className="text-center py-20 px-4 bg-surface rounded-xl border border-border border-dashed">
+            <Store size={48} strokeWidth={1.5} className="mx-auto text-muted/30 mb-4" />
+            <h3 className="text-base font-semibold text-foreground mb-1">No Offers Available</h3>
+            <p className="text-sm text-muted max-w-sm mx-auto">
+              There are no active offers or coupons for this restaurant.
+            </p>
+          </div>
+        )}
+
+        {activeTab === "Reviews" && (
+          <div className="text-center py-20 px-4 bg-surface rounded-xl border border-border border-dashed">
+            <Star size={48} strokeWidth={1.5} className="mx-auto text-muted/30 mb-4" />
+            <h3 className="text-base font-semibold text-foreground mb-1">No Ratings or Complaints Available</h3>
+            <p className="text-sm text-muted max-w-sm mx-auto">
+              This restaurant has not received any reviews or complaints yet.
+            </p>
+          </div>
+        )}
+
       </div>
 
       <Modal 

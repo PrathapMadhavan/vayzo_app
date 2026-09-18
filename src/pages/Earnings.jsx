@@ -142,7 +142,7 @@ export default function Earnings() {
         <StatCard
           variant="horizontal"
           title="Total Earnings"
-          value={`₹${stats.total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
+          value={loading ? "--" : `₹${stats.total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
           trend="15.3%"
           icon={Wallet}
           colorClass="text-primary"
@@ -151,7 +151,7 @@ export default function Earnings() {
         <StatCard
           variant="horizontal"
           title="Delivery Partner Earnings"
-          value={`₹${stats.partner.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
+          value={loading ? "--" : `₹${stats.partner.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
           trend="13.6%"
           icon={UserCheck}
           colorClass="text-success"
@@ -160,7 +160,7 @@ export default function Earnings() {
         <StatCard
           variant="horizontal"
           title="Platform Commission"
-          value={`₹${stats.platform.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
+          value={loading ? "--" : `₹${stats.platform.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
           trend="18.7%"
           icon={BarChart3}
           colorClass="text-info"
@@ -169,7 +169,7 @@ export default function Earnings() {
         <StatCard
           variant="horizontal"
           title="Refunds & Adjustments"
-          value={`-₹${stats.refunds.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
+          value={loading ? "--" : `-₹${stats.refunds.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
           trend="4.2%"
           isNegative
           icon={Undo2}
