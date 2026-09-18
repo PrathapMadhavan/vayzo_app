@@ -58,21 +58,22 @@ export async function getDeliveryPartnerById(partnerId) {
 
 export async function createDeliveryPartner(partnerData) {
   console.warn("MISSING REQUIREMENT: Backend generation of business partnerId is unavailable. Falling back to json-server internal id.");
-  
-  const body = partnerData instanceof FormData ? partnerData : JSON.stringify(partnerData);
+  const newPartner = {
+    ...partnerData
+  };
 
   return apiRequest(ENDPOINT, {
     method: "POST",
-    body,
+    body: JSON.stringify(newPartner),
   }, "Unable to create delivery partner");
 }
 
 export async function updateDeliveryPartner(id, partnerData) {
-  const body = partnerData instanceof FormData ? partnerData : JSON.stringify(partnerData);
-  
+  // Safe update: fetch existing first or use PATCH if supported.
+  // json-server supports PATCH for partial updates safely.
   return apiRequest(`${ENDPOINT}/${id}`, {
     method: "PATCH",
-    body,
+    body: JSON.stringify(partnerData),
   }, "Unable to update delivery partner");
 }
 

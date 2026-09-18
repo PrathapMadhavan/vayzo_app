@@ -227,7 +227,7 @@ function Complaints() {
           <StatCard
             key={idx}
             title={stat.title}
-            value={loading ? "--" : stat.value}
+            value={stat.value}
             icon={stat.icon}
             colorClass={stat.color}
             bgClass={stat.bg}

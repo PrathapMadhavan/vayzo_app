@@ -1,4 +1,3 @@
-import React, { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
 import Login from "./pages/Login";
@@ -11,10 +10,10 @@ import AdminLayout from "./components/layout/AdminLayout";
 
 import Dashboard from "./pages/Dashboard";
 
-// Customers
-const Customers = lazy(() => import("./pages/Customers"));
-const CustomersAdd = lazy(() => import("./pages/CustomersAdd"));
-const CustomerDetails = lazy(() => import("./pages/CustomerDetails"));
+// Users
+import Users from "./pages/Users";
+import UsersAdd from "./pages/UsersAdd";
+import UsersDetails from "./pages/UsersDetails";
 
 // Orders
 import Orders from "./pages/Orders";
@@ -92,12 +91,12 @@ function App() {
                 <Route path="edit" element={<ProfileEdit />} />
               </Route>
 
-              {/* Customers */}
-              <Route path="/customers" element={<Outlet />}>
-                <Route index element={<Customers />} />
-                <Route path="add" element={<CustomersAdd />} />
-                <Route path="edit/:publicId" element={<CustomersAdd />} />
-                <Route path=":publicId" element={<CustomerDetails />} />
+              {/* Users */}
+              <Route path="/users" element={<Outlet />}>
+                <Route index element={<Users />} />
+                <Route path="add" element={<UsersAdd />} />
+                <Route path="edit/:userId" element={<UsersAdd />} />
+                <Route path=":userId" element={<UsersDetails />} />
               </Route>
 
               {/* Orders */}
@@ -156,8 +155,8 @@ function App() {
                 <Route path=":restaurantId" element={<RestaurantsDetails />} />
               </Route>
 
-              {/* Admin Customers */}
-              <Route path="/admin-Customers" element={<Outlet />}>
+              {/* Admin Users */}
+              <Route path="/admin-users" element={<Outlet />}>
                 <Route index element={<AdminUsers />} />
                 <Route path="add" element={<AddAdminUser />} />
                 <Route path="edit/:userId" element={<AddAdminUser />} />

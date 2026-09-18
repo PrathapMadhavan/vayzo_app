@@ -22,15 +22,14 @@ export async function getOrders(filters = {}) {
 }
 
 export async function getOrderById(orderId) {
-  // Try orderId field first (e.g. "ORD1001"), then fallback to id
-  let data = await apiRequest(`${ENDPOINT}?orderId=${orderId}`, {}, "Unable to load order");
-
+  let data = await apiRequest(`${ENDPOINT}?requestId=${orderId}`, {}, "Unable to load request");
+  
   if (!data || data.length === 0) {
-    data = await apiRequest(`${ENDPOINT}?id=${orderId}`, {}, "Unable to load order");
+    data = await apiRequest(`${ENDPOINT}?id=${orderId}`, {}, "Unable to load request");
   }
 
   if (!data || !data.length) {
-    throw new Error("Order not found");
+    throw new Error("Request not found");
   }
 
   return data[0];

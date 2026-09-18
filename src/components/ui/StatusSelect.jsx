@@ -3,7 +3,6 @@ import Select from "./Select";
 function StatusSelect({
   value,
   onChange,
-  label,
   options = [],
   id = "status",
   className = "",
@@ -13,10 +12,8 @@ function StatusSelect({
       id={id}
       value={value}
       onChange={onChange}
-      label={label}
       containerClassName={className}
     >
-     
       {options.map((option) => (
         <option key={option} value={option}>
           {option}
