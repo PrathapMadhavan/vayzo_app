@@ -22,7 +22,7 @@ function Input({ label, error, id, className = "", prefix, suffix, ...props }) {
         <input
           id={id}
           className={[
-            "w-full bg-transparent py-2.5",
+            "w-full min-w-0 bg-transparent py-2.5",
             !prefix ? "pl-3.5" : "",
             !suffix ? "pr-3.5" : "",
             "text-sm text-foreground outline-none",
