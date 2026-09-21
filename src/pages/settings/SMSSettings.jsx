@@ -96,7 +96,8 @@ function SMSSettings() {
           </div>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
+        <div className="flex justify-center mt-4">
+          <div className="space-y-6 w-full max-w-4xl">
           
           {/* LEFT COLUMN */}
           <div className="space-y-6">
@@ -150,8 +151,8 @@ function SMSSettings() {
                       <p className="text-sm font-medium text-foreground">Delivery Report</p>
                       <p className="text-[11px] text-muted">Receive delivery status for sent SMS</p>
                     </div>
-                    <button type="button" onClick={() => toggleSetting('deliveryReport')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.deliveryReport ? "bg-success" : "bg-muted"}`}>
-                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.deliveryReport ? "left-4.5" : "left-0.5"}`} />
+                    <button type="button" onClick={() => toggleSetting('deliveryReport')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.deliveryReport ? "bg-success" : "bg-muted"}`}>
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.deliveryReport ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                     </button>
                   </div>
                   <div>
@@ -190,8 +191,8 @@ function SMSSettings() {
                       <p className="text-[11px] text-muted mt-0.5">Turn on to allow system to send SMS.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('enableSms')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.enableSms ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.enableSms ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('enableSms')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.enableSms ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.enableSms ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -244,8 +245,8 @@ function SMSSettings() {
                     </div>
                   </div>
                   <div className="flex items-center gap-6">
-                    <button type="button" onClick={() => toggleSetting('retryFailed')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.retryFailed ? "bg-primary" : "bg-muted"}`}>
-                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.retryFailed ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                    <button type="button" onClick={() => toggleSetting('retryFailed')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.retryFailed ? "bg-primary" : "bg-muted"}`}>
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.retryFailed ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                     </button>
                     {toggles.retryFailed && (
                       <div>
@@ -268,8 +269,8 @@ function SMSSettings() {
                       <p className="text-[11px] text-muted mt-0.5">Send SMS in unicode format.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('unicode')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.unicode ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.unicode ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('unicode')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.unicode ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.unicode ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -281,8 +282,8 @@ function SMSSettings() {
                       <p className="text-[11px] text-muted mt-0.5">Automatically shorten long URLs.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('urlShorten')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.urlShorten ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.urlShorten ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('urlShorten')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.urlShorten ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.urlShorten ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -297,178 +298,9 @@ function SMSSettings() {
 
           </div>
 
-          {/* RIGHT COLUMN */}
-          <div className="space-y-6">
-            
-            {/* SMS Service Status */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-2 font-semibold text-foreground text-sm">SMS Service Status</h3>
-              <p className="text-[11px] text-muted mb-5">Overview of your SMS service.</p>
-              
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">SMS Service</span>
-                  <span className="rounded bg-success/10 px-2 py-0.5 font-medium text-success">Active</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">Balance</span>
-                  <span className="font-medium text-foreground">1,245 SMS</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">Last Updated</span>
-                  <span className="text-muted font-medium">2 mins ago</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">Failed SMS</span>
-                  <span className="text-muted font-medium">0</span>
-                </div>
-              </div>
-            </div>
-
-            {/* SMS Usage */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-2 font-semibold text-foreground text-sm">SMS Usage (This Month)</h3>
-              <p className="text-[11px] text-muted mb-6">Track your SMS usage and statistics.</p>
-              
-              <div className="flex items-center gap-6">
-                <div className="relative h-28 w-28 shrink-0">
-                  <svg viewBox="0 0 36 36" className="h-full w-full">
-                    {/* Background */}
-                    <path
-                      className="stroke-muted/20"
-                      strokeWidth="4"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    {/* Primary (94%) */}
-                    <path
-                      className="stroke-primary"
-                      strokeWidth="4"
-                      strokeDasharray="94, 100"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    {/* Pink (3%) */}
-                    <path
-                      className="stroke-pink-500"
-                      strokeWidth="4"
-                      strokeDasharray="3, 100"
-                      strokeDashoffset="-94"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    {/* Yellow (3%) */}
-                    <path
-                      className="stroke-yellow-500"
-                      strokeWidth="4"
-                      strokeDasharray="3, 100"
-                      strokeDashoffset="-97"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                    <span className="text-[13px] font-bold text-foreground">12,540</span>
-                    <span className="text-[9px] text-muted font-medium">SMS Sent</span>
-                  </div>
-                </div>
-                
-                <div className="flex-1 space-y-2.5">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <div className="flex items-center gap-1.5"><div className="h-1.5 w-1.5 rounded-full bg-primary" /> <span className="font-semibold text-foreground">Successful</span></div>
-                    <span className="text-muted">11,860 (94%)</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[10px]">
-                    <div className="flex items-center gap-1.5"><div className="h-1.5 w-1.5 rounded-full bg-pink-500" /> <span className="font-semibold text-foreground">Failed</span></div>
-                    <span className="text-muted">420 (3%)</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[10px]">
-                    <div className="flex items-center gap-1.5"><div className="h-1.5 w-1.5 rounded-full bg-yellow-500" /> <span className="font-semibold text-foreground">Pending</span></div>
-                    <span className="text-muted">260 (2%)</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[10px] pt-1 border-t border-border">
-                    <div className="flex items-center gap-1.5"><div className="h-1.5 w-1.5 rounded-full bg-muted" /> <span className="font-semibold text-foreground">Total</span></div>
-                    <span className="font-semibold text-foreground">12,540</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-4 font-semibold text-foreground text-sm">Quick Actions</h3>
-              
-              <div className="space-y-2">
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Mailbox size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">SMS Templates</p>
-                      <p className="text-[11px] text-muted">Manage SMS templates</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-                
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <FileText size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">SMS Logs</p>
-                      <p className="text-[11px] text-muted">View SMS activity logs</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <BarChart2 size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">SMS Reports</p>
-                      <p className="text-[11px] text-muted">View detailed SMS reports</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <XCircle size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Blocked Numbers</p>
-                      <p className="text-[11px] text-muted">Manage blocked numbers</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-              </div>
-            </div>
-
-            {/* Note Card */}
-            <div className="rounded-xl border border-primary/20 bg-[#f4f7ff] p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <Info size={16} className="text-primary" />
-                <h4 className="font-semibold text-foreground text-sm">Note</h4>
-              </div>
-              <div className="space-y-3 text-[11px] text-muted leading-relaxed">
-                <p>Ensure your SMS gateway balance is sufficient to avoid delivery failures.</p>
-                <p>Delivery reports may not be available for all SMS gateways.</p>
-              </div>
-            </div>
-
           </div>
         </div>
-      </div>
-    </>
+      </div>`r`n      </>
   );
 }
 

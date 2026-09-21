@@ -105,7 +105,8 @@ function SEOSettings() {
           </div>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
+        <div className="flex justify-center mt-4">
+          <div className="space-y-6 w-full max-w-4xl">
           
           {/* LEFT COLUMN */}
           <div className="space-y-6">
@@ -189,8 +190,8 @@ function SEOSettings() {
                       <p className="text-sm font-medium text-foreground">Search Engine Indexing</p>
                       <p className="text-[11px] text-muted mt-0.5">Allow search engines to index your website.</p>
                     </div>
-                    <button type="button" onClick={() => toggleSetting('engineIndexing')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.engineIndexing ? "bg-primary" : "bg-muted"}`}>
-                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.engineIndexing ? "left-4.5" : "left-0.5"}`} />
+                    <button type="button" onClick={() => toggleSetting('engineIndexing')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.engineIndexing ? "bg-primary" : "bg-muted"}`}>
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.engineIndexing ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                     </button>
                   </div>
                   <div className="flex items-center justify-between">
@@ -198,8 +199,8 @@ function SEOSettings() {
                       <p className="text-sm font-medium text-foreground">Enable Sitemap</p>
                       <p className="text-[11px] text-muted mt-0.5">Generate and submit XML sitemap to search engines.</p>
                     </div>
-                    <button type="button" onClick={() => toggleSetting('enableSitemap')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.enableSitemap ? "bg-primary" : "bg-muted"}`}>
-                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.enableSitemap ? "left-4.5" : "left-0.5"}`} />
+                    <button type="button" onClick={() => toggleSetting('enableSitemap')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.enableSitemap ? "bg-primary" : "bg-muted"}`}>
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.enableSitemap ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                     </button>
                   </div>
                   <div className="flex items-center justify-between pt-2">
@@ -277,186 +278,9 @@ function SEOSettings() {
 
           </div>
 
-          {/* RIGHT COLUMN */}
-          <div className="space-y-6">
-            
-            {/* SEO Score */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-1 font-semibold text-foreground text-sm">SEO Score</h3>
-              <p className="text-[11px] text-muted mb-6">Your site SEO performance overview.</p>
-              
-              <div className="flex flex-col items-center justify-center mb-8 relative">
-                {/* Donut SVG */}
-                <div className="relative w-32 h-32">
-                  <svg viewBox="0 0 36 36" className="w-full h-full rotate-[-90deg]">
-                    {/* Background Track (Purple) */}
-                    <path
-                      className="stroke-primary"
-                      strokeWidth="3.5"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    {/* Progress (Green - 85%) */}
-                    <path
-                      className="stroke-success"
-                      strokeWidth="3.5"
-                      strokeDasharray="85, 100"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-bold text-foreground">85</span>
-                    <span className="text-[10px] text-muted">/100</span>
-                  </div>
-                </div>
-                
-                <div className="absolute -bottom-3 bg-success/10 border border-success/20 text-success text-[10px] font-semibold px-3 py-1 rounded-full flex items-center gap-1">
-                  <Check size={12} /> Good
-                </div>
-              </div>
-
-              <div className="space-y-3 mt-4">
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2 text-primary">
-                    <Layout size={14} />
-                    <span className="text-muted">Meta information</span>
-                  </div>
-                  <span className="font-semibold text-foreground">90/100</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2 text-primary">
-                    <Smartphone size={14} />
-                    <span className="text-muted">Mobile Friendliness</span>
-                  </div>
-                  <span className="font-semibold text-foreground">85/100</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2 text-primary">
-                    <Timer size={14} />
-                    <span className="text-muted">Page Speed</span>
-                  </div>
-                  <span className="font-semibold text-foreground">78/100</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2 text-primary">
-                    <Share2 size={14} />
-                    <span className="text-muted">Social Signals</span>
-                  </div>
-                  <span className="font-semibold text-foreground">88/100</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2 text-primary">
-                    <Map size={14} />
-                    <span className="text-muted">Sitemap</span>
-                  </div>
-                  <span className="font-semibold text-foreground">90/100</span>
-                </div>
-              </div>
-
-              <div className="mt-5 pt-4 border-t border-border">
-                <a href="#" className="text-primary text-xs font-semibold hover:underline flex items-center gap-1">
-                  View Full SEO Report <ArrowRight size={14} />
-                </a>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-4 font-semibold text-foreground text-sm">Quick Actions</h3>
-              
-              <div className="space-y-2">
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Map size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Open Sitemap</p>
-                      <p className="text-[11px] text-muted">View your XML sitemap</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-                
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <ArrowRightCircle size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Submit to Google</p>
-                      <p className="text-[11px] text-muted">Submit site to Google Search Console</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <BarChart size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Google Analytics</p>
-                      <p className="text-[11px] text-muted">View your analytics dashboard</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Code size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Schema Generator</p>
-                      <p className="text-[11px] text-muted">Generate structured data</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-              </div>
-            </div>
-
-            {/* SEO Tips */}
-            <div className="rounded-2xl border border-primary/20 bg-[#f4f7ff] p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <Lightbulb size={16} className="text-primary" />
-                <h4 className="font-semibold text-foreground text-sm">SEO Tips</h4>
-              </div>
-              
-              <div className="space-y-3">
-                <div className="flex items-start gap-2 text-[11px]">
-                  <Check size={14} className="text-success shrink-0 mt-0.5" />
-                  <span className="text-muted">Keep your meta title under 60 characters.</span>
-                </div>
-                <div className="flex items-start gap-2 text-[11px]">
-                  <Check size={14} className="text-success shrink-0 mt-0.5" />
-                  <span className="text-muted">Add primary keyword in meta description.</span>
-                </div>
-                <div className="flex items-start gap-2 text-[11px]">
-                  <Check size={14} className="text-success shrink-0 mt-0.5" />
-                  <span className="text-muted">Use high quality OG image for social sharing.</span>
-                </div>
-                <div className="flex items-start gap-2 text-[11px]">
-                  <Check size={14} className="text-success shrink-0 mt-0.5" />
-                  <span className="text-muted">Generate and submit sitemap regularly.</span>
-                </div>
-              </div>
-
-              <div className="mt-5">
-                <a href="#" className="text-primary text-[11px] font-semibold hover:underline flex items-center gap-1">
-                  Learn more about SEO <ArrowRight size={12} />
-                </a>
-              </div>
-            </div>
-
           </div>
         </div>
-      </div>
-    </>
+      </div>`r`n      </>
   );
 }
 

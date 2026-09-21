@@ -17,18 +17,21 @@ import StatCard from "../components/ui/StatCard";
 import BadgeCell from "../components/ui/BadgeCell";
 import ActionMenu from "../components/ui/ActionMenu";
 import FilterPanel from "../components/ui/FilterPanel";
+import Toggle from "../components/ui/Toggle";
 
-import { getCategories, deleteCategory } from "../api/categoriesApi";
+import { getCategories, deleteCategory, updateCategory } from "../api/categoriesApi";
 import { exportToCSV } from "../utils/exportUtils";
 
 const statusOptions = [
   "All Status",
   "Active",
   "Inactive",
+  "Deleted",
 ];
 
 const categoryTableHeaders = [
   "No.",
+  "Category",
   "Parent Category",
   "Description",
   "Status",
@@ -93,6 +96,11 @@ export default function Categories() {
 
   const filteredCategories = useMemo(() => {
     return categories.filter((category) => {
+      // Hide soft-deleted items unless explicitly filtering for "Deleted"
+      if (statusFilter !== "Deleted" && category.status === "Deleted") {
+        return false;
+      }
+
       const matchSearch =
         searchText === "" ||
         category.name?.toLowerCase().includes(searchText.toLowerCase());
@@ -132,8 +140,12 @@ export default function Categories() {
   const handleDeleteCategory = async () => {
     if (!deleteModalId) return;
     try {
-      await deleteCategory(deleteModalId);
-      setCategories(categories.filter((c) => c.id !== deleteModalId));
+      const categoryToDelete = categories.find(c => c.id === deleteModalId);
+      if (categoryToDelete) {
+        const updatedCategory = { ...categoryToDelete, status: "Deleted" };
+        await updateCategory(deleteModalId, updatedCategory);
+        setCategories(categories.map((c) => c.id === deleteModalId ? updatedCategory : c));
+      }
       setDeleteModalId(null);
       const newFilteredLength = filteredCategories.length - 1;
       const newTotalPages = Math.ceil(newFilteredLength / itemsPerPage) || 1;
@@ -145,6 +157,18 @@ export default function Categories() {
     }
   };
 
+  const handleToggleStatus = async (category) => {
+    if (category.status === "Deleted") return;
+    try {
+      const newStatus = category.status === "Active" ? "Inactive" : "Active";
+      const updatedCategory = { ...category, status: newStatus };
+      await updateCategory(category.id, updatedCategory);
+      setCategories(categories.map((c) => c.id === category.id ? updatedCategory : c));
+    } catch (err) {
+      alert("Failed to update status");
+    }
+  };
+
   return (
     <section className="min-h-full bg-background p-4 sm:p-6 pb-20 flex flex-col gap-6">
       
@@ -153,8 +177,8 @@ export default function Categories() {
         <StatCard
           variant="horizontal"
           title="Total Categories"
-          value={loading ? "--" : categories.length}
-          trend="12.5%"
+          value={categories.length}
+          trend="9.1%"
           icon={LayoutGrid}
           colorClass="text-primary"
           bgClass="bg-primary/10"
@@ -162,8 +186,8 @@ export default function Categories() {
         <StatCard
           variant="horizontal"
           title="Active Categories"
-          value={loading ? "--" : categories.filter((c) => c.status === "Active").length}
-          trend="10.3%"
+          value={categories.filter((c) => c.status === "Active").length}
+          trend="11.1%"
           icon={CheckCircle}
           colorClass="text-success"
           bgClass="bg-success/10"
@@ -171,8 +195,8 @@ export default function Categories() {
         <StatCard
           variant="horizontal"
           title="Inactive Categories"
-          value={loading ? "--" : categories.filter((c) => c.status === "Inactive").length}
-          trend="8.2%"
+          value={categories.filter((c) => c.status === "Inactive").length}
+          trend="33.3%"
           isNegative
           icon={AlertCircle}
           colorClass="text-warning"
@@ -181,7 +205,7 @@ export default function Categories() {
         <StatCard
           variant="horizontal"
           title="Deleted Categories"
-          value={loading ? "--" : 0}
+          value={categories.filter((c) => c.status === "Deleted").length}
           trend="50%"
           isNegative
           icon={Trash2}
@@ -239,122 +263,132 @@ export default function Categories() {
 
       {/* 4. Categories table */}
       <div className="flex flex-col gap-6 mt-2">
-        <Card noPadding className="w-full overflow-hidden flex flex-col">
-          {error ? (
-            <div className="p-8 text-center text-sm font-medium text-danger">
-              {error}
-            </div>
-          ) : (
-            <Table
-              headers={categoryTableHeaders}
-              currentCount={paginatedCategories.length}
-              totalCount={filteredCategories.length}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              minWidth="1000px"
-              className="border-0 shadow-none rounded-none"
-            >
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={categoryTableHeaders.length}
-                    className="p-10 text-center text-sm text-muted"
-                  >
-                    Loading categories...
+        {error ? (
+          <div className="p-8 text-center text-sm font-medium text-danger">
+            {error}
+          </div>
+        ) : (
+          <Table
+            headers={categoryTableHeaders}
+            currentCount={paginatedCategories.length}
+            totalCount={filteredCategories.length}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            minWidth="1000px"
+            className="border-0 shadow-none rounded-none bg-transparent"
+          >
+            {loading ? (
+              <tr>
+                <td
+                  colSpan={categoryTableHeaders.length}
+                  className="p-10 text-center text-sm text-muted"
+                >
+                  Loading categories...
+                </td>
+              </tr>
+            ) : paginatedCategories.length ? (
+              paginatedCategories.map((category, index) => (
+                <tr
+                  key={category.id}
+                  className="border-b border-border last:border-0 transition-colors hover:bg-background/50 bg-surface"
+                >
+                  <td className="whitespace-nowrap px-5 py-4 font-medium text-foreground">
+                    {String((currentPage - 1) * itemsPerPage + index + 1).padStart(2, "0")}
                   </td>
-                </tr>
-              ) : paginatedCategories.length ? (
-                paginatedCategories.map((category, index) => (
-                  <tr
-                    key={category.id}
-                    className="border-b border-border last:border-0 transition-colors hover:bg-background"
-                  >
-                    <td className="whitespace-nowrap px-5 py-4 font-medium text-foreground">
-                      {String((currentPage - 1) * itemsPerPage + index + 1).padStart(2, "0")}
-                    </td>
-                    
-                    <td className="px-5 py-4">
-                      <div 
-                        className="flex items-center gap-3 cursor-pointer group"
-                        onClick={() => navigate(`/categories/${category.id}`)}
-                      >
-                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${getCategoryIconBg(category.name)}`}>
-                          {getCategoryIcon(category.name)}
-                        </div>
-                        <span className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
-                          {category.name}
-                        </span>
+                  
+                  <td className="px-5 py-4">
+                    <div 
+                      className="flex items-center gap-3 cursor-pointer group"
+                      onClick={() => navigate(`/categories/${category.id}`)}
+                    >
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${getCategoryIconBg(category.name)}`}>
+                        {getCategoryIcon(category.name)}
                       </div>
-                    </td>
+                      <span className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
+                        {category.name}
+                      </span>
+                    </div>
+                  </td>
 
-                    <td className="px-5 py-4 text-sm text-muted max-w-[200px] truncate">
-                      {category.description || "-"}
-                    </td>
+                  <td className="px-5 py-4 text-sm font-medium text-muted">
+                    {category.parentId || "-"}
+                  </td>
 
-                    <td className="px-5 py-4">
-                      <BadgeCell
-                        maxContent={maxStatus}
-                        content={category.status || "Active"}
-                        variant={category.status === 'Active' ? 'success' : 'warning'}
-                        className="px-3"
+                  <td className="px-5 py-4 text-sm text-muted max-w-[200px] truncate">
+                    {category.description || "-"}
+                  </td>
+
+                  <td className="px-5 py-4">
+                    <button
+                      type="button"
+                      disabled={category.status === 'Deleted'}
+                      onClick={() => handleToggleStatus(category)}
+                      className={`text-xs font-semibold px-3 py-1.5 rounded-md border transition-all ${
+                        category.status === 'Active'
+                          ? 'bg-success/10 text-success border-success/30 hover:bg-success/20'
+                          : category.status === 'Deleted'
+                          ? 'bg-danger/10 text-danger border-danger/30 cursor-not-allowed'
+                          : 'bg-warning/10 text-warning-dark border-warning/30 hover:bg-warning/20'
+                      }`}
+                    >
+                      {category.status || "Active"}
+                    </button>
+                  </td>
+
+                  <td className="px-5 py-4 text-sm font-medium text-muted">
+                    {category.itemCount || 0}
+                  </td>
+
+                  <td className="whitespace-nowrap px-5 py-4">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-foreground">
+                        {category.createdDate ? new Date(category.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "16 Jan 2025"}
+                      </span>
+                      <span className="text-xs text-muted">
+                        10:24 AM
+                      </span>
+                    </div>
+                  </td>
+
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-2">
+                      <ActionMenu
+                        actions={[
+                          {
+                            label: "View",
+                            icon: Eye,
+                            onClick: () => navigate(`/categories/${category.id}`),
+                          },
+                          {
+                            label: "Edit",
+                            icon: Pencil,
+                            onClick: () => navigate(`/categories/edit/${category.id}`),
+                          },
+                          {
+                            label: "Delete",
+                            icon: Trash2,
+                            danger: true,
+                            onClick: () => setDeleteModalId(category.id),
+                          },
+                        ]}
                       />
-                    </td>
-
-                    <td className="px-5 py-4 text-sm font-medium text-muted">
-                      {category.itemCount || (Math.floor(Math.random() * 100) + 10)}
-                    </td>
-
-                    <td className="whitespace-nowrap px-5 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-foreground">
-                          {category.createdDate ? new Date(category.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "12 May 2024"}
-                        </span>
-                        <span className="text-xs text-muted">
-                          10:15 AM
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
-                        <ActionMenu
-                          actions={[
-                            {
-                              label: "View",
-                              icon: Eye,
-                              onClick: () => navigate(`/categories/${category.id}`),
-                            },
-                            {
-                              label: "Edit",
-                              icon: Pencil,
-                              onClick: () => navigate(`/categories/edit/${category.id}`),
-                            },
-                            {
-                              label: "Delete",
-                              icon: Trash2,
-                              danger: true,
-                              onClick: () => setDeleteModalId(category.id),
-                            },
-                          ]}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={categoryTableHeaders.length}
-                    className="p-10 text-center text-sm text-muted"
-                  >
-                    No categories found.
+                    </div>
                   </td>
                 </tr>
-              )}
-            </Table>
-          )}
-        </Card>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={categoryTableHeaders.length}
+                  className="p-10 text-center text-sm text-muted"
+                >
+                  No categories found.
+                </td>
+              </tr>
+            )}
+          </Table>
+        )}
       </div>
       
       <Modal 

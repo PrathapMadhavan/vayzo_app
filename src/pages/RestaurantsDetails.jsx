@@ -11,7 +11,7 @@ import Card from "../components/ui/Card";
 import Modal from "../components/ui/Modal";
 import Input from "../components/ui/Input";
 
-import { getRestaurantById, deleteRestaurant, updateRestaurant } from "../api/restaurantsApi";
+import { getRestaurantById, updateRestaurant, deleteRestaurant, updateRestaurantStatus } from "../api/restaurantsApi";
 import { getCategories } from "../api/categoriesApi";
 import { fileToBase64 } from "../utils/fileUtils";
 
@@ -42,6 +42,7 @@ function RestaurantsDetails() {
   const [error, setError] = useState(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [statusError, setStatusError] = useState("");
   const [activeTab, setActiveTab] = useState("Menu Items");
 
   const [categories, setCategories] = useState([]);
@@ -194,28 +195,31 @@ function RestaurantsDetails() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-3 mb-1">
                   <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">{restaurant.name}</h1>
-                  <select
-                    value={restaurant.status}
-                    onChange={async (e) => {
-                      const newStatus = e.target.value;
-                      try {
-                        const updatedRestaurant = { ...restaurant, status: newStatus };
-                        await updateRestaurant(restaurant.id, updatedRestaurant);
-                        setRestaurant(updatedRestaurant);
-                      } catch (err) {
-                        alert("Failed to update status");
-                      }
-                    }}
-                    className={`px-2 py-1 text-[10px] uppercase tracking-wider font-bold rounded-full outline-none cursor-pointer border-0 appearance-none text-center ${
-                      restaurant.status === "Active" 
-                        ? "bg-success/10 text-success" 
-                        : "bg-danger/10 text-danger"
-                    }`}
-                    style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
-                  >
-                    <option value="Active" className="text-foreground bg-background">ACTIVE</option>
-                    <option value="Inactive" className="text-foreground bg-background">INACTIVE</option>
-                  </select>
+                  <div className="flex flex-col items-center gap-1.5 shrink-0 ml-2 relative">
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${restaurant.status === "Active" ? 'text-success bg-success/10' : 'text-muted bg-surface-hover'}`}>
+                      {restaurant.status === "Active" ? 'Active' : 'Inactive'}
+                    </span>
+                    <CustomToggle 
+                      checked={restaurant.status === "Active"} 
+                      onChange={async (val) => {
+                        const newStatus = val ? "Active" : "Inactive";
+                        setRestaurant(prev => ({ ...prev, status: newStatus }));
+                        setStatusError("");
+                        try {
+                          const updatedRestaurant = { ...restaurant, status: newStatus };
+                          await updateRestaurant(restaurant.id, updatedRestaurant);
+                        } catch (err) {
+                          setRestaurant(prev => ({ ...prev, status: val ? "Inactive" : "Active" }));
+                          setStatusError("Unable to update restaurant status. Please try again.");
+                        }
+                      }}
+                    />
+                    {statusError && (
+                      <span className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-danger text-[10px] whitespace-nowrap bg-surface px-2 py-1 rounded shadow-sm border border-danger/20 z-10">
+                        {statusError}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <p className="text-sm text-muted mb-2 truncate">{restaurant.cuisineType}</p>
                 <div className="flex items-center gap-1.5 font-semibold text-sm">
@@ -353,12 +357,14 @@ function RestaurantsDetails() {
                         <h4 className="text-sm font-bold text-foreground truncate" title={item.name}>{item.name}</h4>
                         <div className="flex items-center gap-1.5 shrink-0">
                           <button 
+                            type="button"
                             onClick={() => setEditingMenuItem({ ...item })}
                             className="w-7 h-7 rounded border border-border bg-surface flex items-center justify-center hover:bg-surface-hover text-muted hover:text-foreground transition-colors"
                           >
                             <Pencil size={14} />
                           </button>
                           <button 
+                            type="button"
                             onClick={() => handleDeleteMenuItem(item.id)}
                             className="w-7 h-7 rounded border border-danger/20 bg-danger/5 flex items-center justify-center hover:bg-danger hover:text-white text-danger transition-colors"
                           >

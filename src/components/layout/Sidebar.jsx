@@ -38,7 +38,7 @@ function Sidebar({ isOpen, onClose }) {
 
       <aside
         className={[
-          "fixed inset-y-0 left-0 z-50 bg-foreground",
+          "fixed inset-y-0 left-0 z-50 bg-[#140f33] dark:bg-[#0f172a]",
           "flex h-screen shrink-0 flex-col",
           "transition-transform duration-500 ease-in-out lg:transition-[width,transform] lg:duration-300",
           "lg:sticky lg:top-0 lg:translate-x-0",

@@ -101,7 +101,8 @@ function DeliverySettings() {
           </div>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
+        <div className="flex justify-center mt-4">
+          <div className="space-y-6 w-full max-w-4xl">
           {/* LEFT COLUMN */}
           <div className="space-y-6">
             {/* General Delivery Settings */}
@@ -188,10 +189,10 @@ function DeliverySettings() {
                     <button
                       type="button"
                       onClick={() => toggleSetting("autoAssign")}
-                      className={`relative h-5 w-9 rounded-full transition-colors ${toggles.autoAssign ? "bg-success" : "bg-muted"}`}
+                      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.autoAssign ? "bg-success" : "bg-muted"}`}
                     >
                       <span
-                        className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.autoAssign ? "left-4.5 translate-x-4" : "left-0.5"}`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.autoAssign ? "translate-x-[18px]" : "translate-x-0.5"}`}
                       />
                     </button>
                   </div>
@@ -211,10 +212,10 @@ function DeliverySettings() {
                     <button
                       type="button"
                       onClick={() => toggleSetting("scheduleOrder")}
-                      className={`relative h-5 w-9 rounded-full transition-colors ${toggles.scheduleOrder ? "bg-success" : "bg-muted"}`}
+                      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.scheduleOrder ? "bg-success" : "bg-muted"}`}
                     >
                       <span
-                        className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.scheduleOrder ? "left-4.5 translate-x-4" : "left-0.5"}`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.scheduleOrder ? "translate-x-[18px]" : "translate-x-0.5"}`}
                       />
                     </button>
                   </div>
@@ -230,10 +231,10 @@ function DeliverySettings() {
                     <button
                       type="button"
                       onClick={() => toggleSetting("codAvailable")}
-                      className={`relative h-5 w-9 rounded-full transition-colors ${toggles.codAvailable ? "bg-success" : "bg-muted"}`}
+                      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.codAvailable ? "bg-success" : "bg-muted"}`}
                     >
                       <span
-                        className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.codAvailable ? "left-4.5 translate-x-4" : "left-0.5"}`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.codAvailable ? "translate-x-[18px]" : "translate-x-0.5"}`}
                       />
                     </button>
                   </div>
@@ -252,10 +253,10 @@ function DeliverySettings() {
                     <button
                       type="button"
                       onClick={() => toggleSetting("multiStop")}
-                      className={`relative h-5 w-9 rounded-full transition-colors ${toggles.multiStop ? "bg-success" : "bg-muted"}`}
+                      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.multiStop ? "bg-success" : "bg-muted"}`}
                     >
                       <span
-                        className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.multiStop ? "left-4.5 translate-x-4" : "left-0.5"}`}
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.multiStop ? "translate-x-[18px]" : "translate-x-0.5"}`}
                       />
                     </button>
                   </div>
@@ -354,137 +355,9 @@ function DeliverySettings() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN */}
-          <div className="space-y-6">
-            {/* Delivery Settings Status */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-2 font-semibold text-foreground text-sm">
-                Delivery Settings Status
-              </h3>
-              <p className="text-xs text-muted mb-5">
-                Overview of delivery configuration.
-              </p>
-
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">
-                    Delivery Service
-                  </span>
-                  <span className="rounded bg-success/10 px-2 py-0.5 font-medium text-success">
-                    Active
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">
-                    COD Service
-                  </span>
-                  <span className="rounded bg-success/10 px-2 py-0.5 font-medium text-success">
-                    Active
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">
-                    Schedule Order
-                  </span>
-                  <span className="rounded bg-success/10 px-2 py-0.5 font-medium text-success">
-                    Active
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">
-                    Free Delivery
-                  </span>
-                  <span className="text-muted font-medium">Above ₹500.00</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">
-                    Delivery Charge
-                  </span>
-                  <span className="text-muted font-medium">₹20.00</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Links */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-4 font-semibold text-foreground">
-                Quick Links
-              </h3>
-
-              <div className="space-y-2">
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Lock size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                        Delivery Partners
-                      </p>
-                      <p className="text-[11px] text-muted">
-                        Manage delivery partners
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronDown size={14} className="text-muted -rotate-90" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <MapPin size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                        Delivery Zones
-                      </p>
-                      <p className="text-[11px] text-muted">
-                        Manage delivery areas
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronDown size={14} className="text-muted -rotate-90" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Banknote size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                        Earning Settings
-                      </p>
-                      <p className="text-[11px] text-muted">
-                        Configure earning rules
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronDown size={14} className="text-muted -rotate-90" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Clock size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                        Delivery Time Slots
-                      </p>
-                      <p className="text-[11px] text-muted">
-                        Manage time slots
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronDown size={14} className="text-muted -rotate-90" />
-                </button>
-              </div>
-            </div>
           </div>
         </div>
-      </div>
-    </>
+      </div>`r`n      </>
   );
 }
 

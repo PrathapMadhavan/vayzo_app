@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import { getPaymentSettings, savePaymentSettings } from "../../api/settingsApi";
-import { Eye, Edit, GripVertical, CheckCircle2, Circle, ArrowRight, Smartphone, Building2, Banknote, HelpCircle, Receipt, RefreshCcw, HandCoins, Save } from "lucide-react";
+import { Eye, Edit, GripVertical, CheckCircle2, Circle, ArrowRight, Smartphone, Building2, Banknote, HelpCircle, Receipt, RefreshCcw, HandCoins, Save, Check } from "lucide-react";
 
 function PaymentSettings() {
   const [activeTab, setActiveTab] = useState("Payment Gateways");
@@ -93,13 +93,13 @@ function PaymentSettings() {
   return (
     <section>
       {/* Header */}
-      <div className="mb-6 border-b border-border flex justify-between items-center">
-        <div className="flex gap-8">
+      <div className="mb-6 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex gap-4 sm:gap-8 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-3 text-sm font-medium transition-colors ${
+              className={`pb-3 text-sm font-medium transition-colors whitespace-nowrap ${
                 activeTab === tab
                   ? "border-b-2 border-primary text-primary"
                   : "text-muted hover:text-foreground"
@@ -109,7 +109,7 @@ function PaymentSettings() {
             </button>
           ))}
         </div>
-        <Button type="button" onClick={handleSave} size="sm" className="bg-primary text-white mb-2 flex items-center gap-2">
+        <Button type="button" onClick={handleSave} size="sm" className="bg-primary text-white mb-3 flex shrink-0 items-center gap-2 w-fit">
           <Save size={16} /> Save Changes
         </Button>
       </div>
@@ -177,9 +177,12 @@ function PaymentSettings() {
                 </div>
 
                 <div className="flex flex-col items-end gap-6 justify-between h-full">
-                  <button type="button" onClick={() => toggleGateway("razorpay")} className={`relative h-5 w-9 rounded-full transition-colors ${gateways.razorpay.enabled ? "bg-success" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${gateways.razorpay.enabled ? "left-4.5" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleGateway("razorpay")} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${gateways.razorpay.enabled ? "bg-success" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.razorpay.enabled ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
+                  <Button type="button" variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary-light whitespace-nowrap">
+                    Edit Settings
+                  </Button>
                 </div>
               </div>
             </div>
@@ -221,10 +224,10 @@ function PaymentSettings() {
                 </div>
 
                 <div className="flex flex-col items-end gap-6 justify-between h-full">
-                  <button type="button" onClick={() => toggleGateway("stripe")} className={`relative h-5 w-9 rounded-full transition-colors ${gateways.stripe.enabled ? "bg-success" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${gateways.stripe.enabled ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleGateway("stripe")} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${gateways.stripe.enabled ? "bg-success" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.stripe.enabled ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
-                  <Button type="button" variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary-light">
+                  <Button type="button" variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary-light whitespace-nowrap">
                     Edit Settings
                   </Button>
                 </div>
@@ -268,10 +271,10 @@ function PaymentSettings() {
                 </div>
 
                 <div className="flex flex-col items-end gap-6 justify-between h-full">
-                  <button type="button" onClick={() => toggleGateway("paypal")} className={`relative h-5 w-9 rounded-full transition-colors ${gateways.paypal.enabled ? "bg-success" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${gateways.paypal.enabled ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleGateway("paypal")} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${gateways.paypal.enabled ? "bg-success" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.paypal.enabled ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
-                  <Button type="button" variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary-light">
+                  <Button type="button" variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary-light whitespace-nowrap">
                     Edit Settings
                   </Button>
                 </div>
@@ -295,8 +298,8 @@ function PaymentSettings() {
                     <p className="text-xs text-muted mt-0.5">Allow customers to pay in cash on delivery</p>
                   </div>
                 </div>
-                <button type="button" onClick={() => toggleGateway("cod")} className={`relative h-5 w-9 rounded-full transition-colors ${gateways.cod.enabled ? "bg-success" : "bg-muted"}`}>
-                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${gateways.cod.enabled ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                <button type="button" onClick={() => toggleGateway("cod")} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${gateways.cod.enabled ? "bg-success" : "bg-muted"}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.cod.enabled ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                 </button>
               </div>
             </div>
@@ -319,10 +322,10 @@ function PaymentSettings() {
                   </div>
                 </div>
                 <div className="flex items-center gap-6">
-                  <button type="button" onClick={() => toggleGateway("razorpayUpi")} className={`relative h-5 w-9 rounded-full transition-colors ${gateways.razorpayUpi.enabled ? "bg-success" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${gateways.razorpayUpi.enabled ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleGateway("razorpayUpi")} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${gateways.razorpayUpi.enabled ? "bg-success" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.razorpayUpi.enabled ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
-                  <Button type="button" variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary-light">
+                  <Button type="button" variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary-light whitespace-nowrap">
                     Edit Settings
                   </Button>
                 </div>
@@ -336,31 +339,25 @@ function PaymentSettings() {
             <h3 className="font-semibold text-foreground mb-1">Payment Methods (Customer App)</h3>
             <p className="text-xs text-muted mb-5">Select and sort payment methods to display in customer app.</p>
             
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 mt-4">
               {methods.map((method, index) => (
-                <div key={method.id} className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-2.5 shadow-sm hover:border-primary/50 cursor-grab active:cursor-grabbing transition-colors">
+                <div key={method.id} onClick={() => toggleMethod(index)} className={`flex items-center gap-3 rounded-lg border px-4 py-2.5 shadow-sm cursor-pointer transition-colors ${method.enabled ? "border-primary/50 bg-primary/5" : "border-border bg-surface hover:border-primary/30"}`}>
                   <div className="flex items-center gap-2">
                     {method.icon}
                     <span className="text-sm font-medium">{method.label}</span>
                   </div>
-                  <div 
-                    onClick={() => toggleMethod(index)}
-                    className="ml-2 flex h-5 w-5 cursor-pointer items-center justify-center rounded border border-border bg-surface"
-                  >
-                    {method.enabled && <CheckCircle2 size={16} className="text-primary bg-white rounded-full" />}
+                  <div className={`ml-2 flex h-4 w-4 items-center justify-center rounded transition-colors ${method.enabled ? "bg-primary text-white" : "border border-muted bg-surface"}`}>
+                    {method.enabled && <Check size={12} strokeWidth={3} />}
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-6 flex items-center justify-between">
+            <div className="mt-5 pt-4 border-t border-border flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs text-muted">
                 <GripVertical size={14} />
-                <span>Drag and drop to reorder</span>
+                <span>Drag and drop to reorder methods in the app</span>
               </div>
-              <Button type="button" size="sm" className="bg-primary text-white px-6">
-                Save Changes
-              </Button>
             </div>
           </div>
 
@@ -403,23 +400,23 @@ function PaymentSettings() {
             <div className="space-y-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-foreground">Razorpay</span>
-                <span className="flex items-center gap-1.5 text-xs font-medium text-success"><Circle fill="currentColor" size={6} /> Active</span>
+                <span className={`flex items-center gap-1.5 text-xs font-medium ${gateways.razorpay.enabled ? 'text-success' : 'text-muted'}`}><Circle fill="currentColor" size={6} /> {gateways.razorpay.enabled ? 'Active' : 'Inactive'}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-foreground">Stripe</span>
-                <span className="flex items-center gap-1.5 text-xs font-medium text-muted"><Circle fill="currentColor" size={6} /> Inactive</span>
+                <span className={`flex items-center gap-1.5 text-xs font-medium ${gateways.stripe.enabled ? 'text-success' : 'text-muted'}`}><Circle fill="currentColor" size={6} /> {gateways.stripe.enabled ? 'Active' : 'Inactive'}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-foreground">PayPal</span>
-                <span className="flex items-center gap-1.5 text-xs font-medium text-muted"><Circle fill="currentColor" size={6} /> Inactive</span>
+                <span className={`flex items-center gap-1.5 text-xs font-medium ${gateways.paypal.enabled ? 'text-success' : 'text-muted'}`}><Circle fill="currentColor" size={6} /> {gateways.paypal.enabled ? 'Active' : 'Inactive'}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-foreground">COD</span>
-                <span className="flex items-center gap-1.5 text-xs font-medium text-success"><Circle fill="currentColor" size={6} /> Active</span>
+                <span className={`flex items-center gap-1.5 text-xs font-medium ${gateways.cod.enabled ? 'text-success' : 'text-muted'}`}><Circle fill="currentColor" size={6} /> {gateways.cod.enabled ? 'Active' : 'Inactive'}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
                 <span className="text-foreground">Razorpay UPI (QR)</span>
-                <span className="flex items-center gap-1.5 text-xs font-medium text-success"><Circle fill="currentColor" size={6} /> Active</span>
+                <span className={`flex items-center gap-1.5 text-xs font-medium ${gateways.razorpayUpi.enabled ? 'text-success' : 'text-muted'}`}><Circle fill="currentColor" size={6} /> {gateways.razorpayUpi.enabled ? 'Active' : 'Inactive'}</span>
               </div>
             </div>
           </div>
