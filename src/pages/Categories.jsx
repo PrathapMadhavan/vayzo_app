@@ -320,17 +320,20 @@ export default function Categories() {
                   </td>
 
                   <td className="px-5 py-4">
-                    <div className="flex flex-col items-start gap-1.5">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${category.status === 'Active' ? 'bg-success/15 text-success' : category.status === 'Deleted' ? 'bg-danger/15 text-danger' : 'bg-warning/15 text-warning-dark'}`}>
-                        {category.status || "Active"}
-                      </span>
-                      {category.status !== 'Deleted' && (
-                        <Toggle 
-                          checked={category.status === 'Active'} 
-                          onChange={() => handleToggleStatus(category)} 
-                        />
-                      )}
-                    </div>
+                    <button
+                      type="button"
+                      disabled={category.status === 'Deleted'}
+                      onClick={() => handleToggleStatus(category)}
+                      className={`text-xs font-semibold px-3 py-1.5 rounded-md border transition-all ${
+                        category.status === 'Active'
+                          ? 'bg-success/10 text-success border-success/30 hover:bg-success/20'
+                          : category.status === 'Deleted'
+                          ? 'bg-danger/10 text-danger border-danger/30 cursor-not-allowed'
+                          : 'bg-warning/10 text-warning-dark border-warning/30 hover:bg-warning/20'
+                      }`}
+                    >
+                      {category.status || "Active"}
+                    </button>
                   </td>
 
                   <td className="px-5 py-4 text-sm font-medium text-muted">

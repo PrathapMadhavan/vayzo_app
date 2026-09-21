@@ -10,11 +10,12 @@ import {
   X,
   GripVertical,
   Store,
-  Utensils
+  Utensils,
+  MoreVertical
 } from "lucide-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 
-import Button from "../components/ui/button";
+import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import Card from "../components/ui/Card";
@@ -25,7 +26,6 @@ import {
   updateRestaurant,
 } from "../api/restaurantsApi";
 import { validateImage } from "../utils/fileUtils";
-import { RESTAURANT_CUISINES } from "./Restaurants";
 import { getCategories } from "../api/categoriesApi";
 
 function RequiredLabel({ text }) {
@@ -82,20 +82,32 @@ function RestaurantsAdd() {
 
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(isEditing);
   const [error, setError] = useState("");
   const [menuSearch, setMenuSearch] = useState("");
   const [editingMenuItem, setEditingMenuItem] = useState(null);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [itemToDelete, setItemToDelete] = useState(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setOpenDropdownId(null);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const fetchAllCategories = async () => {
       try {
+        setCategoriesError(false);
         const data = await getCategories();
         setCategories(data);
       } catch (err) {
         console.error("Failed to load categories:", err);
+        setCategoriesError(true);
       } finally {
         setCategoriesLoading(false);
       }
@@ -157,6 +169,7 @@ function RestaurantsAdd() {
       id: `temp-${Date.now()}`,
       name: "",
       category: "",
+      categoryId: "",
       price: "",
       foodType: "Veg",
       status: true,
@@ -187,9 +200,10 @@ function RestaurantsAdd() {
     setEditingMenuItem(null);
   };
 
-  const handleDeleteMenuItem = async (itemId) => {
-    if (!window.confirm("Are you sure you want to delete this menu item?")) return;
+  const confirmDeleteMenuItem = async () => {
+    if (!itemToDelete) return;
     
+    const itemId = itemToDelete.id;
     const updatedMenuItems = form.menuItems.filter(item => item.id !== itemId);
 
     // Persist to backend immediately if editing an existing restaurant
@@ -230,6 +244,8 @@ function RestaurantsAdd() {
         menuItems: updatedMenuItems
       }));
     }
+    
+    setItemToDelete(null);
   };
   const removeCuisine = (c) => {
     setForm((prev) => ({
@@ -383,16 +399,20 @@ function RestaurantsAdd() {
                       <option value="" disabled>
                         Select Cuisine
                       </option>
-                      {RESTAURANT_CUISINES.map((c) => {
-                        const isSelected = form.cuisines.includes(c);
+                      {categoriesLoading && <option disabled>Loading...</option>}
+                      {categoriesError && !categoriesLoading && <option disabled>Error loading</option>}
+                      {!categoriesLoading && !categoriesError && categories
+                        .filter(cat => cat.status === "Active" || cat.status === "active")
+                        .map((cat) => {
+                        const isSelected = form.cuisines.includes(cat.name);
                         return (
                           <option
-                            key={c}
-                            value={c}
+                            key={cat.id}
+                            value={cat.name}
                             disabled={isSelected}
-                            className={isSelected ? "text-muted/50" : ""}
+                            className={isSelected ? "text-muted/50" : "text-foreground bg-surface"}
                           >
-                            {c}
+                            {cat.name}
                           </option>
                         );
                       })}
@@ -423,7 +443,7 @@ function RestaurantsAdd() {
                       {logoPreview ? (
                         <img
                           src={logoPreview}
-                          className="w-full h-full object-contain bg-white"
+                          className="w-full h-full object-contain bg-surface"
                         />
                       ) : (
                         <span className="text-xs text-muted">No Logo</span>
@@ -672,9 +692,9 @@ function RestaurantsAdd() {
         {/* Right Column: Menu Items */}
         <div className="space-y-4">
           {/* Header Card */}
-          <div className="p-4 flex items-center justify-between rounded-xl" style={{ backgroundColor: '#F8F5FF', border: '1px solid #EBE4FF' }}>
+          <div className="p-4 flex items-center justify-between rounded-xl bg-primary/10 border border-primary/20">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-primary" style={{ backgroundColor: '#EBE4FF' }}>
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-primary bg-primary/20">
                 <Utensils size={20} />
               </div>
               <div>
@@ -685,7 +705,7 @@ function RestaurantsAdd() {
           </div>
 
           {/* Search Bar Card */}
-          <Card className="p-0 border-border bg-white shadow-sm overflow-hidden rounded-xl">
+          <Card className="p-0 border-border bg-surface shadow-sm overflow-hidden rounded-xl">
             <div className="p-3">
               <Input
                 placeholder="Search menu items..."
@@ -702,7 +722,7 @@ function RestaurantsAdd() {
               {form.menuItems
                 .filter(item => item.name.toLowerCase().includes(menuSearch.toLowerCase()))
                 .map((item) => (
-                  <Card key={item.id} className="flex gap-4 p-4 items-center bg-white border border-border rounded-xl hover:border-primary/30 hover:shadow-sm transition-all group">
+                  <Card key={item.id} className="flex gap-4 p-4 items-center bg-surface border border-border rounded-xl hover:border-primary/30 hover:shadow-sm transition-all group">
                     <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-primary/5 border border-primary/10 flex items-center justify-center">
                       {(item.image || (item.images && item.images[0])) ? (
                         <img src={item.image || (item.images && item.images[0])} alt={item.name} className="w-full h-full object-cover" />
@@ -735,21 +755,45 @@ function RestaurantsAdd() {
                         />
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="relative shrink-0 dropdown-container">
                         <button 
                           type="button"
-                          onClick={() => setEditingMenuItem({ ...item })}
-                          className="w-8 h-8 rounded-full border border-primary/30 flex items-center justify-center hover:bg-primary/5 text-primary transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenDropdownId(openDropdownId === item.id ? null : item.id);
+                          }}
+                          className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${openDropdownId === item.id ? 'bg-primary text-white border-primary' : 'border-border text-foreground hover:bg-surface-hover hover:border-primary/50 hover:text-primary'}`}
                         >
-                          <Pencil size={14} />
+                          <MoreVertical size={16} />
                         </button>
-                        <button 
-                          type="button"
-                          onClick={() => handleDeleteMenuItem(item.id)}
-                          className="w-8 h-8 rounded-full border border-danger/30 flex items-center justify-center hover:bg-danger/5 text-danger transition-colors"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        
+                        {openDropdownId === item.id && (
+                          <div 
+                            className="absolute right-0 top-full mt-1 z-50 w-32 rounded-lg border border-border bg-surface p-1 shadow-lg"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingMenuItem({ ...item });
+                                setOpenDropdownId(null);
+                              }}
+                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground hover:bg-primary-light hover:text-primary transition-colors"
+                            >
+                              <Pencil size={14} /> Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setItemToDelete(item);
+                                setOpenDropdownId(null);
+                              }}
+                              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-danger hover:bg-danger/10 transition-colors"
+                            >
+                              <Trash2 size={14} /> Delete
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Card>
@@ -759,8 +803,7 @@ function RestaurantsAdd() {
 
           <button 
             type="button" 
-            className="w-full font-bold rounded-xl py-4 text-sm transition-colors text-primary flex items-center justify-center gap-2"
-            style={{ backgroundColor: '#F8F5FF', border: '1px solid #EBE4FF' }}
+            className="w-full font-bold rounded-xl py-4 text-sm transition-colors text-primary flex items-center justify-center gap-2 bg-primary/10 border border-primary/20 hover:bg-primary/20"
             onClick={handleAddNewItem}
           >
             <Plus size={16} /> {form.menuItems.length === 0 ? "Add Item" : "Add More Item"}
@@ -812,16 +855,39 @@ function RestaurantsAdd() {
               <label className="text-sm font-medium text-foreground mb-1.5 block">Category</label>
               <div className="relative flex items-center w-full rounded-lg border border-border bg-surface transition-colors focus-within:border-primary overflow-hidden">
                 <select
-                  value={editingMenuItem.category || ""}
-                  onChange={(e) => setEditingMenuItem(prev => ({ ...prev, category: e.target.value }))}
+                  value={editingMenuItem.categoryId || editingMenuItem.category || ""}
+                  onChange={(e) => {
+                    const selectedCat = categories.find(c => c.id === e.target.value);
+                    setEditingMenuItem(prev => ({ 
+                      ...prev, 
+                      categoryId: e.target.value,
+                      category: selectedCat ? selectedCat.name : e.target.value
+                    }));
+                  }}
                   className="w-full bg-transparent py-2.5 pl-3.5 pr-10 text-sm text-foreground outline-none appearance-none cursor-pointer"
+                  disabled={categoriesLoading || categoriesError}
                 >
-                  <option value="" disabled>Select Category</option>
-                  {categories
-                    .filter(cat => cat.type === "Food")
+                  {categoriesLoading && <option className="bg-surface text-foreground" value="" disabled>Loading categories...</option>}
+                  {categoriesError && !categoriesLoading && <option className="bg-surface text-foreground" value="" disabled>Unable to load categories</option>}
+                  {!categoriesLoading && !categoriesError && categories.filter(c => c.status === "Active" || c.status === "active").length === 0 && (
+                    <option className="bg-surface text-foreground" value="" disabled>No active categories available</option>
+                  )}
+                  {!categoriesLoading && !categoriesError && categories.filter(c => c.status === "Active" || c.status === "active").length > 0 && (
+                    <option className="bg-surface text-foreground" value="" disabled>Select Category</option>
+                  )}
+                  
+                  {!categoriesLoading && !categoriesError && categories
+                    .filter(cat => cat.status === "Active" || cat.status === "active")
                     .map(cat => (
-                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                    <option className="bg-surface text-foreground" key={cat.id} value={cat.id}>{cat.name}</option>
                   ))}
+                  
+                  {/* Graceful fallback for deleted/inactive categories */}
+                  {(editingMenuItem.categoryId || editingMenuItem.category) && !categories.some(c => c.id === (editingMenuItem.categoryId || editingMenuItem.category) && (c.status === "Active" || c.status === "active")) && (
+                    <option className="bg-surface text-foreground" value={editingMenuItem.categoryId || editingMenuItem.category} disabled>
+                      {editingMenuItem.category || "Inactive Category"} (Inactive)
+                    </option>
+                  )}
                 </select>
                 <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -848,7 +914,7 @@ function RestaurantsAdd() {
                       }
                     }}
                   />
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-primary mb-2" style={{ backgroundColor: '#EBE4FF' }}>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-primary mb-2 bg-primary/20">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                   </div>
                   <p className="text-sm font-bold text-primary">Click to upload</p>
@@ -899,7 +965,7 @@ function RestaurantsAdd() {
             <div className="mt-8 flex justify-end gap-3 pt-4 border-t border-border">
               <button 
                 type="button"
-                className="px-5 py-2.5 rounded-lg border border-border bg-white text-foreground font-medium hover:bg-surface transition-colors"
+                className="px-5 py-2.5 rounded-lg border border-border bg-surface text-foreground font-medium hover:bg-background transition-colors"
                 onClick={() => setEditingMenuItem(null)}
               >
                 Cancel
@@ -914,6 +980,35 @@ function RestaurantsAdd() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!itemToDelete}
+        onClose={() => setItemToDelete(null)}
+        title="Delete Menu Item?"
+      >
+        <div className="py-4">
+          <p className="text-sm text-foreground">
+            Are you sure you want to delete <span className="font-bold text-foreground">"{itemToDelete?.name}"</span>?
+          </p>
+          <div className="mt-8 flex justify-end gap-3">
+            <button 
+              type="button"
+              className="px-5 py-2.5 rounded-lg border border-border bg-surface text-foreground font-medium hover:bg-background transition-colors"
+              onClick={() => setItemToDelete(null)}
+            >
+              Cancel
+            </button>
+            <button 
+              type="button"
+              className="px-5 py-2.5 rounded-lg bg-danger text-white font-medium hover:bg-danger/90 transition-colors"
+              onClick={confirmDeleteMenuItem}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
       </Modal>
     </section>
   );

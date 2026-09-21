@@ -1,6 +1,8 @@
 @import "./variables.css";
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 @theme {
   --color-primary: var(--vayzo-primary);
   --color-primary-hover: var(--vayzo-primary-hover);

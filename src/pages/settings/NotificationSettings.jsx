@@ -121,7 +121,8 @@ function NotificationSettings() {
           </div>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
+        <div className="flex justify-center mt-4">
+          <div className="space-y-6 w-full max-w-4xl">
           
           {/* LEFT COLUMN */}
           <div className="space-y-6">
@@ -138,8 +139,8 @@ function NotificationSettings() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-medium text-foreground">Enable All Email Notifications</span>
-                    <button type="button" onClick={toggleEmailGlobal} className={`relative h-5 w-9 rounded-full transition-colors ${emailConfig.global ? "bg-success" : "bg-muted"}`}>
-                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${emailConfig.global ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                    <button type="button" onClick={toggleEmailGlobal} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${emailConfig.global ? "bg-success" : "bg-muted"}`}>
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${emailConfig.global ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                     </button>
                   </div>
                 </div>
@@ -172,17 +173,17 @@ function NotificationSettings() {
                             </td>
                             <td className="py-4 text-center">
                               <button type="button" onClick={() => toggleEmailEvent(idx, 'admin')} className={`inline-flex relative h-5 w-9 rounded-full transition-colors ${evt.admin ? "bg-success" : "bg-muted"}`}>
-                                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${evt.admin ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.admin ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                               </button>
                             </td>
                             <td className="py-4 text-center">
                               <button type="button" onClick={() => toggleEmailEvent(idx, 'user')} className={`inline-flex relative h-5 w-9 rounded-full transition-colors ${evt.user ? "bg-success" : "bg-muted"}`}>
-                                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${evt.user ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.user ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                               </button>
                             </td>
                             <td className="py-4 text-center">
                               <button type="button" onClick={() => toggleEmailEvent(idx, 'partner')} className={`inline-flex relative h-5 w-9 rounded-full transition-colors ${evt.partner ? "bg-success" : "bg-muted"}`}>
-                                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${evt.partner ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.partner ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                               </button>
                             </td>
                           </tr>
@@ -202,8 +203,8 @@ function NotificationSettings() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-xs font-medium text-foreground">Enable All Push Notifications</span>
-                    <button type="button" onClick={togglePushGlobal} className={`relative h-5 w-9 rounded-full transition-colors ${pushConfig.global ? "bg-success" : "bg-muted"}`}>
-                      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${pushConfig.global ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                    <button type="button" onClick={togglePushGlobal} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${pushConfig.global ? "bg-success" : "bg-muted"}`}>
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${pushConfig.global ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                     </button>
                   </div>
                 </div>
@@ -236,17 +237,17 @@ function NotificationSettings() {
                             </td>
                             <td className="py-4 text-center">
                               <button type="button" onClick={() => togglePushEvent(idx, 'admin')} className={`inline-flex relative h-5 w-9 rounded-full transition-colors ${evt.admin ? "bg-success" : "bg-muted"}`}>
-                                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${evt.admin ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.admin ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                               </button>
                             </td>
                             <td className="py-4 text-center">
                               <button type="button" onClick={() => togglePushEvent(idx, 'user')} className={`inline-flex relative h-5 w-9 rounded-full transition-colors ${evt.user ? "bg-success" : "bg-muted"}`}>
-                                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${evt.user ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.user ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                               </button>
                             </td>
                             <td className="py-4 text-center">
                               <button type="button" onClick={() => togglePushEvent(idx, 'partner')} className={`inline-flex relative h-5 w-9 rounded-full transition-colors ${evt.partner ? "bg-success" : "bg-muted"}`}>
-                                <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${evt.partner ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.partner ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                               </button>
                             </td>
                           </tr>
@@ -267,127 +268,9 @@ function NotificationSettings() {
 
           </div>
 
-          {/* RIGHT COLUMN */}
-          <div className="space-y-6">
-            
-            {/* Notification Status */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-2 font-semibold text-foreground text-sm">Notification Status</h3>
-              <p className="text-[11px] text-muted mb-5">Overview of your notification system.</p>
-              
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-xs group cursor-pointer hover:bg-surface-50 p-1 -mx-1 rounded transition-colors">
-                  <span className="font-medium text-foreground">Email Notifications</span>
-                  <div className="flex items-center gap-3">
-                    <span className="rounded bg-success/10 px-2 py-0.5 font-medium text-success">Active</span>
-                    <ChevronRight size={14} className="text-muted" />
-                  </div>
-                </div>
-                <div className="flex justify-between items-center text-xs group cursor-pointer hover:bg-surface-50 p-1 -mx-1 rounded transition-colors">
-                  <span className="font-medium text-foreground">Push Notifications</span>
-                  <div className="flex items-center gap-3">
-                    <span className="rounded bg-success/10 px-2 py-0.5 font-medium text-success">Active</span>
-                    <ChevronRight size={14} className="text-muted" />
-                  </div>
-                </div>
-                <div className="flex justify-between items-center text-xs group cursor-pointer hover:bg-surface-50 p-1 -mx-1 rounded transition-colors">
-                  <span className="font-medium text-foreground">SMS Notifications</span>
-                  <div className="flex items-center gap-3">
-                    <span className="rounded bg-danger/10 px-2 py-0.5 font-medium text-danger">Inactive</span>
-                    <ChevronRight size={14} className="text-muted" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Links */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-4 font-semibold text-foreground text-sm">Quick Links</h3>
-              
-              <div className="space-y-2">
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Mail size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Test Email</p>
-                      <p className="text-[11px] text-muted">Send a test email notification</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-                
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Bell size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Test Push Notification</p>
-                      <p className="text-[11px] text-muted">Send a test push notification</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <FileText size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Notification Templates</p>
-                      <p className="text-[11px] text-muted">Manage notification templates</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <List size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Notification Logs</p>
-                      <p className="text-[11px] text-muted">View notification history</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Settings size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Custom Settings</p>
-                      <p className="text-[11px] text-muted">Configure advanced settings</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-              </div>
-            </div>
-
-            {/* Note Card */}
-            <div className="rounded-xl border border-primary/20 bg-[#f4f7ff] p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <Info size={16} className="text-primary" />
-                <h4 className="font-semibold text-foreground text-sm">Note</h4>
-              </div>
-              <div className="space-y-3 text-[11px] text-muted leading-relaxed">
-                <p>Changes to notification settings will be applied immediately.</p>
-                <p>Users and delivery partners will receive notifications based on their preferences.</p>
-              </div>
-            </div>
-
           </div>
         </div>
-      </div>
-    </>
+      </div>`r`n      </>
   );
 }
 

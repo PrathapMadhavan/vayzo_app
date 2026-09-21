@@ -15,15 +15,10 @@ import ActionMenu from "../components/ui/ActionMenu";
 import FilterPanel from "../components/ui/FilterPanel";
 
 import { getRestaurants, deleteRestaurant } from "../api/restaurantsApi";
+import { getCategories } from "../api/categoriesApi";
 import { exportToCSV } from "../utils/exportUtils";
 
 const statusOptions = ["All Status", "Active", "Inactive"];
-export const RESTAURANT_CUISINES = [
-  "South Indian", "North Indian", "Fast Food",
-  "Chinese", "Italian", "Biryani", "Multi-Cuisine", "Cafe",
-];
-
-const cuisineOptions = ["All Cuisine", ...RESTAURANT_CUISINES];
 
 const tableHeaders = ["No.", "Restaurant", "Owner", "City", "Cuisine", "Rating", "Orders", "Status", "Actions"];
 
@@ -45,6 +40,7 @@ function Restaurants() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All Status");
   const [cuisine, setCuisine] = useState("All Cuisine");
+  const [categories, setCategories] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
@@ -59,6 +55,8 @@ function Restaurants() {
         setError(null);
         const data = await getRestaurants();
         if (isMounted) setRestaurants(data);
+        const catData = await getCategories();
+        if (isMounted) setCategories(catData.filter(c => c.status === "Active" || c.status === "active"));
       } catch {
         if (isMounted) setError("Failed to load restaurants");
       } finally {
@@ -175,7 +173,7 @@ function Restaurants() {
               <StatusSelect
                 id="rst-cuisine"
                 value={cuisine}
-                options={cuisineOptions}
+                options={["All Cuisine", ...categories.map(c => c.name)]}
                 onChange={(e) => setCuisine(e.target.value)}
                 className="w-full lg:w-[170px]"
               />
