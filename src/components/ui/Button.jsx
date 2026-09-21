@@ -17,9 +17,14 @@ function Button({
       "border border-border bg-surface text-foreground hover:bg-primary-light",
 
     danger: "bg-danger text-white hover:bg-danger/90",
+    
+    success: "bg-success text-white hover:bg-success/90",
 
     ghost:
       "bg-transparent text-muted hover:bg-primary-light hover:text-primary",
+
+    outline:
+      "border-2 border-primary text-primary bg-transparent hover:bg-primary/5",
   };
 
   const sizes = {
