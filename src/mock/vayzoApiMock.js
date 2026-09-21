@@ -294,7 +294,7 @@ export const vayzoApiMock = {
 
 export const mockAdminCredentials = {
   email: "admin@vayzo.com",
-  password: "admin@123",
+  password: "admin123",
 };
 
 export const mockAdmin = {

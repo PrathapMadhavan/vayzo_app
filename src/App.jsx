@@ -71,7 +71,26 @@ import SeoSettings from "./pages/settings/SEOSettings";
 import MaintenanceMode from "./pages/settings/MaintenanceMode";
 import ThirdPartyIntegrations from "./pages/settings/ThirdPartyIntegrations";
 
+import { useEffect } from "react";
+import { getGeneralSettings } from "./api/settingsApi";
+import { applyThemeToDocument } from "./utils/themeUtils";
+
 function App() {
+  useEffect(() => {
+    // Load and apply the globally saved appearance settings on startup
+    const initTheme = async () => {
+      try {
+        const settings = await getGeneralSettings();
+        if (settings) {
+          applyThemeToDocument(settings.primaryColor, settings.themeMode);
+        }
+      } catch (err) {
+        console.error("Failed to load theme settings:", err);
+      }
+    };
+    initTheme();
+  }, []);
+
   return (
     <BrowserRouter>
       <NotificationProvider>

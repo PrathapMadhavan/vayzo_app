@@ -17,7 +17,6 @@ import {
 
 const menuItems = [
   { label: "General Settings", path: "/settings/general", icon: LayoutGrid },
-  { label: "Site Settings", path: "/settings/site", icon: Globe },
   { label: "Commission Settings", path: "/settings/commission", icon: TrendingUp },
   { label: "Payment Settings", path: "/settings/payment", icon: CreditCard },
   { label: "Delivery Settings", path: "/settings/delivery", icon: Truck },

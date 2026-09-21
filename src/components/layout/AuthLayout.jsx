@@ -8,7 +8,7 @@ const AuthLayout = ({ children }) => {
       <div className="flex h-full w-full max-h-none flex-col overflow-hidden bg-surface shadow-xl sm:max-h-[550px] sm:max-w-4xl sm:flex-row sm:rounded-2xl">
         
         {/* Left Panel - Image Area */}
-        <section className="relative hidden w-full flex-shrink-0 items-center justify-center overflow-hidden bg-gray-50 sm:flex sm:h-full sm:w-[45%]">
+        <section className="relative hidden w-full flex-shrink-0 items-center justify-center overflow-hidden bg-surface sm:flex sm:h-full sm:w-[45%]">
           <img 
             src={vayzoLoginBg} 
             alt="VAYZO Admin Portal" 
@@ -17,7 +17,7 @@ const AuthLayout = ({ children }) => {
         </section>
 
         {/* Right Panel - Content Area */}
-        <section className="relative flex h-full flex-1 flex-col items-center justify-center bg-[#fafbff] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 overflow-hidden">
+        <section className="relative flex h-full flex-1 flex-col items-center justify-center bg-background px-4 py-4 sm:px-6 sm:py-6 lg:px-8 overflow-hidden">
           
           {/* Main Auth Content (Centered vertically in available space) */}
           <div className="flex w-full max-w-[360px] flex-1 flex-col justify-center">

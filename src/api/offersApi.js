@@ -6,20 +6,21 @@ export async function getOffers() {
   return apiRequest(ENDPOINT, {}, "Unable to load offers");
 }
 
-export async function getOfferById(offerId) {
-  const data = await apiRequest(`${ENDPOINT}?offerId=${offerId}`, {}, "Unable to load offer");
+export async function getOfferById(id) {
+  const data = await apiRequest(`${ENDPOINT}/${id}`, {}, "Unable to load offer");
 
-  if (!data || !data.length) {
+  if (!data || Object.keys(data).length === 0) {
     throw new Error("Offer not found");
   }
 
-  return data[0];
+  return data;
 }
 
 export async function createOffer(offerData) {
   console.warn("MISSING REQUIREMENT: Backend generation of business offer ID is unavailable.");
   const newOffer = {
     ...offerData,
+    offerId: offerData.offerId || `OFR${Date.now()}`,
     createdAt: new Date().toISOString(),
   };
 

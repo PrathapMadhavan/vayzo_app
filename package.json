@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "mock-api": "node mockServer.js",
     "preview": "vite preview",
-    "server": "node mockServer.js"
+    "server": "node mockServer.js",
+    "test-post": "node testPost.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
