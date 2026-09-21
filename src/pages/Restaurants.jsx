@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, RotateCcw, Trash2, Eye, Pencil, Star, ShoppingBag, Store, TrendingUp, Download } from "lucide-react";
+import { Plus, RotateCcw, Trash2, Eye, Pencil, Star, ShoppingBag, Store, TrendingUp, TrendingDown, Download } from "lucide-react";
 
 import Badge from "../components/ui/Badge";
 import BadgeCell from "../components/ui/BadgeCell";
@@ -15,15 +15,10 @@ import ActionMenu from "../components/ui/ActionMenu";
 import FilterPanel from "../components/ui/FilterPanel";
 
 import { getRestaurants, deleteRestaurant } from "../api/restaurantsApi";
+import { getCategories } from "../api/categoriesApi";
 import { exportToCSV } from "../utils/exportUtils";
 
 const statusOptions = ["All Status", "Active", "Inactive"];
-export const RESTAURANT_CUISINES = [
-  "South Indian", "North Indian", "Fast Food",
-  "Chinese", "Italian", "Biryani", "Multi-Cuisine", "Cafe",
-];
-
-const cuisineOptions = ["All Cuisine", ...RESTAURANT_CUISINES];
 
 const tableHeaders = ["No.", "Restaurant", "Owner", "City", "Cuisine", "Rating", "Orders", "Status", "Actions"];
 
@@ -45,6 +40,7 @@ function Restaurants() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("All Status");
   const [cuisine, setCuisine] = useState("All Cuisine");
+  const [categories, setCategories] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
@@ -59,6 +55,8 @@ function Restaurants() {
         setError(null);
         const data = await getRestaurants();
         if (isMounted) setRestaurants(data);
+        const catData = await getCategories();
+        if (isMounted) setCategories(catData.filter(c => c.status === "Active" || c.status === "active"));
       } catch {
         if (isMounted) setError("Failed to load restaurants");
       } finally {
@@ -122,20 +120,18 @@ function Restaurants() {
   };
 
   const activeCount = restaurants.filter((r) => r.status === "Active").length;
+  const inactiveCount = restaurants.filter((r) => r.status === "Inactive").length;
   const totalOrders = restaurants.reduce((s, r) => s + (r.totalOrders || 0), 0);
-  const avgRating = restaurants.length
-    ? (restaurants.reduce((s, r) => s + (r.rating || 0), 0) / restaurants.length).toFixed(1)
-    : "0";
 
   return (
     <section className="min-h-full bg-background p-4 sm:p-6">
 
       {/* Stat Cards */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-        <StatCard variant="horizontal" title="Total Restaurants" value={loading ? "--" : restaurants.length} icon={Store} colorClass="text-primary" bgClass="bg-primary/10" />
-        <StatCard variant="horizontal" title="Active Restaurants" value={loading ? "--" : activeCount} icon={TrendingUp} colorClass="text-success" bgClass="bg-success/10" />
-        <StatCard variant="horizontal" title="Total Orders" value={loading ? "--" : totalOrders.toLocaleString("en-IN")} icon={ShoppingBag} colorClass="text-info" bgClass="bg-info/10" />
-        <StatCard variant="horizontal" title="Avg. Rating" value={loading ? "--" : avgRating} icon={Star} colorClass="text-warning" bgClass="bg-warning/10" />
+        <StatCard variant="horizontal" title="Total Restaurants" value={restaurants.length} icon={Store} colorClass="text-primary" bgClass="bg-primary/10" />
+        <StatCard variant="horizontal" title="Active Restaurants" value={activeCount} icon={TrendingUp} colorClass="text-success" bgClass="bg-success/10" />
+        <StatCard variant="horizontal" title="Inactive Restaurants" value={inactiveCount} icon={TrendingDown} colorClass="text-danger" bgClass="bg-danger/10" />
+        <StatCard variant="horizontal" title="Total Orders" value={totalOrders.toLocaleString("en-IN")} icon={ShoppingBag} colorClass="text-info" bgClass="bg-info/10" />
       </div>
 
       {/* Filters */}
@@ -177,7 +173,7 @@ function Restaurants() {
               <StatusSelect
                 id="rst-cuisine"
                 value={cuisine}
-                options={cuisineOptions}
+                options={["All Cuisine", ...categories.map(c => c.name)]}
                 onChange={(e) => setCuisine(e.target.value)}
                 className="w-full lg:w-[170px]"
               />

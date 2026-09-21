@@ -24,6 +24,13 @@ export async function updateRestaurant(id, data) {
   }, "Unable to update restaurant");
 }
 
+export async function updateRestaurantStatus(id, status) {
+  return apiRequest(`${ENDPOINT}/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  }, "Unable to update restaurant status");
+}
+
 export async function deleteRestaurant(id) {
   await apiRequest(`${ENDPOINT}/${id}`, { method: "DELETE" }, "Unable to delete restaurant");
   return true;

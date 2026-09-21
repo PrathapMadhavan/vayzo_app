@@ -134,7 +134,7 @@ export default function Offers() {
     if (!deleteModalId) return;
     try {
       await deleteOffer(deleteModalId);
-      setOffers((prev) => prev.filter((o) => o.offerId !== deleteModalId));
+      setOffers((prev) => prev.filter((o) => (o.offerId || o.id) !== deleteModalId));
       setDeleteModalId(null);
       const newFilteredLength = filteredOffers.length - 1;
       const newTotalPages = Math.ceil(newFilteredLength / itemsPerPage) || 1;
@@ -298,7 +298,7 @@ export default function Offers() {
 
                   return (
                     <tr
-                      key={offer.offerId}
+                      key={offer.offerId || offer.id}
                       className="border-b border-border transition-colors hover:bg-background last:border-0"
                     >
                       <td className="whitespace-nowrap px-5 py-4 font-medium text-foreground">
@@ -307,7 +307,7 @@ export default function Offers() {
                       <td className="px-5 py-4 min-w-[220px]">
                         <div 
                           className="flex items-center gap-3 cursor-pointer group"
-                          onClick={() => navigate(`/offers/${offer.offerId}`)}
+                          onClick={() => navigate(`/offers/${offer.offerId || offer.id}`)}
                         >
                           <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${bgAndColor}`}>
                             <Icon size={18} strokeWidth={2.5}/>
@@ -360,18 +360,18 @@ export default function Offers() {
                             {
                               label: "View",
                               icon: Eye,
-                              onClick: () => navigate(`/offers/${offer.offerId}`),
+                              onClick: () => navigate(`/offers/${offer.offerId || offer.id}`),
                             },
                             {
                               label: "Edit",
                               icon: Pencil,
-                              onClick: () => navigate(`/offers/edit/${offer.offerId}`),
+                              onClick: () => navigate(`/offers/edit/${offer.offerId || offer.id}`),
                             },
                             {
                               label: "Delete",
                               icon: Trash2,
                               danger: true,
-                              onClick: () => setDeleteModalId(offer.id),
+                              onClick: () => setDeleteModalId(offer.offerId || offer.id),
                             },
                           ]}
                         />

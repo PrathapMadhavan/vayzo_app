@@ -104,7 +104,8 @@ function AppSettings() {
           </div>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
+        <div className="flex justify-center mt-4">
+          <div className="space-y-6 w-full max-w-4xl">
           
           {/* LEFT COLUMN */}
           <div className="space-y-6">
@@ -197,8 +198,8 @@ function AppSettings() {
                       <p className="text-[11px] text-muted mt-0.5">Enable maintenance mode to disable the app for users.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('maintenanceMode')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.maintenanceMode ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.maintenanceMode ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('maintenanceMode')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.maintenanceMode ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.maintenanceMode ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -210,8 +211,8 @@ function AppSettings() {
                       <p className="text-[11px] text-muted mt-0.5">Allow new users to register on the platform.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('userRegistration')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.userRegistration ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.userRegistration ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('userRegistration')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.userRegistration ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.userRegistration ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -223,8 +224,8 @@ function AppSettings() {
                       <p className="text-[11px] text-muted mt-0.5">Require email verification for new user registration.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('emailVerification')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.emailVerification ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.emailVerification ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('emailVerification')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.emailVerification ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.emailVerification ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -236,8 +237,8 @@ function AppSettings() {
                       <p className="text-[11px] text-muted mt-0.5">Require phone verification for new user registration.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('phoneVerification')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.phoneVerification ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.phoneVerification ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('phoneVerification')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.phoneVerification ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.phoneVerification ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -249,8 +250,8 @@ function AppSettings() {
                       <p className="text-[11px] text-muted mt-0.5">Enable referral system for users.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('referralSystem')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.referralSystem ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.referralSystem ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('referralSystem')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.referralSystem ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.referralSystem ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -262,8 +263,8 @@ function AppSettings() {
                       <p className="text-[11px] text-muted mt-0.5">Allow users to select their preferred language.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('multiLanguage')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.multiLanguage ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.multiLanguage ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('multiLanguage')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.multiLanguage ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.multiLanguage ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -275,8 +276,8 @@ function AppSettings() {
                       <p className="text-[11px] text-muted mt-0.5">Enable dark mode option in the application.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('darkMode')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.darkMode ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.darkMode ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('darkMode')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.darkMode ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.darkMode ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -312,166 +313,19 @@ function AppSettings() {
                     <p className="text-[11px] text-muted mt-0.5">Force all users to update their app to the latest version.</p>
                   </div>
                 </div>
-                <button type="button" onClick={() => setForceUpdate(!forceUpdate)} className={`relative h-5 w-9 rounded-full transition-colors ${forceUpdate ? "bg-primary" : "bg-muted"}`}>
-                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${forceUpdate ? "left-4.5" : "left-0.5"}`} />
+                <button type="button" onClick={() => setForceUpdate(!forceUpdate)} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${forceUpdate ? "bg-primary" : "bg-muted"}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${forceUpdate ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                 </button>
               </div>
 
             </div>
 
           </div>
-
-          {/* RIGHT COLUMN */}
-          <div className="space-y-6">
-            
-            {/* App Status */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-2 font-semibold text-foreground text-sm">App Status</h3>
-              <p className="text-[11px] text-muted mb-5">Overview of your application status.</p>
-              
-              <div className="bg-success/5 border border-success/20 rounded-lg p-3 mb-6 flex items-start gap-3">
-                <div className="bg-success/20 text-success p-1 rounded-full mt-0.5">
-                  <CheckCircle size={14} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-success">Application is Active</p>
-                  <p className="text-[10px] text-muted mt-0.5">Your application is running smoothly.</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2 text-muted">
-                    <Globe size={14} />
-                    <span>Environment</span>
-                  </div>
-                  <span className="font-medium text-foreground">Production</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2 text-muted">
-                    <Clock size={14} />
-                    <span>Last Update</span>
-                  </div>
-                  <span className="font-medium text-foreground">2 days ago</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2 text-muted">
-                    <Server size={14} />
-                    <span>Installed On</span>
-                  </div>
-                  <span className="font-medium text-foreground">12 Jan 2024</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2 text-muted">
-                    <Database size={14} />
-                    <span>Database Version</span>
-                  </div>
-                  <span className="font-medium text-foreground">v4.8.1</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2 text-muted">
-                    <Code size={14} />
-                    <span>PHP Version</span>
-                  </div>
-                  <span className="font-medium text-foreground">8.2.12</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-4 font-semibold text-foreground text-sm">Quick Actions</h3>
-              
-              <div className="space-y-2">
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Trash2 size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Clear Cache</p>
-                      <p className="text-[11px] text-muted">Clear application cache</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-                
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Zap size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Optimize App</p>
-                      <p className="text-[11px] text-muted">Optimize database and files</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Download size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Export Settings</p>
-                      <p className="text-[11px] text-muted">Download app configuration</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <RotateCcw size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Reset Settings</p>
-                      <p className="text-[11px] text-muted">Reset all settings to default</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-              </div>
-            </div>
-
-            {/* Social Links */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-1 font-semibold text-foreground text-sm">Social Links</h3>
-              <p className="text-[11px] text-muted mb-5">Manage social media links for your app.</p>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between gap-4">
-                  <label className="text-xs font-medium text-foreground w-16">Facebook</label>
-                  <input type="text" defaultValue="https://facebook.com/vayzo" className="flex-1 rounded-md border border-border bg-surface px-3 py-1.5 text-xs focus:border-primary outline-none" />
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <label className="text-xs font-medium text-foreground w-16">Twitter</label>
-                  <input type="text" defaultValue="https://twitter.com/vayzo" className="flex-1 rounded-md border border-border bg-surface px-3 py-1.5 text-xs focus:border-primary outline-none" />
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <label className="text-xs font-medium text-foreground w-16">Instagram</label>
-                  <input type="text" defaultValue="https://instagram.com/vayzo" className="flex-1 rounded-md border border-border bg-surface px-3 py-1.5 text-xs focus:border-primary outline-none" />
-                </div>
-                <div className="flex items-center justify-between gap-4">
-                  <label className="text-xs font-medium text-foreground w-16">LinkedIn</label>
-                  <input type="text" defaultValue="https://linkedin.com/company/vayzo" className="flex-1 rounded-md border border-border bg-surface px-3 py-1.5 text-xs focus:border-primary outline-none" />
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-5">
-                <Button type="button" className="bg-primary text-white text-xs px-4 py-1.5 h-auto">
-                  Save Social Links
-                </Button>
-              </div>
-            </div>
 
           </div>
         </div>
       </div>
-    </>
+      </>
   );
 }
 

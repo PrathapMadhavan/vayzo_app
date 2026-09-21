@@ -95,7 +95,8 @@ function SecuritySettings() {
           </div>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
+        <div className="flex justify-center mt-4">
+          <div className="space-y-6 w-full max-w-4xl">
           
           {/* LEFT COLUMN */}
           <div className="space-y-6">
@@ -153,8 +154,8 @@ function SecuritySettings() {
                       <p className="text-[11px] text-muted mt-0.5">Require 2FA for all admin users to add an extra layer of security.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('twoFactor')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.twoFactor ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.twoFactor ? "left-4.5" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('twoFactor')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.twoFactor ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.twoFactor ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -166,8 +167,8 @@ function SecuritySettings() {
                       <p className="text-[11px] text-muted mt-0.5">Get notified via email on new login to your account.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('loginNotification')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.loginNotification ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.loginNotification ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('loginNotification')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.loginNotification ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.loginNotification ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -235,8 +236,8 @@ function SecuritySettings() {
                       <p className="text-[11px] text-muted mt-0.5">Redirect all requests to secure HTTPS connection.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('forceHttps')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.forceHttps ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.forceHttps ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('forceHttps')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.forceHttps ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.forceHttps ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -248,8 +249,8 @@ function SecuritySettings() {
                       <p className="text-[11px] text-muted mt-0.5">Enable Google reCAPTCHA on login page.</p>
                     </div>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('recaptcha')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.recaptcha ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.recaptcha ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('recaptcha')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.recaptcha ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.recaptcha ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -309,188 +310,10 @@ function SecuritySettings() {
 
           </div>
 
-          {/* RIGHT COLUMN */}
-          <div className="space-y-6">
-            
-            {/* Security Status Gauge */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-1 font-semibold text-foreground text-sm">Security Status</h3>
-              <p className="text-[11px] text-muted mb-6">Overall security strength of your platform.</p>
-              
-              <div className="flex flex-col items-center justify-center mb-6 relative">
-                {/* Gauge SVG */}
-                <svg viewBox="0 0 100 55" className="w-48 h-auto overflow-visible">
-                  {/* Track */}
-                  <path 
-                    d="M 10 50 A 40 40 0 0 1 90 50" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="8" 
-                    strokeLinecap="round" 
-                    className="text-muted/20"
-                  />
-                  {/* Progress (Strong -> Green) */}
-                  <path 
-                    d="M 10 50 A 40 40 0 0 1 90 50" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="8" 
-                    strokeLinecap="round" 
-                    strokeDasharray="125.6"
-                    strokeDashoffset="25.12" // 80% filled
-                    className="text-success"
-                  />
-                </svg>
-                
-                <div className="absolute bottom-2 flex flex-col items-center">
-                  <div className="h-6 w-6 rounded-full border border-success text-success flex items-center justify-center mb-1">
-                    <ShieldCheck size={14} />
-                  </div>
-                  <h4 className="font-bold text-foreground text-lg leading-tight">Strong</h4>
-                  <p className="text-[9px] text-muted">Your platform is secure</p>
-                </div>
-              </div>
-
-              <div className="space-y-2 mt-2 pt-4 border-t border-border">
-                <div className="flex items-center gap-2 text-xs">
-                  <CheckCircle size={14} className="text-success shrink-0" />
-                  <span className="text-muted">No critical vulnerabilities</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <CheckCircle size={14} className="text-success shrink-0" />
-                  <span className="text-muted">All security systems are active</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <CheckCircle size={14} className="text-success shrink-0" />
-                  <span className="text-muted">Regular security scan enabled</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <CheckCircle size={14} className="text-success shrink-0" />
-                  <span className="text-muted">Platform is up to date</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Active Sessions */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-1 font-semibold text-foreground text-sm">Active Sessions</h3>
-              <p className="text-[11px] text-muted mb-5">Manage all active login sessions.</p>
-              
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-3">
-                    <Monitor size={16} className="text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">Windows • Chrome</p>
-                      <p className="text-[10px] text-muted">Chennai, India</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="inline-block border border-primary text-primary text-[9px] font-semibold px-2 py-0.5 rounded-full mb-1">Current Session</span>
-                    <p className="text-[9px] text-muted">Just now</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-3">
-                    <Smartphone size={16} className="text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">Android • Chrome</p>
-                      <p className="text-[10px] text-muted">Bangalore, India</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <p className="text-[9px] text-muted">2 hours ago</p>
-                    <button className="border border-danger text-danger text-[10px] font-medium px-2 py-0.5 rounded hover:bg-danger/5 transition-colors">Terminate</button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-3">
-                    <Monitor size={16} className="text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">Windows • Edge</p>
-                      <p className="text-[10px] text-muted">Mumbai, India</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <p className="text-[9px] text-muted">1 day ago</p>
-                    <button className="border border-danger text-danger text-[10px] font-medium px-2 py-0.5 rounded hover:bg-danger/5 transition-colors">Terminate</button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5">
-                <a href="#" className="text-primary text-xs font-semibold hover:underline flex items-center gap-1">
-                  View All Sessions <ArrowRight size={14} />
-                </a>
-              </div>
-            </div>
-
-            {/* Security Logs (Recent) */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-1 font-semibold text-foreground text-sm">Security Logs (Recent)</h3>
-              <p className="text-[11px] text-muted mb-5">View recent security related activities.</p>
-              
-              <div className="space-y-4">
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-success mt-1.5 shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">Successful login</p>
-                      <p className="text-[10px] text-muted">admin@vayzo.com</p>
-                    </div>
-                  </div>
-                  <p className="text-[9px] text-muted">Just now</p>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">Password changed</p>
-                      <p className="text-[10px] text-muted">admin@vayzo.com</p>
-                    </div>
-                  </div>
-                  <p className="text-[9px] text-muted">2 days ago</p>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-danger mt-1.5 shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">Failed login attempt</p>
-                      <p className="text-[10px] text-muted">admin@vayzo.com</p>
-                    </div>
-                  </div>
-                  <p className="text-[9px] text-muted">3 days ago</p>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">Login from new device</p>
-                      <p className="text-[10px] text-muted">admin@vayzo.com</p>
-                    </div>
-                  </div>
-                  <p className="text-[9px] text-muted">5 days ago</p>
-                </div>
-
-              </div>
-
-              <div className="mt-5">
-                <a href="#" className="text-primary text-xs font-semibold hover:underline flex items-center gap-1">
-                  View All Logs <ArrowRight size={14} />
-                </a>
-              </div>
-            </div>
-
           </div>
         </div>
       </div>
-    </>
+      </>
   );
 }
 

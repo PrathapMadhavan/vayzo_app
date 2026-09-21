@@ -3,7 +3,7 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Toggle from "../../components/ui/Toggle";
 import Card from "../../components/ui/Card";
-import Button from "../../components/ui/button";
+import Button from "../../components/ui/Button";
 import { getCommissionSettings, saveCommissionSettings } from "../../api/settingsApi";
 import { 
   Info, 
@@ -22,12 +22,7 @@ function CommissionSettings() {
     { id: "deliveryCommission", name: "Delivery Service", desc: "Parcel delivery", type: "Percentage (%)", comm: "10", gst: "18", active: true, icon: Package, iconColor: "text-yellow-500", iconBg: "bg-yellow-500/10" },
   ]);
 
-  const [toggles, setToggles] = useState({
-    extraCod: false,
-    peakTime: false,
-    surge: false,
-    rounded: true,
-  });
+
 
   useEffect(() => {
     let isMounted = true;
@@ -37,9 +32,15 @@ function CommissionSettings() {
         const data = await getCommissionSettings();
         if (isMounted && data) {
           setServices([
-            { id: "restaurantCommission", name: "Food Delivery", desc: "Restaurants orders", type: "Percentage (%)", comm: data.restaurantCommission || "0", gst: "18", active: true, icon: Utensils, iconColor: "text-orange-500", iconBg: "bg-orange-500/10" },
-            { id: "deliveryCommission", name: "Delivery Service", desc: "Parcel delivery", type: "Percentage (%)", comm: data.deliveryCommission || "0", gst: "18", active: true, icon: Package, iconColor: "text-yellow-500", iconBg: "bg-yellow-500/10" },
+            { id: "restaurantCommission", name: "Food Delivery", desc: "Restaurants orders", type: data.restaurantCommissionType || "Percentage (%)", comm: data.restaurantCommission || "0", gst: data.restaurantGst || "18", active: data.restaurantActive !== false, icon: Utensils, iconColor: "text-orange-500", iconBg: "bg-orange-500/10" },
+            { id: "deliveryCommission", name: "Delivery Service", desc: "Parcel delivery", type: data.deliveryCommissionType || "Percentage (%)", comm: data.deliveryCommission || "0", gst: data.deliveryGst || "18", active: data.deliveryActive !== false, icon: Package, iconColor: "text-yellow-500", iconBg: "bg-yellow-500/10" },
           ]);
+          setRules({
+            minCommission: data.minCommission || "5.00",
+            maxCommission: data.maxCommission || "100.00",
+            applyOn: data.applyOn || "Subtotal",
+            applicability: data.applicability || "All Orders"
+          });
         }
       } catch (err) {
         console.error("Failed to load commission settings", err);
@@ -63,18 +64,60 @@ function CommissionSettings() {
     setServices(newServices);
   };
 
+  const [rules, setRules] = useState({
+    minCommission: "5.00",
+    maxCommission: "100.00",
+    applyOn: "Subtotal",
+    applicability: "All Orders"
+  });
+
   const handleSave = async (event) => {
     if (event) event.preventDefault();
     try {
       const dataToSave = {
         restaurantCommission: parseFloat(services[0].comm) || 0,
+        restaurantCommissionType: services[0].type,
+        restaurantGst: parseFloat(services[0].gst) || 0,
+        restaurantActive: services[0].active,
+        
         deliveryCommission: parseFloat(services[1].comm) || 0,
+        deliveryCommissionType: services[1].type,
+        deliveryGst: parseFloat(services[1].gst) || 0,
+        deliveryActive: services[1].active,
+
+        minCommission: parseFloat(rules.minCommission) || 0,
+        maxCommission: parseFloat(rules.maxCommission) || 0,
+        applyOn: rules.applyOn,
+        applicability: rules.applicability
       };
       await saveCommissionSettings(dataToSave);
       setSaveMessage("Changes saved successfully.");
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (err) {
       console.error("Failed to save", err);
+    }
+  };
+
+  const handleUpdateSingleService = async (index) => {
+    try {
+      const svc = services[index];
+      const dataToPatch = {};
+      if (svc.id === "restaurantCommission") {
+        dataToPatch.restaurantCommission = parseFloat(svc.comm) || 0;
+        dataToPatch.restaurantCommissionType = svc.type;
+        dataToPatch.restaurantGst = parseFloat(svc.gst) || 0;
+        dataToPatch.restaurantActive = svc.active;
+      } else {
+        dataToPatch.deliveryCommission = parseFloat(svc.comm) || 0;
+        dataToPatch.deliveryCommissionType = svc.type;
+        dataToPatch.deliveryGst = parseFloat(svc.gst) || 0;
+        dataToPatch.deliveryActive = svc.active;
+      }
+      await saveCommissionSettings(dataToPatch);
+      setSaveMessage(`${svc.name} updated successfully.`);
+      setTimeout(() => setSaveMessage(""), 3000);
+    } catch (err) {
+      console.error("Failed to update service", err);
     }
   };
 
@@ -109,10 +152,10 @@ function CommissionSettings() {
           </div>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start mt-4">
+        <div className="mt-4">
           
-          {/* LEFT COLUMN */}
-          <div className="space-y-6">
+          {/* MAIN CONTENT AREA */}
+          <div className="space-y-6 w-full">
             
             {/* Service Wise Commission */}
             <div className="rounded-2xl border border-border bg-surface shadow-sm">
@@ -180,7 +223,7 @@ function CommissionSettings() {
                             <Toggle checked={svc.active} onChange={() => toggleServiceStatus(idx)} />
                           </td>
                           <td className="py-4 pl-2 text-right">
-                            <Button variant="secondary" size="sm" className="h-8 text-xs hover:text-primary">Update</Button>
+                            <Button type="button" onClick={() => handleUpdateSingleService(idx)} variant="secondary" size="sm" className="h-8 text-xs hover:text-primary">Update</Button>
                           </td>
                         </tr>
                       );
@@ -194,7 +237,6 @@ function CommissionSettings() {
                   <Info size={14} />
                   <span>Commission will be calculated on the order amount (after discounts).</span>
                 </div>
-                <Button size="sm" className="bg-primary text-white">Save All Changes</Button>
               </div>
             </div>
 
@@ -212,7 +254,12 @@ function CommissionSettings() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 w-32">
-                    <Input type="text" defaultValue="5.00" className="!py-1.5 !px-3 !text-sm text-right font-medium" />
+                    <Input 
+                      type="number" 
+                      value={rules.minCommission} 
+                      onChange={(e) => setRules(p => ({ ...p, minCommission: e.target.value }))}
+                      className="!py-1.5 !px-3 !text-sm text-right font-medium" 
+                    />
                   </div>
                 </div>
 
@@ -225,7 +272,12 @@ function CommissionSettings() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 w-32">
-                    <Input type="text" defaultValue="100.00" className="!py-1.5 !px-3 !text-sm text-right font-medium" />
+                    <Input 
+                      type="number" 
+                      value={rules.maxCommission} 
+                      onChange={(e) => setRules(p => ({ ...p, maxCommission: e.target.value }))}
+                      className="!py-1.5 !px-3 !text-sm text-right font-medium" 
+                    />
                   </div>
                 </div>
 
@@ -239,11 +291,23 @@ function CommissionSettings() {
                   </div>
                   <div className="flex items-center gap-5 text-sm">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="applyOn" className="text-primary focus:ring-primary h-4 w-4" defaultChecked />
+                      <input 
+                        type="radio" 
+                        name="applyOn" 
+                        checked={rules.applyOn === "Subtotal"}
+                        onChange={() => setRules(p => ({ ...p, applyOn: "Subtotal" }))}
+                        className="text-primary focus:ring-primary h-4 w-4" 
+                      />
                       <span className="text-foreground font-medium text-xs">Subtotal <span className="text-muted font-normal">(Before Delivery Charge)</span></span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="applyOn" className="text-primary focus:ring-primary h-4 w-4" />
+                      <input 
+                        type="radio" 
+                        name="applyOn" 
+                        checked={rules.applyOn === "Total"}
+                        onChange={() => setRules(p => ({ ...p, applyOn: "Total" }))}
+                        className="text-primary focus:ring-primary h-4 w-4" 
+                      />
                       <span className="text-foreground font-medium text-xs">Total <span className="text-muted font-normal">(After Delivery Charge)</span></span>
                     </label>
                   </div>
@@ -259,11 +323,23 @@ function CommissionSettings() {
                   </div>
                   <div className="flex items-center gap-5 text-sm">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="applicability" className="text-primary focus:ring-primary h-4 w-4" defaultChecked />
+                      <input 
+                        type="radio" 
+                        name="applicability" 
+                        checked={rules.applicability === "All Orders"}
+                        onChange={() => setRules(p => ({ ...p, applicability: "All Orders" }))}
+                        className="text-primary focus:ring-primary h-4 w-4" 
+                      />
                       <span className="text-foreground font-medium text-xs">All Orders</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="applicability" className="text-primary focus:ring-primary h-4 w-4" />
+                      <input 
+                        type="radio" 
+                        name="applicability" 
+                        checked={rules.applicability === "Only Completed Orders"}
+                        onChange={() => setRules(p => ({ ...p, applicability: "Only Completed Orders" }))}
+                        className="text-primary focus:ring-primary h-4 w-4" 
+                      />
                       <span className="text-foreground font-medium text-xs">Only Completed Orders</span>
                     </label>
                   </div>
@@ -272,106 +348,9 @@ function CommissionSettings() {
             </Card>
 
           </div>
-
-          {/* RIGHT COLUMN */}
-          <div className="space-y-6">
-            
-            {/* Calculation Example */}
-            <div className="rounded-2xl border border-success/20 bg-[#f6fbf7] p-5 shadow-sm">
-              <h3 className="mb-4 font-semibold text-foreground text-sm">Commission Calculation Example</h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-foreground text-xs">Order Amount</span>
-                  <span className="font-medium">₹500.00</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted font-medium">Platform Commission (18%)</span>
-                  <span className="text-foreground">- ₹90.00</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted font-medium">GST (18% on Commission)</span>
-                  <span className="text-foreground">- ₹16.20</span>
-                </div>
-                <div className="pt-3 border-t border-success/20 flex justify-between items-center">
-                  <span className="font-semibold text-success text-[13px]">You Will Get</span>
-                  <span className="font-semibold text-success">₹393.80</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Settings */}
-            <Card className="p-5">
-              <h3 className="mb-5 font-semibold text-foreground">Additional Commission Settings</h3>
-              
-              <div className="space-y-6">
-                
-                {/* Extra COD */}
-                <div className="pb-5 border-b border-border">
-                  <div className="flex justify-between items-start gap-3">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">Extra Commission for COD Orders</p>
-                      <p className="text-[11px] text-muted mt-1 leading-relaxed">Apply extra commission for Cash on Delivery orders.</p>
-                    </div>
-                    <Toggle checked={toggles.extraCod} onChange={() => setToggles(p => ({...p, extraCod: !p.extraCod}))} />
-                  </div>
-                  {toggles.extraCod && (
-                    <div className="mt-4">
-                      <label className="text-xs text-muted mb-1 block">Extra Commission (%)</label>
-                      <Input type="text" defaultValue="0" className="!py-2 !text-sm" suffix={<span className="text-sm text-muted">%</span>} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Peak Time */}
-                <div className="pb-5 border-b border-border">
-                  <div className="flex justify-between items-start gap-3">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">Peak Time Commission</p>
-                      <p className="text-[11px] text-muted mt-1 leading-relaxed">Apply extra commission during peak hours.</p>
-                    </div>
-                    <Toggle checked={toggles.peakTime} onChange={() => setToggles(p => ({...p, peakTime: !p.peakTime}))} />
-                  </div>
-                  {toggles.peakTime && (
-                    <div className="mt-4">
-                      <label className="text-xs text-muted mb-1 block">Extra Commission (%)</label>
-                      <Input type="text" defaultValue="0" className="!py-2 !text-sm" suffix={<span className="text-sm text-muted">%</span>} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Surge */}
-                <div className="pb-5 border-b border-border">
-                  <div className="flex justify-between items-start gap-3">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">Surge Commission</p>
-                      <p className="text-[11px] text-muted mt-1 leading-relaxed">Enable surge commission for high demand.</p>
-                    </div>
-                    <Toggle checked={toggles.surge} onChange={() => setToggles(p => ({...p, surge: !p.surge}))} />
-                  </div>
-                  {toggles.surge && (
-                    <div className="mt-4">
-                      <label className="text-xs text-muted mb-1 block">Surge Commission (%)</label>
-                      <Input type="text" defaultValue="0" className="!py-2 !text-sm" suffix={<span className="text-sm text-muted">%</span>} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Rounded Off */}
-                <div>
-                  <div className="flex justify-between items-center gap-3">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">Rounded Off</p>
-                      <p className="text-[11px] text-muted mt-0.5">Round off commission to nearest rupee.</p>
-                    </div>
-                    <Toggle checked={toggles.rounded} onChange={() => setToggles(p => ({...p, rounded: !p.rounded}))} />
-                  </div>
-                </div>
-
-              </div>
-            </Card>
-
-          </div>
         </div>
+            
+
       </div>
     </>
   );

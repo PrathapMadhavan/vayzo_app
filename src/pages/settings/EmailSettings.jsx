@@ -105,7 +105,8 @@ function EmailSettings() {
           </div>
         )}
 
-        <div className="grid gap-6 xl:grid-cols-[2.5fr_1fr] items-start">
+        <div className="flex justify-center mt-4">
+          <div className="space-y-6 w-full max-w-4xl">
           
           {/* LEFT COLUMN */}
           <div className="space-y-6">
@@ -173,8 +174,8 @@ function EmailSettings() {
                     <p className="text-sm font-medium text-foreground">Enable Email Sending</p>
                     <p className="text-[11px] text-muted mt-0.5">Turn on to allow system to send emails.</p>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('enableSending')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.enableSending ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.enableSending ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('enableSending')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.enableSending ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.enableSending ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -183,8 +184,8 @@ function EmailSettings() {
                     <p className="text-sm font-medium text-foreground">Set as Default</p>
                     <p className="text-[11px] text-muted mt-0.5">Use this configuration as the default.</p>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('setAsDefault')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.setAsDefault ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.setAsDefault ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('setAsDefault')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.setAsDefault ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.setAsDefault ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -193,8 +194,8 @@ function EmailSettings() {
                     <p className="text-sm font-medium text-foreground">Enable HTML Email</p>
                     <p className="text-[11px] text-muted mt-0.5">Send emails in HTML format.</p>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('htmlEmail')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.htmlEmail ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.htmlEmail ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('htmlEmail')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.htmlEmail ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.htmlEmail ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
 
@@ -203,8 +204,8 @@ function EmailSettings() {
                     <p className="text-sm font-medium text-foreground">Email Logging</p>
                     <p className="text-[11px] text-muted mt-0.5">Log all email activities for debugging.</p>
                   </div>
-                  <button type="button" onClick={() => toggleSetting('emailLogging')} className={`relative h-5 w-9 rounded-full transition-colors ${toggles.emailLogging ? "bg-primary" : "bg-muted"}`}>
-                    <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform ${toggles.emailLogging ? "left-4.5 translate-x-4" : "left-0.5"}`} />
+                  <button type="button" onClick={() => toggleSetting('emailLogging')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.emailLogging ? "bg-primary" : "bg-muted"}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.emailLogging ? "translate-x-[18px]" : "translate-x-0.5"}`} />
                   </button>
                 </div>
               </div>
@@ -233,122 +234,9 @@ function EmailSettings() {
 
           </div>
 
-          {/* RIGHT COLUMN */}
-          <div className="space-y-6">
-            
-            {/* Email Settings Status */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-2 font-semibold text-foreground text-sm">Email Settings Status</h3>
-              <p className="text-[11px] text-muted mb-5">Overview of your email delivery system.</p>
-              
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">Email Service</span>
-                  <span className="rounded bg-success/10 px-2 py-0.5 font-medium text-success">Active</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">Last Test Email</span>
-                  <span className="text-muted font-medium">2 mins ago</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">Email Queue</span>
-                  <span className="text-foreground font-medium">0</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-foreground">Failed Emails</span>
-                  <span className="text-foreground font-medium">0</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-              <h3 className="mb-4 font-semibold text-foreground text-sm">Quick Actions</h3>
-              
-              <div className="space-y-2">
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <Mail size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Email Templates</p>
-                      <p className="text-[11px] text-muted">Manage email templates</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-                
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <FileText size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Email Log</p>
-                      <p className="text-[11px] text-muted">View email activity logs</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <AlertCircle size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Queue Failed Emails</p>
-                      <p className="text-[11px] text-muted">View and retry failed emails</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <XCircle size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Email Blacklist</p>
-                      <p className="text-[11px] text-muted">Manage email blacklist</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-
-                <button className="flex w-full items-center justify-between rounded-lg p-3 transition-colors hover:bg-surface-50 group border border-transparent hover:border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 text-primary">
-                      <CheckCircle size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">Email Whitelist</p>
-                      <p className="text-[11px] text-muted">Manage email whitelist</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted" />
-                </button>
-              </div>
-            </div>
-
-            {/* Tips Card */}
-            <div className="rounded-xl border border-primary/20 bg-[#f4f7ff] p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <Lightbulb size={16} className="text-primary" />
-                <h4 className="font-semibold text-foreground text-sm">Tips</h4>
-              </div>
-              <div className="space-y-4 text-[11px] text-muted leading-relaxed">
-                <p>Ensure your SMTP credentials are correct for smooth email delivery.</p>
-                <p>We recommend using dedicated email services for production.</p>
-              </div>
-            </div>
-
           </div>
         </div>
-      </div>
-    </>
+      </div>`r`n      </>
   );
 }
 
