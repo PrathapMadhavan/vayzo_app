@@ -20,13 +20,11 @@ const IS_VERCEL = Boolean(process.env.VERCEL);
 function resolveDbFile() {
   const source = path.join(__dirname, 'db.json');
   if (!IS_VERCEL) return source;
-  const dest = path.join(os.tmpdir(), 'vayzo-db.json');
-  // Refresh the writable copy whenever the packaged db.json is newer,
-  // otherwise Vercel keeps serving a stale /tmp database after deploys.
-  const shouldCopy =
-    !fs.existsSync(dest) ||
-    fs.statSync(source).mtimeMs > fs.statSync(dest).mtimeMs;
-  if (shouldCopy) {
+  // Include source mtime in the filename so each deploy gets a fresh LowDB file
+  // instead of reusing a stale /tmp copy from a previous build.
+  const stamp = Math.floor(fs.statSync(source).mtimeMs);
+  const dest = path.join(os.tmpdir(), `vayzo-db-${stamp}.json`);
+  if (!fs.existsSync(dest)) {
     fs.copyFileSync(source, dest);
   }
   return dest;
@@ -222,23 +220,25 @@ app.post('/api/v1/admin/auth/forgot-password', (req, res) => {
 });
 
 // Bearer token middleware for protected Admin routes (excluding /auth)
-app.use('/api/v1/admin', (req, res, next) => {
-  if (req.path.startsWith('/auth/')) return next(); // skip auth endpoints
-  const authHeader = req.headers['authorization'];
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, message: 'Missing or invalid Authorization header' });
+app.use((req, res, next) => {
+  const pathName = (req.url || "").split("?")[0];
+  if (!pathName.startsWith("/api/v1/admin")) return next();
+  if (pathName.startsWith("/api/v1/admin/auth/")) return next();
+
+  const authHeader = req.headers["authorization"];
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ success: false, message: "Missing or invalid Authorization header" });
   }
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.split(" ")[1];
   try {
     const payload = jwt.verify(token, SECRET_KEY);
-    // Extra validation: ensure the user is an admin
-    if (payload.role !== 'Admin') {
-       return res.status(403).json({ success: false, message: 'Forbidden: Admin role required' });
+    if (payload.role !== "Admin") {
+      return res.status(403).json({ success: false, message: "Forbidden: Admin role required" });
     }
-    req.user = payload; // attach for downstream if needed
+    req.user = payload;
     next();
   } catch (e) {
-    return res.status(401).json({ success: false, message: 'Invalid token' });
+    return res.status(401).json({ success: false, message: "Invalid token" });
   }
 });
 
