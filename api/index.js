@@ -21,8 +21,10 @@ function restoreUrl(req) {
     current.startsWith("/api/v1/") ||
     current.startsWith("/api/settings") ||
     current.startsWith("/api/deliveryPartners") ||
+    current.startsWith("/api/restaurant_products") ||
     current.startsWith("/settings") ||
-    current.startsWith("/deliveryPartners")
+    current.startsWith("/deliveryPartners") ||
+    current.startsWith("/restaurant_products")
   ) {
     return;
   }

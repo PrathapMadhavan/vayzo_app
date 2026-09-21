@@ -15,12 +15,28 @@
       "destination": "/api?p=/api/deliveryPartners"
     },
     {
+      "source": "/api/restaurant_products",
+      "destination": "/api?p=/api/restaurant_products"
+    },
+    {
+      "source": "/api/restaurant_products/:path*",
+      "destination": "/api?p=/api/restaurant_products/:path*"
+    },
+    {
       "source": "/settings/:path*",
       "destination": "/api?p=/settings/:path*"
     },
     {
       "source": "/deliveryPartners",
       "destination": "/api?p=/deliveryPartners"
+    },
+    {
+      "source": "/restaurant_products",
+      "destination": "/api?p=/api/restaurant_products"
+    },
+    {
+      "source": "/restaurant_products/:path*",
+      "destination": "/api?p=/api/restaurant_products/:path*"
     },
     {
       "source": "/((?!api/).*)",

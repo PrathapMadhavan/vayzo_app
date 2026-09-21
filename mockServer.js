@@ -21,7 +21,12 @@ function resolveDbFile() {
   const source = path.join(__dirname, 'db.json');
   if (!IS_VERCEL) return source;
   const dest = path.join(os.tmpdir(), 'vayzo-db.json');
-  if (!fs.existsSync(dest)) {
+  // Refresh the writable copy whenever the packaged db.json is newer,
+  // otherwise Vercel keeps serving a stale /tmp database after deploys.
+  const shouldCopy =
+    !fs.existsSync(dest) ||
+    fs.statSync(source).mtimeMs > fs.statSync(dest).mtimeMs;
+  if (shouldCopy) {
     fs.copyFileSync(source, dest);
   }
   return dest;
@@ -101,10 +106,11 @@ function findAdminByMobile(mobile) {
 function findAdminByEmail(email) {
   const users = router.db.get('users').value() || [];
   const adminUsers = router.db.get('adminUsers').value() || [];
-  
-  let admin = users.find(u => u.email === email && u.role === 'Admin');
+
+  // Prefer adminUsers — users can reuse the same email with a non-admin role.
+  let admin = adminUsers.find(u => u.email === email);
   if (!admin) {
-    admin = adminUsers.find(u => u.email === email);
+    admin = users.find(u => u.email === email && u.role === 'Admin');
   }
   return admin;
 }
@@ -270,10 +276,23 @@ app.put('/api/v1/admin/restaurants/:id', (req, res) => {
   }
 });
 
+// json-server rewriter matches the full req.url including query strings.
+// Strip Vercel rewrite helpers first so routes like /api?p=/api/v1/... resolve.
+app.use((req, _res, next) => {
+  const parsed = new URL(req.url, 'http://localhost');
+  parsed.searchParams.delete('p');
+  parsed.searchParams.delete('orig');
+  req._qs = parsed.searchParams.toString();
+  req.url = parsed.pathname;
+  next();
+});
+
 // Add the rewriter to support existing API paths
 app.use(jsonServer.rewriter({
-  '/api/v1/admin/requests/*': '/orders/$1', // Note: original used requests, but db has orders. Or if db has requests? Let's check db keys again. 
-  '/api/v1/admin/requests': '/orders', 
+  '/api/v1/admin/customers/*': '/users/$1',
+  '/api/v1/admin/customers': '/users',
+  '/api/v1/admin/requests/*': '/orders/$1',
+  '/api/v1/admin/requests': '/orders',
   '/api/v1/admin/finance/payments/*': '/payments/$1',
   '/api/v1/admin/finance/payments': '/payments',
   '/api/v1/admin/finance/wallets/*': '/wallets/$1',
@@ -288,9 +307,8 @@ app.use(jsonServer.rewriter({
   '/api/v1/admin/finance/earnings': '/earnings',
   '/api/v1/admin/admin-users/*': '/adminUsers/$1',
   '/api/v1/admin/admin-users': '/adminUsers',
-  // Deprecated direct flattening mappings:
-  // '/api/v1/admin/partners/*': '/partners/$1',
-  // '/api/v1/admin/partners': '/partners',
+  '/api/v1/admin/partners/*': '/partners/$1',
+  '/api/v1/admin/partners': '/partners',
   '/api/v1/admin/restaurants/*': '/restaurants/$1',
   '/api/v1/admin/restaurants': '/restaurants',
   '/api/v1/admin/support/*': '/complaints/$1',
@@ -317,10 +335,14 @@ app.use(jsonServer.rewriter({
   '/api/v1/admin/partner-bank-accounts': '/partner_bank_accounts',
   '/api/v1/admin/users/*': '/users/$1',
   '/api/v1/admin/users': '/users',
-  '/api/v1/ratings': '/ratings',
+  '/api/v1/ratings': '/ratings_reviews',
   '/api/settings/*': '/settings/$1',
   '/api/settings': '/settings',
   '/api/deliveryPartners': '/deliveryPartners',
+  '/api/restaurant_products/*': '/restaurant_products/$1',
+  '/api/restaurant_products': '/restaurant_products',
+  '/restaurant_products/*': '/restaurant_products/$1',
+  '/restaurant_products': '/restaurant_products',
 }));
 
 app.use((req, _res, next) => {
