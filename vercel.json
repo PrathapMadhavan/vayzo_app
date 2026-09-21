@@ -3,20 +3,40 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/v1/:path*",
+      "destination": "/api?p=/api/v1/:path*"
+    },
+    {
+      "source": "/api/settings/:path*",
+      "destination": "/api?p=/api/settings/:path*"
+    },
+    {
+      "source": "/api/deliveryPartners",
+      "destination": "/api?p=/api/deliveryPartners"
+    },
+    {
+      "source": "/api/restaurant_products",
+      "destination": "/api?p=/api/restaurant_products"
+    },
+    {
+      "source": "/api/restaurant_products/:path*",
+      "destination": "/api?p=/api/restaurant_products/:path*"
+    },
+    {
       "source": "/settings/:path*",
-      "destination": "/api/settings/:path*"
+      "destination": "/api?p=/settings/:path*"
     },
     {
       "source": "/deliveryPartners",
-      "destination": "/api/deliveryPartners"
+      "destination": "/api?p=/deliveryPartners"
     },
     {
       "source": "/restaurant_products",
-      "destination": "/api/restaurant_products"
+      "destination": "/api?p=/api/restaurant_products"
     },
     {
       "source": "/restaurant_products/:path*",
-      "destination": "/api/restaurant_products/:path*"
+      "destination": "/api?p=/api/restaurant_products/:path*"
     },
     {
       "source": "/((?!api/).*)",
