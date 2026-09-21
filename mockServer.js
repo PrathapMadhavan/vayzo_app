@@ -11,12 +11,26 @@ import { fileURLToPath } from 'url';
 import { ulid } from 'ulid';
 import multer from 'multer';
 import fs from 'fs';
+import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const IS_VERCEL = Boolean(process.env.VERCEL);
+
+function resolveDbFile() {
+  const source = path.join(__dirname, 'db.json');
+  if (!IS_VERCEL) return source;
+  const dest = path.join(os.tmpdir(), 'vayzo-db.json');
+  if (!fs.existsSync(dest)) {
+    fs.copyFileSync(source, dest);
+  }
+  return dest;
+}
 
 // Ensure upload directories exist
-const uploadDir = path.join(__dirname, 'public', 'uploads');
+const uploadDir = IS_VERCEL
+  ? path.join(os.tmpdir(), 'vayzo-uploads')
+  : path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -42,9 +56,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Load db.json via json-server router
-const router = jsonServer.router(path.join(__dirname, 'db.json'));
-const middlewares = jsonServer.defaults({ static: __dirname });
+// Load db.json via json-server router (writable copy on Vercel)
+const router = jsonServer.router(resolveDbFile());
+const middlewares = jsonServer.defaults(
+  IS_VERCEL ? { logger: false } : { static: __dirname },
+);
 
 // Helper to find Admin user by mobile number
 function findAdminByMobile(mobile) {
@@ -193,6 +209,16 @@ app.use('/api/v1/admin', (req, res, next) => {
 });
 
 app.use(middlewares);
+
+// json-server rewriter matches req.url including query strings; strip first.
+app.use((req, _res, next) => {
+  const parsed = new URL(req.url, "http://localhost");
+  parsed.searchParams.delete("p");
+  parsed.searchParams.delete("orig");
+  req._qs = parsed.searchParams.toString();
+  req.url = parsed.pathname;
+  next();
+});
 
 // GET /api/v1/admin/partners (Aggregated List)
 app.get('/api/v1/admin/partners', (req, res) => {
@@ -1050,11 +1076,23 @@ app.use(jsonServer.rewriter({
   '/api/v1/admin/partner-bank-accounts': '/partner_bank_accounts',
   '/api/v1/admin/users/*': '/users/$1',
   '/api/v1/admin/users': '/users',
-  '/api/v1/ratings': '/ratings'
+  '/api/v1/ratings': '/ratings',
+  '/api/settings/*': '/settings/$1',
+  '/api/settings': '/settings',
+  '/api/deliveryPartners': '/deliveryPartners',
 }));
+
+app.use((req, _res, next) => {
+  if (req._qs) req.url += `?${req._qs}`;
+  next();
+});
 
 app.use(router);
 
-app.listen(SERVER_PORT, () => {
-  console.log(`Mock server listening on port ${SERVER_PORT}`);
-});
+if (!IS_VERCEL) {
+  app.listen(SERVER_PORT, () => {
+    console.log(`Mock server listening on port ${SERVER_PORT}`);
+  });
+}
+
+export default app;
