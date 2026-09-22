@@ -317,7 +317,7 @@ export default function Locations() {
                       return (
                         <tr
                           key={loc.id}
-                          onClick={() => navigate(`/locations/edit/${loc.id}`)}
+                          onClick={() => navigate(`/locations/${loc.id}`)}
                           className="border-b border-border transition-colors hover:bg-background last:border-0 cursor-pointer"
                         >
                           <td className="whitespace-nowrap px-5 py-4 font-medium text-foreground">
@@ -355,14 +355,14 @@ export default function Locations() {
                             {loc.orders30d}
                           </td>
 
-                          <td className="px-5 py-4">
+                          <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center gap-2">
                               <ActionMenu
                                 actions={[
                                   {
                                     label: "View",
                                     icon: Eye,
-                                    onClick: () => {},
+                                    onClick: () => navigate(`/locations/${loc.id}`),
                                   },
                                   {
                                     label: "Edit",
