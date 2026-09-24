@@ -1,10 +1,27 @@
 import { apiRequest } from "./apiClient";
+import { API_BASE_URL } from "./config";
 
 const ENDPOINT = "/api/v1/admin/customers";
 
+const resolveImageUrl = (img) => {
+  if (img && img.startsWith("/uploads/")) {
+    const base = API_BASE_URL || window.location.origin;
+    return `${base}${img}`;
+  }
+  return img;
+};
+
+const resolveCustomerImage = (customer) => {
+  if (customer && customer.profileImage) {
+    customer.profileImage = resolveImageUrl(customer.profileImage);
+  }
+  return customer;
+};
+
 export async function getCustomers(filters = {}) {
   const query = new URLSearchParams(filters).toString();
-  return apiRequest(`${ENDPOINT}${query ? `?${query}` : ""}`, {}, "Unable to load customers");
+  const data = await apiRequest(`${ENDPOINT}${query ? `?${query}` : ""}`, {}, "Unable to load customers");
+  return Array.isArray(data) ? data.map(resolveCustomerImage) : data;
 }
 
 export async function getCustomerById(publicId) {
@@ -14,21 +31,23 @@ export async function getCustomerById(publicId) {
     throw new Error("Customer not found");
   }
 
-  return data;
+  return resolveCustomerImage(data);
 }
 
 export async function createCustomer(formData) {
-  return apiRequest(ENDPOINT, {
+  const data = await apiRequest(ENDPOINT, {
     method: "POST",
     body: formData,
   }, "Unable to create customer");
+  return resolveCustomerImage(data);
 }
 
 export async function updateCustomer(publicId, formData) {
-  return apiRequest(`${ENDPOINT}/${publicId}`, {
+  const data = await apiRequest(`${ENDPOINT}/${publicId}`, {
     method: "PATCH",
     body: formData,
   }, "Unable to update customer");
+  return resolveCustomerImage(data);
 }
 
 export async function deleteCustomer(publicId) {

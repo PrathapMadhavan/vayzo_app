@@ -149,13 +149,12 @@ export default function Offers() {
 
   return (
     <section className="min-h-full bg-background p-4 sm:p-6 pb-20 flex flex-col gap-6">
-      
       {/* 2. Stat Cards Row */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           variant="horizontal"
           title="Total Offers"
-          value={offers.length > 0 ? offers.length : 28}
+          value={offers.length > 0 ? offers.length : "--"}
           trend="12.5%"
           icon={Tag}
           colorClass="text-primary"
@@ -164,7 +163,7 @@ export default function Offers() {
         <StatCard
           variant="horizontal"
           title="Active Offers"
-          value={offers.filter((o) => o.status === "ACTIVE").length || 16}
+          value={offers.filter((o) => o.status === "ACTIVE").length || "--"}
           trend="8.7%"
           icon={CheckCircle}
           colorClass="text-success"
@@ -173,7 +172,7 @@ export default function Offers() {
         <StatCard
           variant="horizontal"
           title="Scheduled Offers"
-          value={offers.filter((o) => o.status === "SCHEDULED").length || 7}
+          value={offers.filter((o) => o.status === "SCHEDULED").length || "--"}
           trend="16.2%"
           icon={Clock}
           colorClass="text-warning"
@@ -182,7 +181,7 @@ export default function Offers() {
         <StatCard
           variant="horizontal"
           title="Expired Offers"
-          value={offers.filter((o) => o.status === "EXPIRED").length || 5}
+          value={offers.filter((o) => o.status === "EXPIRED").length || "--"}
           trend="10.3%"
           isNegative
           icon={XCircle}
@@ -213,9 +212,9 @@ export default function Offers() {
                 <Download size={14} className="mr-1" />
                 Export
               </Button>
-              <Button 
-                size="sm" 
-                className="gap-2 shrink-0 shadow-md h-10 w-full sm:w-auto px-4" 
+              <Button
+                size="sm"
+                className="gap-2 shrink-0 shadow-md h-10 w-full sm:w-auto px-4"
                 onClick={() => navigate("/offers/add")}
               >
                 <Plus size={16} /> Create Offer
@@ -229,21 +228,21 @@ export default function Offers() {
                 value={status}
                 options={["All Status", "Active", "Scheduled", "Expired"]}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full lg:w-[150px]"
+                className="w-full lg:w-37.5"
               />
               <StatusSelect
                 id="offers-type"
                 value={type}
                 options={["All Types", "Percentage", "Flat", "Free Delivery"]}
                 onChange={(e) => setType(e.target.value)}
-                className="w-full lg:w-[150px]"
+                className="w-full lg:w-37.5"
               />
               <StatusSelect
                 id="offers-platform"
                 value={platform}
                 options={["All Platforms", "App", "Web"]}
                 onChange={(e) => setPlatform(e.target.value)}
-                className="w-full lg:w-[150px]"
+                className="w-full lg:w-37.5"
               />
             </>
           }
@@ -269,7 +268,7 @@ export default function Offers() {
                 "Usage",
                 "Validity",
                 "Status",
-                "Actions"
+                "Actions",
               ]}
               currentCount={paginatedOffers.length}
               totalCount={filteredOffers.length}
@@ -281,7 +280,10 @@ export default function Offers() {
             >
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="p-10 text-center text-sm text-muted">
+                  <td
+                    colSpan={8}
+                    className="p-10 text-center text-sm text-muted"
+                  >
                     Loading offers...
                   </td>
                 </tr>
@@ -289,11 +291,15 @@ export default function Offers() {
                 paginatedOffers.map((offer, index) => {
                   const Icon = ICON_MAP[offer.type] || Tag;
                   const bgAndColor = COLOR_MAP[offer.color] || COLOR_MAP.muted;
-                  
+
                   const formatDt = (dt) => {
-                     if (!dt) return "";
-                     const d = new Date(dt);
-                     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                    if (!dt) return "";
+                    const d = new Date(dt);
+                    return d.toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    });
                   };
 
                   return (
@@ -302,19 +308,29 @@ export default function Offers() {
                       className="border-b border-border transition-colors hover:bg-background last:border-0"
                     >
                       <td className="whitespace-nowrap px-5 py-4 font-medium text-foreground">
-                        {String((currentPage - 1) * itemsPerPage + index + 1).padStart(2, "0")}
+                        {String(
+                          (currentPage - 1) * itemsPerPage + index + 1,
+                        ).padStart(2, "0")}
                       </td>
-                      <td className="px-5 py-4 min-w-[220px]">
-                        <div 
+                      <td className="px-5 py-4 min-w-55">
+                        <div
                           className="flex items-center gap-3 cursor-pointer group"
-                          onClick={() => navigate(`/offers/${offer.offerId || offer.id}`)}
+                          onClick={() =>
+                            navigate(`/offers/${offer.offerId || offer.id}`)
+                          }
                         >
-                          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${bgAndColor}`}>
-                            <Icon size={18} strokeWidth={2.5}/>
+                          <div
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${bgAndColor}`}
+                          >
+                            <Icon size={18} strokeWidth={2.5} />
                           </div>
                           <div className="flex flex-col">
-                            <span className="font-bold text-foreground text-sm uppercase tracking-wide group-hover:text-primary transition-colors">{offer.name}</span>
-                            <span className="text-[11px] text-muted truncate max-w-[200px]">{offer.title}</span>
+                            <span className="font-bold text-foreground text-sm uppercase tracking-wide group-hover:text-primary transition-colors">
+                              {offer.name}
+                            </span>
+                            <span className="text-[11px] text-muted truncate max-w-50">
+                              {offer.title}
+                            </span>
                           </div>
                         </div>
                       </td>
@@ -325,22 +341,34 @@ export default function Offers() {
 
                       <td className="px-5 py-4">
                         <div className="flex flex-col">
-                          <span className="font-semibold text-foreground text-sm">{offer.discountText}</span>
-                          <span className="text-xs text-muted">{offer.discountDetail}</span>
+                          <span className="font-semibold text-foreground text-sm">
+                            {offer.discountText}
+                          </span>
+                          <span className="text-xs text-muted">
+                            {offer.discountDetail}
+                          </span>
                         </div>
                       </td>
 
                       <td className="px-5 py-4">
                         <div className="flex flex-col">
-                          <span className="font-semibold text-foreground text-sm">{offer.usageLimit?.toLocaleString() || 0}</span>
-                          <span className="text-xs text-muted">/ {offer.usageMax?.toLocaleString() || "Unlimited"}</span>
+                          <span className="font-semibold text-foreground text-sm">
+                            {offer.usageLimit?.toLocaleString() || 0}
+                          </span>
+                          <span className="text-xs text-muted">
+                            / {offer.usageMax?.toLocaleString() || "Unlimited"}
+                          </span>
                         </div>
                       </td>
 
                       <td className="px-5 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="text-sm font-medium text-foreground">{formatDt(offer.validFrom)}</span>
-                          <span className="text-xs text-muted">to {formatDt(offer.validTo)}</span>
+                          <span className="text-sm font-medium text-foreground">
+                            {formatDt(offer.validFrom)}
+                          </span>
+                          <span className="text-xs text-muted">
+                            to {formatDt(offer.validTo)}
+                          </span>
                         </div>
                       </td>
 
@@ -355,26 +383,33 @@ export default function Offers() {
 
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
-                        <ActionMenu
-                          actions={[
-                            {
-                              label: "View",
-                              icon: Eye,
-                              onClick: () => navigate(`/offers/${offer.offerId || offer.id}`),
-                            },
-                            {
-                              label: "Edit",
-                              icon: Pencil,
-                              onClick: () => navigate(`/offers/edit/${offer.offerId || offer.id}`),
-                            },
-                            {
-                              label: "Delete",
-                              icon: Trash2,
-                              danger: true,
-                              onClick: () => setDeleteModalId(offer.offerId || offer.id),
-                            },
-                          ]}
-                        />
+                          <ActionMenu
+                            actions={[
+                              {
+                                label: "View",
+                                icon: Eye,
+                                onClick: () =>
+                                  navigate(
+                                    `/offers/${offer.offerId || offer.id}`,
+                                  ),
+                              },
+                              {
+                                label: "Edit",
+                                icon: Pencil,
+                                onClick: () =>
+                                  navigate(
+                                    `/offers/edit/${offer.offerId || offer.id}`,
+                                  ),
+                              },
+                              {
+                                label: "Delete",
+                                icon: Trash2,
+                                danger: true,
+                                onClick: () =>
+                                  setDeleteModalId(offer.offerId || offer.id),
+                              },
+                            ]}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -382,7 +417,10 @@ export default function Offers() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={8} className="p-10 text-center text-sm text-muted">
+                  <td
+                    colSpan={8}
+                    className="p-10 text-center text-sm text-muted"
+                  >
                     No offers found.
                   </td>
                 </tr>
@@ -392,15 +430,25 @@ export default function Offers() {
         </Card>
       </div>
 
-      <Modal 
-        isOpen={!!deleteModalId} 
-        onClose={() => setDeleteModalId(null)} 
+      <Modal
+        isOpen={!!deleteModalId}
+        onClose={() => setDeleteModalId(null)}
         title="Delete Offer"
       >
-        <p className="text-sm text-muted">Are you sure you want to delete this offer? This action cannot be undone.</p>
+        <p className="text-sm text-muted">
+          Are you sure you want to delete this offer? This action cannot be
+          undone.
+        </p>
         <div className="mt-6 flex justify-end gap-3">
-          <Button variant="secondary" onClick={() => setDeleteModalId(null)}>Cancel</Button>
-          <Button className="bg-danger hover:bg-danger/90 text-white border-0" onClick={handleDeleteOffer}>Delete</Button>
+          <Button variant="secondary" onClick={() => setDeleteModalId(null)}>
+            Cancel
+          </Button>
+          <Button
+            className="bg-danger hover:bg-danger/90 text-white border-0"
+            onClick={handleDeleteOffer}
+          >
+            Delete
+          </Button>
         </div>
       </Modal>
     </section>

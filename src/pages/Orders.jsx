@@ -28,33 +28,37 @@ import Modal from "../components/ui/Modal";
 import ActionMenu from "../components/ui/ActionMenu";
 import FilterPanel from "../components/ui/FilterPanel";
 import BadgeCell from "../components/ui/BadgeCell";
-import { getOrders, deleteOrder } from "../api/ordersApi";
+import { getOrders, updateOrderStatus } from "../api/ordersApi";
 import { exportToCSV } from "../utils/exportUtils";
 
 const STATUS_MAP = {
-  DELIVERED: "success",
-  IN_TRANSIT: "info",
-  PREPARING: "warning",
-  PENDING: "warning",
-  CANCELLED: "danger",
-  REFUNDED: "default",
+  delivered: "success",
+  completed: "success",
+  going_to_customer: "info",
+  picked_up: "info",
+  purchasing: "info",
+  arrived_pickup: "info",
+  going_to_pickup: "info",
+  partner_assigned: "info",
+  searching_partner: "warning",
+  requested: "warning",
+  cancelled: "danger",
+  failed: "danger",
 };
 
 const TABS = [
   "All Orders",
-  "Pending",
+  "Requested",
   "On The Way",
   "Delivered",
   "Cancelled",
-  "Refunded",
 ];
 
 const STATUS_OPTIONS = [
   "All Status",
   "Delivered",
-  "In Transit",
-  "Preparing",
-  "Pending",
+  "On The Way",
+  "Requested",
   "Cancelled",
 ];
 
@@ -70,7 +74,7 @@ const STAT_CONFIG = [
     trend: "12.5%",
   },
   {
-    label: "Pending",
+    label: "Requested",
     key: "pending",
     icon: Clock3,
     colorClass: "text-warning",
@@ -214,14 +218,10 @@ function Orders() {
   const stats = useMemo(() => {
     return {
       total: orders.length,
-
-      pending: orders.filter((order) => order.status === "PENDING").length,
-
-      inTransit: orders.filter((order) => order.status === "IN_TRANSIT").length,
-
-      delivered: orders.filter((order) => order.status === "DELIVERED").length,
-
-      cancelled: orders.filter((order) => order.status === "CANCELLED").length,
+      pending: orders.filter((order) => order.status === "requested").length,
+      inTransit: orders.filter((order) => ["going_to_customer", "picked_up", "going_to_pickup"].includes(order.status)).length,
+      delivered: orders.filter((order) => order.status === "delivered" || order.status === "completed").length,
+      cancelled: orders.filter((order) => order.status === "cancelled" || order.status === "failed").length,
     };
   }, [orders]);
 
@@ -234,17 +234,15 @@ function Orders() {
 
     return orders.filter((order) => {
       const phoneStr =
-        order.mobileNumber || order.customerPhone || "+91 98765 43210";
+        order.customer?.phone || order.customer?.mobile || "Unavailable";
       const searchableText = [
-        order.orderId,
-        order.customerName,
+        order.id,
+        order.customer?.name,
         phoneStr,
         phoneStr.replace(/\s+/g, ""), // spaceless version
-        order.itemsDescription || "Food, Milk",
-        order.restaurantName,
-        order.deliveryPartner,
-        order.city,
-        order.paymentStatus,
+        "Items", // No simple string items summary
+        order.restaurant?.name,
+        order.assignments?.[0]?.partner_id,
         order.status,
       ]
         .filter(Boolean)
@@ -258,22 +256,20 @@ function Orders() {
         status === "All Status" ||
         formatStatus(order.status).toLowerCase() === status.toLowerCase();
 
-      const matchesPayment =
-        payment === "All Payment Status" ||
-        order.paymentStatus?.toLowerCase() === payment.toLowerCase();
+      const matchesPayment = true; // Payments API not integrated yet
 
       let matchesTab = true;
 
       if (activeTab !== "All Orders") {
         const tabStatus =
           activeTab === "On The Way"
-            ? "IN_TRANSIT"
-            : activeTab.toUpperCase().replaceAll(" ", "_");
+            ? "going_to_customer" // Simplify filter to one status for now
+            : activeTab.toLowerCase().replaceAll(" ", "_");
 
         matchesTab = order.status === tabStatus;
       }
 
-      const orderDate = getDateOnly(order.orderDate);
+      const orderDate = getDateOnly(order.created_at);
 
       const matchesFromDate = !fromDate || orderDate >= fromDate;
 
@@ -306,17 +302,16 @@ function Orders() {
   const handleDeleteOrder = async () => {
     if (!deleteModalId) return;
     try {
-      await deleteOrder(deleteModalId);
-      setOrders((prev) => prev.filter((o) => o.orderId !== deleteModalId));
+      await updateOrderStatus(deleteModalId, { status: "cancelled" });
+      setOrders((prev) =>
+        prev.map((o) =>
+          (o.id || o.orderId) === deleteModalId ? { ...o, status: "cancelled" } : o
+        )
+      );
       setDeleteModalId(null);
-      const newFilteredLength = filteredOrders.length - 1;
-      const newTotalPages = Math.ceil(newFilteredLength / itemsPerPage) || 1;
-      if (currentPage > newTotalPages) {
-        setCurrentPage(newTotalPages);
-      }
     } catch (err) {
       console.error(err);
-      alert("Failed to delete order.");
+      alert("Failed to cancel order.");
     }
   };
 
@@ -337,7 +332,7 @@ function Orders() {
 
   const maxPaymentStatus = useMemo(() => {
     return paginatedOrders.reduce((max, o) => {
-      const val = o.paymentStatus || "--";
+      const val = o.payment_method || "--";
       return val.length > max.length ? val : max;
     }, "");
   }, [paginatedOrders]);
@@ -407,7 +402,7 @@ function Orders() {
                   id="order-status"
                   value={status}
                   onChange={(event) => setStatus(event.target.value)}
-                  className="w-full lg:w-[150px]"
+                  className="w-full lg:w-37.5"
                 >
                   {STATUS_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -419,7 +414,7 @@ function Orders() {
                   id="payment-status"
                   value={payment}
                   onChange={(event) => setPayment(event.target.value)}
-                  className="w-full lg:w-[180px]"
+                  className="w-full lg:w-45"
                 >
                   {PAYMENT_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -432,7 +427,7 @@ function Orders() {
                   toValue={toDate}
                   onFromChange={(event) => setFromDate(event.target.value)}
                   onToChange={(event) => setToDate(event.target.value)}
-                  className="w-full lg:w-[260px] shrink-0"
+                  className="w-full lg:w-65 shrink-0"
                 />
               </>
             }
@@ -494,8 +489,8 @@ function Orders() {
             ) : paginatedOrders.length ? (
               paginatedOrders.map((order, index) => (
                 <tr
-                  key={order.orderId}
-                  onClick={() => navigate(`/orders/${order.orderId}`)}
+                  key={order.id}
+                  onClick={() => navigate(`/orders/${order.id}`)}
                   className="hover:bg-surface-50 hover:text-primary transition-colors cursor-pointer"
                 >
                   <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
@@ -503,64 +498,46 @@ function Orders() {
                       (currentPage - 1) * itemsPerPage + index + 1,
                     ).padStart(2, "0")}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
-                    {order.orderId?.startsWith("#")
-                      ? order.orderId
-                      : `#${order.orderId}`}
+                  <td className="whitespace-nowrap px-3 py-3 text-sm font-semibold text-foreground">
+                    {order.id?.startsWith("#")
+                      ? order.id
+                      : `#${order.id}`}
                   </td>
-                  <td className="px-3 py-3">
-                    <div className="flex min-w-0 items-center gap-2">
+                  <td className="px-3 py-3 min-w-50">
+                    <div className="flex items-center gap-3">
                       <Avatar
-                        src={order.customerImage}
-                        alt={order.customerName}
-                        identifier={order.customerName || order.orderId}
-                        className="h-7 w-7 rounded-full shadow-sm shrink-0"
+                        src={order.customer?.profileImage}
+                        identifier={order.customer?.name || order.id}
+                        className="h-9 w-9 rounded-full shadow-sm shrink-0"
                       />
                       <div className="flex flex-col min-w-0">
                         <span className="truncate font-medium text-foreground leading-tight">
-                          {order.customerName || "--"}
+                          {order.customer?.name || "Unavailable"}
                         </span>
                         <span className="truncate text-[11px] text-muted mt-0.5">
-                          {order.mobileNumber ||
-                            order.customerPhone ||
-                            "+91 98765 43210"}
+                          {order.customer?.phone || order.customer?.mobile || "Unavailable"}
                         </span>
                       </div>
                     </div>
                   </td>
-                  <td className="min-w-[120px] px-3 py-3">
+                  <td className="min-w-30 px-3 py-3">
                     <div className="flex flex-col min-w-0">
                       <span className="truncate text-sm font-medium text-foreground leading-tight">
-                        {order.itemsCount
-                          ? `${order.itemsCount} Items`
-                          : "2 Items"}
+                        {order.items?.length !== undefined
+                          ? `${order.items.length} Items`
+                          : "Unavailable"}
                       </span>
                       <span className="truncate text-[11px] text-muted mt-0.5">
-                        {order.itemsDescription || "Food, Milk"}
+                        {order.restaurant?.name || "Unavailable"}
                       </span>
                     </div>
                   </td>
                   <td className="px-3 py-3">
-                    {order.deliveryPartner ? (
-                      <div className="flex min-w-0 items-center gap-2">
-                        <Avatar
-                          src={order.deliveryPartnerImage}
-                          alt={order.deliveryPartner}
-                          identifier={order.deliveryPartner}
-                          className="h-7 w-7 rounded-full shadow-sm shrink-0"
-                        />
+                    {order.assignments?.[0]?.partner_id ? (
+                      <div className="flex items-center gap-2">
                         <div className="flex flex-col min-w-0">
                           <span className="truncate font-medium text-foreground leading-tight">
-                            {order.deliveryPartner}
-                          </span>
-                          <span className="flex items-center gap-1 text-[10px] text-muted mt-0.5">
-                            <Truck
-                              size={11}
-                              className="text-primary shrink-0"
-                            />
-                            <span className="truncate">
-                              {order.deliveryPartnerVehicle || "Delivery"}
-                            </span>
+                            {order.assignments[0].partner_id}
                           </span>
                         </div>
                       </div>
@@ -569,20 +546,18 @@ function Orders() {
                     )}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
-                    {order.amount !== undefined && order.amount !== null
-                      ? `₹${Number(order.amount).toLocaleString("en-IN")}`
-                      : "--"}
+                    {order.total_estimated_amount !== undefined && order.total_estimated_amount !== null
+                      ? `₹${Number(order.total_estimated_amount).toLocaleString("en-IN")}`
+                      : "Unavailable"}
                   </td>
                   <td className="px-3 py-3">
                     <BadgeCell
                       maxContent={maxPaymentStatus}
-                      content={order.paymentStatus || "--"}
+                      content={order.payment_method || "--"}
                       variant={
-                        order.paymentStatus === "PAID"
+                        order.payment_method
                           ? "success"
-                          : order.paymentStatus === "REFUNDED"
-                            ? "default"
-                            : "warning"
+                          : "warning"
                       }
                       className="px-3"
                     />
@@ -598,10 +573,10 @@ function Orders() {
                   <td className="whitespace-nowrap px-3 py-3">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-foreground">
-                        {formatOrderDateTime(order.orderDate).date}
+                        {formatOrderDateTime(order.created_at).date}
                       </span>
                       <span className="text-[11px] text-muted mt-0.5">
-                        {formatOrderDateTime(order.orderDate).time}
+                        {formatOrderDateTime(order.created_at).time}
                       </span>
                     </div>
                   </td>
@@ -612,13 +587,13 @@ function Orders() {
                           {
                             label: "View",
                             icon: Eye,
-                            onClick: () => navigate(`/orders/${order.orderId}`),
+                            onClick: () => navigate(`/orders/${order.id}`),
                           },
                           {
-                            label: "Delete",
-                            icon: Trash2,
+                            label: "Cancel",
+                            icon: XCircle,
                             danger: true,
-                            onClick: () => setDeleteModalId(order.orderId),
+                            onClick: () => setDeleteModalId(order.id),
                           },
                         ]}
                       />
@@ -650,21 +625,21 @@ function Orders() {
       <Modal
         isOpen={!!deleteModalId}
         onClose={() => setDeleteModalId(null)}
-        title="Delete Order"
+        title="Cancel Request"
       >
         <p className="text-sm text-muted">
-          Are you sure you want to delete this order? This action cannot be
-          undone.
+          Are you sure you want to cancel this request? This action will set the status to cancelled.
         </p>
         <div className="mt-6 flex justify-end gap-3">
           <Button variant="secondary" onClick={() => setDeleteModalId(null)}>
             Cancel
           </Button>
           <Button
-            className="bg-danger hover:bg-danger/90 text-white"
+            variant="danger"
+            className="w-full sm:w-auto px-6 font-semibold shadow-sm hover:shadow"
             onClick={handleDeleteOrder}
           >
-            Delete
+            Yes, Cancel
           </Button>
         </div>
       </Modal>

@@ -21,6 +21,46 @@
       "role": "Delivery Partner",
       "status": "Active",
       "profileImage": "/uploads/01M2JMAKZ2V5FQQ7F9B1KBM7FX.jpeg"
+    },
+    {
+      "id": "01M3901H8PD4R2XHW9RPCTT8JQ",
+      "name": "Dup2",
+      "email": "dup2@vayzo.com",
+      "mobileNumber": "7777777777",
+      "role": "Delivery Partner",
+      "status": "Active",
+      "profileImage": null,
+      "created_at": "2026-09-24T06:01:00.950Z"
+    },
+    {
+      "id": "01M3906Q9Q2EP53137PJPA7BNM",
+      "name": "JSON Test",
+      "email": "json@vayzo.com",
+      "mobileNumber": "4444444444",
+      "role": "Delivery Partner",
+      "status": "Active",
+      "profileImage": null,
+      "created_at": "2026-09-24T06:03:50.967Z"
+    },
+    {
+      "id": "01M3906QAAQQ6NSMKPM7PRAQ7P",
+      "name": "Dup",
+      "email": "image@vayzo.com",
+      "mobileNumber": "3333333333",
+      "role": "Delivery Partner",
+      "status": "Active",
+      "profileImage": null,
+      "created_at": "2026-09-24T06:03:50.986Z"
+    },
+    {
+      "id": "01M3906XZWP10WHAG82B92F4DT",
+      "name": "Image Partner",
+      "email": "image1790229837632@vayzo.com",
+      "mobileNumber": "7729837633",
+      "role": "Delivery Partner",
+      "status": "Active",
+      "profileImage": "/uploads/01M3906Y0M3F2DT8S1X0AJTB4A.png",
+      "created_at": "2026-09-24T06:03:57.820Z"
     }
   ],
   "orders": [
@@ -244,6 +284,92 @@
       "city": "Madurai",
       "id": "ORD2020",
       "deliveryPartnerVehicle": "Bike"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "INVALID",
+      "id": "mdXCoCK"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "FOOD",
+      "restaurant_id": "RST003",
+      "id": "zfo6YsU"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "BIKE_RIDE",
+      "id": "aS9hrHw"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "FOOD",
+      "restaurant_id": "RST003",
+      "items": [
+        {
+          "name": "Pizza",
+          "quantity": 1
+        }
+      ],
+      "id": "3ON7KrP"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "INVALID",
+      "id": "Eyw5Wyi"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "FOOD",
+      "restaurant_id": "RST003",
+      "id": "vrQleft"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "BIKE_RIDE",
+      "id": "x3X7sID"
+    },
+    {
+      "customer_id": "new_cust",
+      "service_type": "FOOD",
+      "restaurant_id": "RST003",
+      "items": [
+        {
+          "name": "Pizza",
+          "quantity": 1
+        }
+      ],
+      "id": "elPYBS2",
+      "status": "completed"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "BUY_GET",
+      "text_instruction": "Buy bread",
+      "pickups": [
+        {
+          "address": "Shop 1"
+        }
+      ],
+      "id": "NEpW4bu"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "BIKE_RIDE",
+      "ride_details": {
+        "pickup": "A",
+        "drop": "B"
+      },
+      "id": "Zj-_Oj8"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "CAR_RIDE",
+      "ride_details": {
+        "pickup": "X",
+        "drop": "Y"
+      },
+      "id": "uB7KMnN"
     }
   ],
   "dashboard": {
@@ -1728,6 +1854,27 @@
       "vehicleNumber": "TN 75 MN 7890",
       "insuranceNumber": "HDF1234567890",
       "insuranceValidTill": "20 Nov 2024"
+    },
+    {
+      "id": "01M3901H8554GT4RQWVBHVJ2MQ",
+      "partner_id": "01M3901H85NX11X602755X7SP3"
+    },
+    {
+      "id": "01M3901H8PGSHSM41P4S7RMADG",
+      "partner_id": "01M3901H8PD4R2XHW9RPCTT8JQ"
+    },
+    {
+      "id": "01M3906Q9QB0QAQTJS4B7NEP1Y",
+      "partner_id": "01M3906Q9Q2EP53137PJPA7BNM",
+      "vehicleName": "Honda"
+    },
+    {
+      "id": "01M3906QAA05CCVN60GZBST81B",
+      "partner_id": "01M3906QAAQQ6NSMKPM7PRAQ7P"
+    },
+    {
+      "id": "01M3906XZWK6KSRC25HW24MPHW",
+      "partner_id": "01M3906XZWP10WHAG82B92F4DT"
     }
   ],
   "partner_bank_accounts": [
@@ -1746,6 +1893,26 @@
       "accountNumber": "4567 8901 2345",
       "ifscCode": "HDFC0001234",
       "accountHolderName": "Selvam R"
+    },
+    {
+      "id": "01M3901H85NEK18RZ7BR6F5JZV",
+      "partner_id": "01M3901H85NX11X602755X7SP3"
+    },
+    {
+      "id": "01M3901H8PS83ZS9E4RBHEZ879",
+      "partner_id": "01M3901H8PD4R2XHW9RPCTT8JQ"
+    },
+    {
+      "id": "01M3906Q9Q2YQXNM9J3N5NRQSM",
+      "partner_id": "01M3906Q9Q2EP53137PJPA7BNM"
+    },
+    {
+      "id": "01M3906QAA7V5JS95S096QBJG4",
+      "partner_id": "01M3906QAAQQ6NSMKPM7PRAQ7P"
+    },
+    {
+      "id": "01M3906XZW55M5CTCBSFVFAEXR",
+      "partner_id": "01M3906XZWP10WHAG82B92F4DT"
     }
   ],
   "restaurant_categories": [
@@ -1797,11 +1964,449 @@
       "createdDate": "2026-09-21T08:41:58.977Z"
     }
   ],
-  "requests": [],
-  "request_items": [],
-  "request_pickups": [],
-  "request_status_history": [],
-  "rides": [],
+  "requests": [
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "FOOD",
+      "restaurant_id": "RST003",
+      "items": [
+        {
+          "name": "Pizza",
+          "quantity": 1
+        }
+      ],
+      "id": "01M345SDPSRMKSC26YKDYGBXMG",
+      "status": "cancelled",
+      "created_at": "2026-09-22T09:05:14.459Z",
+      "updated_at": "2026-09-22T09:45:40.695Z",
+      "text_instruction": "leave at door"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "BUY_GET",
+      "text_instruction": "Buy bread",
+      "pickups": [
+        {
+          "address": "Shop 1"
+        }
+      ],
+      "id": "01M345SDQBHBNWTEYEGAZBFWYK",
+      "status": "partner_assigned",
+      "restaurant_id": null,
+      "created_at": "2026-09-22T09:05:14.476Z",
+      "updated_at": "2026-09-22T10:46:53.586Z"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "BIKE_RIDE",
+      "ride_details": {
+        "pickup": "A",
+        "drop": "B"
+      },
+      "id": "01M345SDQV2BVZ4E8RYGQMS5YR",
+      "status": "requested",
+      "restaurant_id": null,
+      "created_at": "2026-09-22T09:05:14.491Z",
+      "updated_at": "2026-09-22T09:05:14.491Z"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "CAR_RIDE",
+      "ride_details": {
+        "pickup": "X",
+        "drop": "Y"
+      },
+      "id": "01M345SDRAK8PD78VM6VSZRFFZ",
+      "status": "requested",
+      "restaurant_id": null,
+      "created_at": "2026-09-22T09:05:14.506Z",
+      "updated_at": "2026-09-22T09:05:14.506Z"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "FOOD",
+      "restaurant_id": "RST003",
+      "items": [
+        {
+          "name": "Pizza",
+          "quantity": 1
+        }
+      ],
+      "id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "status": "completed",
+      "created_at": "2026-09-22T09:05:34.058Z",
+      "updated_at": "2026-09-22T09:05:34.267Z",
+      "text_instruction": "Leave at door"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "BUY_GET",
+      "text_instruction": "Buy bread",
+      "pickups": [
+        {
+          "address": "Shop 1"
+        }
+      ],
+      "id": "01M345T0VWCK2T8XVS5HW08X9P",
+      "status": "requested",
+      "restaurant_id": null,
+      "created_at": "2026-09-22T09:05:34.076Z",
+      "updated_at": "2026-09-22T09:05:34.076Z"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "BIKE_RIDE",
+      "ride_details": {
+        "pickup": "A",
+        "drop": "B"
+      },
+      "id": "01M345T0WD6309GC5XWAVH1F57",
+      "status": "requested",
+      "restaurant_id": null,
+      "created_at": "2026-09-22T09:05:34.094Z",
+      "updated_at": "2026-09-22T09:05:34.094Z"
+    },
+    {
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "service_type": "CAR_RIDE",
+      "ride_details": {
+        "pickup": "X",
+        "drop": "Y"
+      },
+      "id": "01M345T0WYDAWWZKY36BP3K9GK",
+      "status": "requested",
+      "restaurant_id": null,
+      "created_at": "2026-09-22T09:05:34.110Z",
+      "updated_at": "2026-09-22T09:05:34.110Z"
+    },
+    {
+      "id": "REQ-FOOD-TEST-001",
+      "service_type": "FOOD",
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "restaurant_id": "RST002",
+      "status": "partner_assigned",
+      "total_estimated_amount": 500,
+      "dropoff_address_snapshot": "123 Main St, Test City",
+      "created_at": "2026-09-22T10:04:20.167Z",
+      "updated_at": "2026-09-22T10:24:08.726Z"
+    },
+    {
+      "id": "REQ-BUYGET-TEST-002",
+      "service_type": "BUY_GET",
+      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
+      "status": "partner_assigned",
+      "total_estimated_amount": 150,
+      "dropoff_address_snapshot": "456 Buy St, Test City",
+      "created_at": "2026-09-22T10:04:20.167Z",
+      "updated_at": "2026-09-22T10:04:20.167Z"
+    }
+  ],
+  "request_items": [
+    {
+      "name": "Pizza",
+      "quantity": 1,
+      "id": "01M345SDPZ18XCY82N0JNBTYSB",
+      "request_id": "01M345SDPSRMKSC26YKDYGBXMG"
+    },
+    {
+      "name": "Pizza",
+      "quantity": 1,
+      "id": "01M345T0VEY26P25FSCV5C3QAF",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ"
+    },
+    {
+      "id": "RQI-001",
+      "request_id": "REQ-FOOD-TEST-001",
+      "product_id": "RP001",
+      "name": "Paneer Tikka",
+      "quantity": 1,
+      "price": 220,
+      "created_at": "2026-09-22T10:04:20.167Z"
+    },
+    {
+      "id": "RQI-002",
+      "request_id": "REQ-FOOD-TEST-001",
+      "product_id": "RP002",
+      "name": "Paneer Butter Masala",
+      "quantity": 1,
+      "price": 280,
+      "created_at": "2026-09-22T10:04:20.167Z"
+    },
+    {
+      "id": "RQI-003",
+      "request_id": "REQ-BUYGET-TEST-002",
+      "name": "Milk 1L",
+      "quantity": 1,
+      "price": 50,
+      "created_at": "2026-09-22T10:04:20.167Z"
+    }
+  ],
+  "request_pickups": [
+    {
+      "address": "Shop 1",
+      "id": "01M345SDQGP6VQSC81BWT451D8",
+      "request_id": "01M345SDQBHBNWTEYEGAZBFWYK"
+    },
+    {
+      "address": "Shop 1",
+      "id": "01M345T0W131KXWBBAQK7JG3X1",
+      "request_id": "01M345T0VWCK2T8XVS5HW08X9P"
+    },
+    {
+      "id": "RQP-001",
+      "request_id": "REQ-BUYGET-TEST-002",
+      "address_snapshot": "789 Store Rd, Test City",
+      "created_at": "2026-09-22T10:04:20.167Z"
+    }
+  ],
+  "request_status_history": [
+    {
+      "id": "01M345SDQ2FNW1M19NWTMHK4GN",
+      "request_id": "01M345SDPSRMKSC26YKDYGBXMG",
+      "status": "requested",
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:14.467Z"
+    },
+    {
+      "id": "01M345SDQJJDS976RW2BGVWRP4",
+      "request_id": "01M345SDQBHBNWTEYEGAZBFWYK",
+      "status": "requested",
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:14.483Z"
+    },
+    {
+      "id": "01M345SDR15CSX0JN2MWEY3AX7",
+      "request_id": "01M345SDQV2BVZ4E8RYGQMS5YR",
+      "status": "requested",
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:14.497Z"
+    },
+    {
+      "id": "01M345SDRFTEQ8EW172CSVFYW3",
+      "request_id": "01M345SDRAK8PD78VM6VSZRFFZ",
+      "status": "requested",
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:14.511Z"
+    },
+    {
+      "id": "01M345T0VJA9ZB4DPKMC2AMQH1",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "status": "requested",
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.066Z"
+    },
+    {
+      "id": "01M345T0W5JCB01SKGMSDVKSH1",
+      "request_id": "01M345T0VWCK2T8XVS5HW08X9P",
+      "status": "requested",
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.085Z"
+    },
+    {
+      "id": "01M345T0WPRT3691MB8QG8JKHY",
+      "request_id": "01M345T0WD6309GC5XWAVH1F57",
+      "status": "requested",
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.102Z"
+    },
+    {
+      "id": "01M345T0X7J3XF3W733KPX6RXD",
+      "request_id": "01M345T0WYDAWWZKY36BP3K9GK",
+      "status": "requested",
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.119Z"
+    },
+    {
+      "id": "01M345T0Y4TB4ADYF02TWSMY9W",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "status": "searching_partner",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.148Z"
+    },
+    {
+      "id": "01M345T0YZ8Z89ABSXZKXHXXAA",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "status": "partner_assigned",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.175Z"
+    },
+    {
+      "id": "01M345T0ZF92WTYB16AJAGTQK2",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "status": "accepted",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.191Z"
+    },
+    {
+      "id": "01M345T0ZT0BT0XXYZAYN2W4PD",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "status": "going_to_pickup",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.202Z"
+    },
+    {
+      "id": "01M345T104CCA8T60PS53YY9A2",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "status": "arrived_pickup",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.213Z"
+    },
+    {
+      "id": "01M345T10KJE8ZNNXYJBXHJ0QA",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "status": "picked_up",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.228Z"
+    },
+    {
+      "id": "01M345T10XX6CT1ST7NCK7TD57",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "status": "going_to_customer",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.238Z"
+    },
+    {
+      "id": "01M345T119W3AYZHQYP3K339GK",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "status": "arrived_customer",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.249Z"
+    },
+    {
+      "id": "01M345T11MGFBA6WCS6KT7G4F9",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "status": "delivered",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.260Z"
+    },
+    {
+      "id": "01M345T11XXJ9FMZZ065TQ2XWW",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "status": "completed",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:05:34.269Z"
+    },
+    {
+      "id": "01M346YNA2YKDHNP8KW2F57W5E",
+      "request_id": "01M345SDPSRMKSC26YKDYGBXMG",
+      "status": "searching_partner",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:25:34.660Z"
+    },
+    {
+      "id": "01M346ZRGYG3YJRYQGHF5KWM6C",
+      "request_id": "01M345SDPSRMKSC26YKDYGBXMG",
+      "status": "partner_assigned",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:26:10.718Z"
+    },
+    {
+      "id": "01M3483F2XEF2FXE66DB1ZXZXF",
+      "request_id": "01M345SDPSRMKSC26YKDYGBXMG",
+      "status": "cancelled",
+      "reason": null,
+      "changed_by": "admin1",
+      "timestamp": "2026-09-22T09:45:40.701Z"
+    },
+    {
+      "id": "RSH-001",
+      "request_id": "REQ-FOOD-TEST-001",
+      "status": "requested",
+      "timestamp": "2026-09-22T10:04:20.167Z",
+      "changed_by": "system"
+    },
+    {
+      "id": "RSH-002",
+      "request_id": "REQ-BUYGET-TEST-002",
+      "status": "requested",
+      "timestamp": "2026-09-22T10:04:20.167Z",
+      "changed_by": "system"
+    },
+    {
+      "id": "RSH-003",
+      "request_id": "REQ-BUYGET-TEST-002",
+      "status": "searching_partner",
+      "timestamp": "2026-09-22T10:04:20.167Z",
+      "changed_by": "system"
+    },
+    {
+      "id": "RSH-004",
+      "request_id": "REQ-BUYGET-TEST-002",
+      "status": "partner_assigned",
+      "timestamp": "2026-09-22T10:04:20.167Z",
+      "changed_by": "system"
+    },
+    {
+      "id": "01M34A9X00E0VWJRQ06HXSPA6F",
+      "request_id": "REQ-FOOD-TEST-001",
+      "status": "searching_partner",
+      "reason": null,
+      "changed_by": "ADM001",
+      "timestamp": "2026-09-22T10:24:08.711Z"
+    },
+    {
+      "id": "01M34A9X0SC9ZRVFB20GSRGC4J",
+      "request_id": "REQ-FOOD-TEST-001",
+      "status": "partner_assigned",
+      "reason": null,
+      "changed_by": "ADM001",
+      "timestamp": "2026-09-22T10:24:08.729Z"
+    },
+    {
+      "id": "01M34BK9QQZARWZT5B2EBQTBTC",
+      "request_id": "01M345SDQBHBNWTEYEGAZBFWYK",
+      "status": "searching_partner",
+      "reason": null,
+      "changed_by": "ADM001",
+      "timestamp": "2026-09-22T10:46:45.244Z"
+    },
+    {
+      "id": "01M34BKHWQJ7F866A7YTG3CRWG",
+      "request_id": "01M345SDQBHBNWTEYEGAZBFWYK",
+      "status": "partner_assigned",
+      "reason": null,
+      "changed_by": "ADM001",
+      "timestamp": "2026-09-22T10:46:53.591Z"
+    }
+  ],
+  "rides": [
+    {
+      "pickup": "A",
+      "drop": "B",
+      "id": "01M345SDQYR35QX3GQ336NYWNY",
+      "request_id": "01M345SDQV2BVZ4E8RYGQMS5YR"
+    },
+    {
+      "pickup": "X",
+      "drop": "Y",
+      "id": "01M345SDRDY6DB9D26MY3X04EV",
+      "request_id": "01M345SDRAK8PD78VM6VSZRFFZ"
+    },
+    {
+      "pickup": "A",
+      "drop": "B",
+      "id": "01M345T0WJ8FKW2YK5NJ6CZH7Y",
+      "request_id": "01M345T0WD6309GC5XWAVH1F57"
+    },
+    {
+      "pickup": "X",
+      "drop": "Y",
+      "id": "01M345T0X31H2K9ZA5AGNQQT4A",
+      "request_id": "01M345T0WYDAWWZKY36BP3K9GK"
+    }
+  ],
   "ride_locations": [],
   "payments": [],
   "wallets": [
@@ -1821,7 +2426,16 @@
     }
   ],
   "wallet_transactions": [],
-  "partner_earnings": [],
+  "partner_earnings": [
+    {
+      "id": "01M345T1200VWZTTYFFWHNBFKM",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "partner_id": "Y1zeTMOWroc",
+      "amount": 0,
+      "status": "PENDING",
+      "created_at": "2026-09-22T09:05:34.272Z"
+    }
+  ],
   "partner_payouts": [],
   "roles": [],
   "permissions": [],
@@ -1880,6 +2494,41 @@
       "address": "123 Test St",
       "online_status": "Online",
       "joined_at": "2026-09-15T08:25:11.726Z"
+    },
+    {
+      "id": "01M3901H85MRBAQ7NRP12QGPKY",
+      "user_id": "01M3901H85NX11X602755X7SP3",
+      "partner_code": "DP-660933",
+      "online_status": "Online",
+      "verification_status": "Pending"
+    },
+    {
+      "id": "01M3901H8PSB9E3R2CS6WHRJ22",
+      "user_id": "01M3901H8PD4R2XHW9RPCTT8JQ",
+      "partner_code": "DP-660950",
+      "online_status": "Online",
+      "verification_status": "Pending"
+    },
+    {
+      "id": "01M3906Q9QTWNZ00RJY6ZX7ZJ3",
+      "user_id": "01M3906Q9Q2EP53137PJPA7BNM",
+      "partner_code": "DP-830967",
+      "online_status": "Online",
+      "verification_status": "Pending"
+    },
+    {
+      "id": "01M3906QAAPSWYZZ8TC12NC9EW",
+      "user_id": "01M3906QAAQQ6NSMKPM7PRAQ7P",
+      "partner_code": "DP-830986",
+      "online_status": "Online",
+      "verification_status": "Pending"
+    },
+    {
+      "id": "01M3906XZWB55745AT9XZ7AY2C",
+      "user_id": "01M3906XZWP10WHAG82B92F4DT",
+      "partner_code": "DP-837820",
+      "online_status": "Online",
+      "verification_status": "Pending"
     }
   ],
   "request_assignments": [
@@ -1890,6 +2539,45 @@
       "assignment_status": "unknown",
       "created_at": "2026-09-11T13:23:26.486Z",
       "updated_at": "2026-09-11T13:23:26.486Z"
+    },
+    {
+      "id": "01M345T0YS8EEH4XS7DY6H13Q1",
+      "request_id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
+      "partner_id": "Y1zeTMOWroc",
+      "assignment_status": "active",
+      "created_at": "2026-09-22T09:05:34.169Z",
+      "updated_at": "2026-09-22T09:05:34.170Z"
+    },
+    {
+      "id": "01M346ZRGPJDKQFP7G7890B8MF",
+      "request_id": "01M345SDPSRMKSC26YKDYGBXMG",
+      "partner_id": "Y1zeTMOWroc",
+      "assignment_status": "active",
+      "created_at": "2026-09-22T09:26:10.710Z",
+      "updated_at": "2026-09-22T09:26:10.710Z"
+    },
+    {
+      "id": "RQA-001",
+      "request_id": "REQ-BUYGET-TEST-002",
+      "partner_id": "Y1zeTMOWroc",
+      "assignment_status": "active",
+      "assigned_at": "2026-09-22T10:04:20.167Z"
+    },
+    {
+      "id": "01M34A9X0KTB94PQ6D6BQS70PQ",
+      "request_id": "REQ-FOOD-TEST-001",
+      "partner_id": "Y1zeTMOWroc",
+      "assignment_status": "active",
+      "created_at": "2026-09-22T10:24:08.723Z",
+      "updated_at": "2026-09-22T10:24:08.723Z"
+    },
+    {
+      "id": "01M34BKHWF4A67EYE6E0ABWHGF",
+      "request_id": "01M345SDQBHBNWTEYEGAZBFWYK",
+      "partner_id": "Y1zeTMOWroc",
+      "assignment_status": "active",
+      "created_at": "2026-09-22T10:46:53.583Z",
+      "updated_at": "2026-09-22T10:46:53.583Z"
     }
   ],
   "ratings_reviews": []

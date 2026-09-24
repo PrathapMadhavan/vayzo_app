@@ -14,16 +14,26 @@ import Badge from "../components/ui/Badge";
 import Card from "../components/ui/Card";
 import Select from "../components/ui/Select";
 import Table from "../components/ui/Table";
-import { getOrderById, updateOrder } from "../api/ordersApi";
-import { getDeliveryPartners, getDeliveryPartnerLocation } from "../api/deliveryPartnersApi";
+import { getOrderById, updateOrder, updateOrderStatus } from "../api/ordersApi";
+import {
+  getDeliveryPartners,
+} from "../api/deliveryPartnersApi";
 
 const STATUS_MAP = {
-  DELIVERED: "success",
-  IN_TRANSIT: "info",
-  PREPARING: "warning",
-  CONFIRMED: "success",
-  PENDING: "warning",
-  CANCELLED: "danger",
+  requested: "warning",
+  searching_partner: "info",
+  partner_assigned: "info",
+  accepted: "info",
+  going_to_pickup: "info",
+  arrived_pickup: "info",
+  purchasing: "warning",
+  picked_up: "info",
+  going_to_customer: "info",
+  arrived_customer: "info",
+  delivered: "success",
+  completed: "success",
+  cancelled: "danger",
+  failed: "danger",
 };
 
 const formatStatus = (status = "") => status.replaceAll("_", " ");
@@ -45,8 +55,7 @@ export default function OrderDetails() {
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [mapLoading, setMapLoading] = useState(false);
+  const [error, setError] = useState("");
   const [partners, setPartners] = useState([]);
   const [selectedPartner, setSelectedPartner] = useState("");
   const [assignLoading, setAssignLoading] = useState(false);
@@ -58,7 +67,8 @@ export default function OrderDetails() {
 
       const orderData = await getOrderById(orderId);
       setOrder(orderData);
-      setSelectedPartner(orderData.deliveryPartnerId || "");
+      const partnerId = orderData.assignments?.[0]?.partner_id;
+      setSelectedPartner(partnerId || "");
 
       try {
         const partnersData = await getDeliveryPartners();
@@ -81,14 +91,26 @@ export default function OrderDetails() {
     if (!selectedPartner) return;
     try {
       setAssignLoading(true);
-      await updateOrder(order.id, {
-        deliveryPartnerId: selectedPartner,
-        status: "IN_TRANSIT",
+      if (
+        order.status === "requested" ||
+        !order.status ||
+        order.status === "PENDING"
+      ) {
+        await updateOrderStatus(order.id, {
+          status: "searching_partner",
+        });
+      }
+      await updateOrderStatus(order.id, {
+        partner_id: selectedPartner,
+        status: "partner_assigned",
       });
       setOrder((prev) => ({
         ...prev,
-        deliveryPartnerId: selectedPartner,
-        status: "IN_TRANSIT",
+        assignment: {
+          partner_id: selectedPartner,
+          assignment_status: "active",
+        },
+        status: "partner_assigned",
       }));
       alert("Partner assigned successfully!");
     } catch (err) {
@@ -96,40 +118,7 @@ export default function OrderDetails() {
     } finally {
       setAssignLoading(false);
     }
-  };
-
-  const handleViewOnMap = async () => {
-    try {
-      setMapLoading(true);
-      if (order.deliveryPartnerId) {
-        try {
-          const res = await getDeliveryPartnerLocation(order.deliveryPartnerId);
-          const { latitude, longitude, address } = res.data;
-          if (latitude && longitude) {
-            window.open(`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`, "_blank");
-            return;
-          }
-          if (address) {
-            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, "_blank");
-            return;
-          }
-        } catch (e) {
-          console.error("Partner location fetch failed", e);
-        }
-      }
-      
-      // Fallback to order delivery address
-      if (order.deliveryAddress) {
-        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${order.deliveryAddress}${order.city ? `, ${order.city}` : ""}`)}`, "_blank");
-        return;
-      }
-      
-      // If neither coordinates nor address exists:
-      alert("Location not available");
-    } finally {
-      setMapLoading(false);
-    }
-  };
+  };
 
   if (loading) {
     return (
@@ -151,19 +140,19 @@ export default function OrderDetails() {
   }
 
   const orderStatus = order.status || "PENDING";
-  const dateFormatted = order.orderDate
-    ? new Date(order.orderDate).toLocaleDateString("en-GB", {
+  const dateFormatted = order.created_at
+    ? new Date(order.created_at).toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "short",
         year: "numeric",
       })
-    : "12 May 2024";
-  const timeFormatted = order.orderDate
-    ? new Date(order.orderDate).toLocaleTimeString("en-US", {
+    : "Unavailable";
+  const timeFormatted = order.created_at
+    ? new Date(order.created_at).toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
       })
-    : "10:30 AM";
+    : "Unavailable";
 
   return (
     <section className="min-h-full bg-background p-4 sm:p-6 pb-20">
@@ -172,7 +161,7 @@ export default function OrderDetails() {
         <div className="flex flex-col">
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-2xl font-bold text-foreground">
-              Order #{order.orderId}
+              Order #{order.id}
             </h1>
             <Badge
               variant={STATUS_MAP[orderStatus] || "default"}
@@ -189,9 +178,7 @@ export default function OrderDetails() {
               variant="secondary"
               className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded-md bg-surface border border-border"
             >
-              {order.paymentStatus === "PAID"
-                ? "Online Payment"
-                : "Cash on Delivery"}
+              {"Payment Info Unavailable"}
             </Badge>
           </div>
         </div>
@@ -229,10 +216,14 @@ export default function OrderDetails() {
               </div>
               <div className="flex flex-col gap-1 text-sm text-muted">
                 <span className="font-semibold text-foreground text-base mb-1">
-                  {order.customerName}
+                  {order.customer?.name || "Unavailable"}
                 </span>
-                <span>+91 98765 43210</span>
-                <span>customer.email@example.com</span>
+                <span>
+                  {order.customer?.phone ||
+                    order.customer?.mobile ||
+                    "Unavailable"}
+                </span>
+                <span>{order.customer?.email || "Unavailable"}</span>
               </div>
             </Card>
 
@@ -243,16 +234,8 @@ export default function OrderDetails() {
               </div>
               <div className="flex flex-col gap-3 text-sm text-muted">
                 <p className="leading-relaxed">
-                  {order.deliveryAddress ? (
-                    <>
-                      {order.deliveryAddress}
-                      {order.city && (
-                        <>
-                          <br />
-                          {order.city}
-                        </>
-                      )}
-                    </>
+                  {order.dropoff_address_snapshot ? (
+                    <>{order.dropoff_address_snapshot}</>
                   ) : (
                     <span className="italic">Location not available</span>
                   )}
@@ -260,10 +243,9 @@ export default function OrderDetails() {
                 <Button
                   variant="secondary"
                   className="w-fit text-primary border-primary/30 font-semibold bg-primary/5 hover:bg-primary/10"
-                  onClick={handleViewOnMap}
-                  disabled={mapLoading}
+                  disabled={true} title="Live tracking unavailable"
                 >
-                  {mapLoading ? "Loading..." : "View on Map"}
+                  Track Partner (Unavailable)
                 </Button>
               </div>
             </Card>
@@ -340,7 +322,9 @@ export default function OrderDetails() {
                       Total
                     </td>
                     <td className="px-5 py-4 text-right font-bold text-foreground text-base">
-                      {formatAmount(order.amount)}
+                      {order.total_estimated_amount
+                        ? formatAmount(order.total_estimated_amount)
+                        : "Unavailable"}
                     </td>
                   </tr>
                 )}
@@ -363,7 +347,7 @@ export default function OrderDetails() {
               <div className="flex justify-between items-center">
                 <span className="text-muted">Restaurant</span>
                 <span className="text-foreground font-semibold text-right">
-                  {order.restaurantName}
+                  {order.restaurant?.name || "Unavailable"}
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -375,20 +359,22 @@ export default function OrderDetails() {
               <div className="flex justify-between items-center mt-2">
                 <span className="text-muted">Item Total</span>
                 <span className="text-foreground text-right">
-                  {formatAmount(order.amount)}
+                  {order.total_estimated_amount
+                    ? formatAmount(order.total_estimated_amount)
+                    : "Unavailable"}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted">Packaging Charges</span>
-                <span className="text-foreground text-right">₹20.00</span>
+                <span className="text-foreground text-right">Unavailable</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted">Delivery Charges</span>
-                <span className="text-foreground text-right">₹25.00</span>
+                <span className="text-foreground text-right">Unavailable</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted">Discount</span>
-                <span className="text-success text-right">-₹50.00</span>
+                <span className="text-foreground text-right">Unavailable</span>
               </div>
 
               <div className="border-t border-dashed border-border my-2"></div>
@@ -398,14 +384,16 @@ export default function OrderDetails() {
                   Total Amount
                 </span>
                 <span className="text-foreground font-bold text-base text-right">
-                  {formatAmount(order.amount + 45 - 50)}
+                  {order.total_estimated_amount
+                    ? formatAmount(order.total_estimated_amount)
+                    : "Unavailable"}
                 </span>
               </div>
 
               <div className="flex justify-between items-center mt-2 p-3 bg-success/5 rounded-lg border border-success/20">
                 <span className="text-success font-bold">Paid Amount</span>
                 <span className="text-success font-bold text-right">
-                  {formatAmount(order.amount + 45 - 50)}
+                  Unavailable
                 </span>
               </div>
             </div>
@@ -422,7 +410,7 @@ export default function OrderDetails() {
                 Select Delivery Partner <span className="text-danger">*</span>
               </label>
 
-              <div className="flex flex-col gap-2 mt-2 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+              <div className="flex flex-col gap-2 mt-2 max-h-75 overflow-y-auto custom-scrollbar pr-2">
                 {partners.map((dp, i) => (
                   <label
                     key={dp.id}
@@ -430,9 +418,9 @@ export default function OrderDetails() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary overflow-hidden shrink-0">
-                        {dp.image ? (
+                        {dp.profileImage ? (
                           <img
-                            src={dp.image}
+                            src={dp.profileImage}
                             alt={dp.name}
                             className="w-full h-full object-cover"
                           />
@@ -463,7 +451,7 @@ export default function OrderDetails() {
                           checked={selectedPartner === dp.id}
                           onChange={() => setSelectedPartner(dp.id)}
                         />
-                        <div className="h-4 w-4 rounded-full border border-muted peer-checked:border-primary peer-checked:border-[4px] transition-all"></div>
+                        <div className={`h-4 w-4 rounded-full transition-all ${selectedPartner === dp.id ? "border-4 border-primary" : "border border-muted"}`}></div>
                       </div>
                     </div>
                   </label>
@@ -487,61 +475,40 @@ export default function OrderDetails() {
             </div>
 
             <div className="relative pl-6 pt-4 pb-2 border-l-2 border-border ml-3 flex flex-col gap-8">
-              {/* Placed */}
-              <div className="relative">
-                <div className="absolute -left-[35px] top-0.5 h-4 w-4 rounded-full bg-background border-2 border-success ring-4 ring-background z-10 flex items-center justify-center">
-                  <div className="h-1.5 w-1.5 rounded-full bg-success"></div>
-                </div>
-                <div className="absolute -left-[27px] -top-8 h-12 w-0.5 bg-success -z-0"></div>
-                <h4 className="text-sm font-bold text-foreground">
-                  Order Placed
-                </h4>
-                <p className="text-xs text-muted mt-1">
-                  {dateFormatted}, 10:30 AM
-                </p>
-              </div>
-
-              {/* Confirmed */}
-              <div className="relative">
-                <div className="absolute -left-[35px] top-0.5 h-4 w-4 rounded-full bg-background border-2 border-success ring-4 ring-background z-10 flex items-center justify-center">
-                  <div className="h-1.5 w-1.5 rounded-full bg-success"></div>
-                </div>
-                <div className="absolute -left-[27px] -top-[44px] h-[52px] w-0.5 bg-success -z-0"></div>
-                <h4 className="text-sm font-bold text-foreground">
-                  Order Confirmed
-                </h4>
-                <p className="text-xs text-muted mt-1">
-                  {dateFormatted}, 10:31 AM
-                </p>
-              </div>
-
-              {/* Preparing */}
-              <div className="relative">
-                <div className="absolute -left-[35px] top-0.5 h-4 w-4 rounded-full bg-background border-2 border-primary ring-4 ring-background z-10 flex items-center justify-center">
-                  <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
-                </div>
-                <div className="absolute -left-[27px] -top-[44px] h-[52px] w-0.5 bg-primary -z-0"></div>
-                <h4 className="text-sm font-bold text-foreground">Preparing</h4>
-                <p className="text-xs text-muted mt-1">
-                  {dateFormatted}, 10:35 AM
-                </p>
-              </div>
-
-              {/* Out for Delivery */}
-              <div className="relative">
-                <div className="absolute -left-[35px] top-0.5 h-4 w-4 rounded-full border-2 border-border bg-background ring-4 ring-background z-10"></div>
-                <h4 className="text-sm font-medium text-muted">
-                  Out for Delivery
-                </h4>
-                <p className="text-xs text-muted mt-1">--</p>
-              </div>
-
-              {/* Delivered */}
-              <div className="relative">
-                <div className="absolute -left-[35px] top-0.5 h-4 w-4 rounded-full border-2 border-border bg-background ring-4 ring-background z-10"></div>
-                <h4 className="text-sm font-medium text-muted">Delivered</h4>
-                <p className="text-xs text-muted mt-1">--</p>
-              </div>
+              {order.status_history && order.status_history.length > 0 ? (
+                order.status_history.map((sh, idx) => (
+                  <div key={idx} className="relative">
+                    <div className="absolute -left-8.75 top-0.5 h-4 w-4 rounded-full bg-background border-2 border-primary ring-4 ring-background z-10 flex items-center justify-center">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
+                    </div>
+                    {idx > 0 && (
+                      <div className="absolute -left-6.75 -top-11 h-13 w-0.5 bg-primary z-0"></div>
+                    )}
+                    <h4 className="text-sm font-bold text-foreground">
+                      {toTitleCase(formatStatus(sh.status))}
+                    </h4>
+                    <p className="text-xs text-muted mt-1">
+                      {new Date(sh.timestamp).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                      ,{" "}
+                      {new Date(sh.timestamp).toLocaleTimeString("en-US", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                    {sh.reason && (
+                      <p className="text-xs italic text-muted mt-1">
+                        {sh.reason}
+                      </p>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted">No timeline available</p>
+              )}
             </div>
           </Card>
         </div>

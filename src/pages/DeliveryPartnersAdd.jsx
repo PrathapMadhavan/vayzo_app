@@ -21,8 +21,8 @@ const vehicleOptions = [
   "Auto",
 ];
 
-const statusOptions = ["Active", "Inactive", "Pending", "Blocked"];
-const onlineStatusOptions = ["Online", "Offline"];
+const statusOptions = ["Active"];
+const onlineStatusOptions = ["Online"];
 
 function RequiredLabel({ text }) {
   return (
@@ -35,41 +35,38 @@ function RequiredLabel({ text }) {
 
 function DeliveryPartnersAdd() {
   const navigate = useNavigate();
-  const { partnerId } = useParams();
+  const { id } = useParams();
   
-  const isEditing = !!partnerId;
+  const isEditing = !!id;
 
   const [form, setForm] = useState({
     // Section 1
     firstName: "", lastName: "", email: "", mobileNumber: "", dateOfBirth: "", gender: "Male", alternateMobile: "",
     // Section 2
-    emergencyContact: "", emergencyContactRelation: "", emergencyMobile: "",
+    emergencyContact: "", emergencyMobile: "",
     // Section 3
-    addressLine1: "", addressLine2: "", city: "", state: "", postalCode: "", country: "India",
+    address: "", city: "",
     // Section 4
     vehicleType: vehicleOptions[0], vehicleName: "", vehicleNumber: "", rcNumber: "",
     // Section 5
-    drivingLicenseNumber: "", drivingLicenseExpiry: "", insuranceProvider: "", insuranceNumber: "", insuranceValidTill: "",
+    insuranceProvider: "", insuranceNumber: "", insuranceValidTill: "",
     // Section 6
     bankName: "", accountHolderName: "", accountNumber: "", ifscCode: "",
     // Section 7
-    status: statusOptions[0], onlineStatus: onlineStatusOptions[1],
+    status: statusOptions[0], onlineStatus: onlineStatusOptions[0],
     // Section 8 (Text Fields)
     aadhaarNumber: "", panNumber: ""
   });
   
   const [documentPreviews, setDocumentPreviews] = useState({
     aadhaar: null,
-    drivingLicense: null,
     pan: null,
     rc: null,
     insurance: null
   });
   
-  const [documentFiles, setDocumentFiles] = useState({});
+  const [documents, setDocuments] = useState({});
   const [profileImageFile, setProfileImageFile] = useState(null);
-
-  const [partnerDbId, setPartnerDbId] = useState(null); // The internal id for json-server PUT
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -79,19 +76,14 @@ function DeliveryPartnersAdd() {
     if (isEditing) {
       loadPartnerData();
     }
-  }, [partnerId]);
+  }, [id]);
 
   const loadPartnerData = async () => {
     try {
       setLoading(true);
-      const data = await getDeliveryPartnerById(partnerId);
-      setPartnerDbId(data.partner?.id || partnerId);
+      const data = await getDeliveryPartnerById(id);
       
-      const pDetails = data.personalDetails || {};
-      const vDetails = data.vehicle || {};
-      const bDetails = data.bankAccount || {};
-
-      const fullName = data.partner?.name || "";
+      const fullName = data.name || "";
       const nameParts = fullName.split(' ');
       const firstName = nameParts[0] || "";
       const lastName = nameParts.slice(1).join(' ');
@@ -99,53 +91,39 @@ function DeliveryPartnersAdd() {
       setForm({
         firstName,
         lastName,
-        email: data.partner?.email || "",
-        mobileNumber: data.partner?.mobileNumber || "",
-        dateOfBirth: pDetails.dateOfBirth || "",
-        gender: pDetails.gender || "Male",
-        alternateMobile: pDetails.alternativeMobile || "",
-        emergencyContact: pDetails.emergencyContact || "",
-        emergencyContactRelation: pDetails.emergencyContactRelation || "",
-        emergencyMobile: pDetails.emergencyMobile || "",
-        addressLine1: pDetails.addressLine1 || "",
-        addressLine2: pDetails.addressLine2 || "",
-        city: pDetails.city || "",
-        state: pDetails.state || "",
-        postalCode: pDetails.postalCode || "",
-        country: pDetails.country || "India",
-        vehicleType: vDetails.vehicleType || vehicleOptions[0],
-        vehicleName: vDetails.vehicleName || "",
-        vehicleNumber: vDetails.vehicleNumber || "",
-        rcNumber: vDetails.rcNumber || "",
-        drivingLicenseNumber: pDetails.drivingLicenseNumber || "",
-        drivingLicenseExpiry: pDetails.drivingLicenseExpiry || "",
-        insuranceProvider: vDetails.insuranceProvider || "",
-        insuranceNumber: vDetails.insuranceNumber || "",
-        insuranceValidTill: vDetails.validTill || "",
-        bankName: bDetails.bankName || "",
-        accountHolderName: bDetails.accountHolderName || "",
-        accountNumber: bDetails.accountNumber || "",
-        ifscCode: bDetails.ifscCode || "",
-        status: data.partner?.status || statusOptions[0],
-        onlineStatus: data.partner?.onlineStatus || data.partner?.online_status || pDetails?.onlineStatus || onlineStatusOptions[1],
-        aadhaarNumber: pDetails.aadhaarNumber || "",
-        panNumber: pDetails.panNumber || "",
+        email: data.email || "",
+        mobileNumber: data.mobileNumber || "",
+        dateOfBirth: data.dateOfBirth || "",
+        gender: data.gender || "Male",
+        alternateMobile: data.alternateMobile || "",
+        emergencyContact: data.emergencyContact || "",
+        emergencyMobile: data.emergencyMobile || "",
+        address: data.address || "",
+        city: data.city || "",
+        vehicleType: data.vehicleType || vehicleOptions[0],
+        vehicleName: data.vehicleName || "",
+        vehicleNumber: data.vehicleNumber || "",
+        rcNumber: data.rcNumber || "",
+        insuranceProvider: data.insuranceProvider || "",
+        insuranceNumber: data.insuranceNumber || "",
+        insuranceValidTill: data.insuranceValidTill || "",
+        bankName: data.bankName || "",
+        accountHolderName: data.accountHolderName || "",
+        accountNumber: data.accountNumber || "",
+        ifscCode: data.ifscCode || "",
+        status: data.status || statusOptions[0],
+        onlineStatus: data.onlineStatus || onlineStatusOptions[0],
+        aadhaarNumber: data.aadhaarNumber || "",
+        panNumber: data.panNumber || "",
       });
-      setImagePreview(data.partner?.profileImage || pDetails.profileImage || null);
+      setImagePreview(data.profileImage || null);
       
-      if (data.documents && Array.isArray(data.documents)) {
-        const previews = {};
-        data.documents.forEach(doc => {
-          if (doc.document_url) {
-            if (doc.document_type === 'aadhaar') previews.aadhaar = doc.document_url;
-            if (doc.document_type === 'pan') previews.pan = doc.document_url;
-            if (doc.document_type === 'rc') previews.rc = doc.document_url;
-            if (doc.document_type === 'driving_license') previews.drivingLicense = doc.document_url;
-            if (doc.document_type === 'insurance') previews.insurance = doc.document_url;
-          }
-        });
-        setDocumentPreviews(previews);
-      }
+      setDocumentPreviews({
+        aadhaar: data.aadhaarDocumentUrl || null,
+        pan: data.panDocumentUrl || null,
+        rc: data.rcDocumentUrl || null,
+        insurance: data.insuranceDocumentUrl || null,
+      });
     } catch (err) {
       setError("Unable to load partner details.");
     } finally {
@@ -183,27 +161,6 @@ function DeliveryPartnersAdd() {
       }
     }
   };
-
-  const handleDocChange = (key) => async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        if (file.type !== "application/pdf") {
-          throw new Error("Invalid file type. Only PDF is allowed.");
-        }
-        if (file.size > 2 * 1024 * 1024) {
-          throw new Error("File size must be less than 2MB.");
-        }
-        const objectUrl = URL.createObjectURL(file);
-        setDocumentPreviews(prev => ({ ...prev, [key]: objectUrl }));
-        setDocumentFiles(prev => ({ ...prev, [key]: file }));
-      } catch (err) {
-        console.error("Failed to read file", err);
-        alert(err.message);
-      }
-    }
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -234,15 +191,16 @@ function DeliveryPartnersAdd() {
       if (profileImageFile) {
         formData.append("profileImage", profileImageFile);
       }
-      if (documentFiles.aadhaar) formData.append("aadhaarFile", documentFiles.aadhaar);
-      if (documentFiles.pan) formData.append("panFile", documentFiles.pan);
-      if (documentFiles.rc) formData.append("rcFile", documentFiles.rc);
-      if (documentFiles.drivingLicense) formData.append("drivingLicenseFile", documentFiles.drivingLicense);
-      if (documentFiles.insurance) formData.append("insuranceFile", documentFiles.insurance);
+
+      Object.keys(documents).forEach(key => {
+        if (documents[key]) {
+          formData.append(key + 'File', documents[key]);
+        }
+      });
 
       if (isEditing) {
          // Pass the formData directly
-         await updateDeliveryPartner(partnerDbId, formData);
+         await updateDeliveryPartner(id, formData);
       } else {
          await createDeliveryPartner(formData);
       }
@@ -402,14 +360,6 @@ function DeliveryPartnersAdd() {
             </h2>
             <div className="mt-8 grid gap-8 md:grid-cols-2">
               {field("emergencyContact", "Contact Name", "emergencyContact", "text", "e.g. Selvam R")}
-              <StatusSelect
-                id="emergencyContactRelation"
-                label="Relationship"
-                value={form.emergencyContactRelation}
-                options={["Select Relationship", "Father", "Mother", "Spouse", "Sibling", "Friend"]}
-                onChange={update("emergencyContactRelation")}
-                required={false}
-              />
               <Input
                 id="emergencyMobile"
                 label={<RequiredLabel text="Emergency Mobile" />}
@@ -434,34 +384,9 @@ function DeliveryPartnersAdd() {
             </h2>
             <div className="mt-8 grid gap-8 md:grid-cols-2">
               <div className="md:col-span-2">
-                {field("addressLine1", "Address Line 1", "addressLine1", "text", "Flat, House no., Building")}
-              </div>
-              <div className="md:col-span-2">
-                {field("addressLine2", "Address Line 2 (Optional)", "addressLine2", "text", "Area, Colony, Street", false)}
+                {field("address", "Address", "address", "text", "Flat, House no., Building, Area, Street")}
               </div>
               {field("city", "City", "city", "text", "e.g. Chennai")}
-              {field("state", "State", "state", "text", "e.g. Tamil Nadu")}
-              <Input
-                id="postalCode"
-                label={<RequiredLabel text="Postal Code" />}
-                type="text"
-                value={form.postalCode}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, '').slice(0, 6);
-                  setForm({ ...form, postalCode: val });
-                }}
-                placeholder="6-digit PIN code"
-                required
-                pattern="[0-9]{6}"
-              />
-              <StatusSelect
-                id="country"
-                label={<RequiredLabel text="Country" />}
-                value={form.country}
-                options={["India"]}
-                onChange={update("country")}
-                required
-              />
             </div>
           </div>
 
@@ -486,11 +411,9 @@ function DeliveryPartnersAdd() {
           
           <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
              <h2 className="text-lg font-semibold text-foreground">
-              Driving & Insurance
+              Insurance
             </h2>
             <div className="mt-8 grid gap-8 md:grid-cols-2">
-              {field("drivingLicenseNumber", "Driving License Number", "drivingLicenseNumber", "text", "Enter DL number")}
-              {field("drivingLicenseExpiry", "DL Expiry Date", "drivingLicenseExpiry", "date", "")}
               {field("insuranceProvider", "Insurance Provider", "insuranceProvider", "text", "Enter insurance provider")}
               {field("insuranceNumber", "Insurance Number", "insuranceNumber", "text", "Enter insurance number")}
               {field("insuranceValidTill", "Insurance Valid Till", "insuranceValidTill", "date", "")}
@@ -549,37 +472,59 @@ function DeliveryPartnersAdd() {
           </div>
           
           <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8">
-             <h2 className="text-lg font-semibold text-foreground mb-1">
-              Documents
-            </h2>
-            <p className="text-sm text-muted mb-8">Upload clear, legible PDF copies of the original documents.</p>
+             <div className="mb-6 flex flex-col gap-1">
+              <h2 className="text-lg font-semibold text-foreground">
+                Documents
+              </h2>
+              <p className="text-sm text-muted">Upload partner documents (PDF only, max 2MB).</p>
+            </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {[
-                { key: 'aadhaar', label: 'Aadhaar Card', inputKey: 'aadhaarNumber', inputLabel: 'Aadhaar Number' },
-                { key: 'pan', label: 'PAN Card', inputKey: 'panNumber', inputLabel: 'PAN Number' },
-                { key: 'rc', label: 'Vehicle RC Book', inputKey: 'rcNumber', inputLabel: 'RC Number (Filled above)', disabled: true },
-                { key: 'drivingLicense', label: 'Driving License', inputKey: 'drivingLicenseNumber', inputLabel: 'DL Number (Filled above)', disabled: true },
-                { key: 'insurance', label: 'Insurance Document', inputKey: 'insuranceNumber', inputLabel: 'Insurance No (Filled above)', disabled: true }
+                { key: 'aadhaar', label: 'Aadhaar Card', inputKey: 'aadhaarNumber', inputLabel: 'Aadhaar Number', fileKey: 'aadhaarFile' },
+                { key: 'pan', label: 'PAN Card', inputKey: 'panNumber', inputLabel: 'PAN Number', fileKey: 'panFile' },
+                { key: 'rc', label: 'Vehicle RC Book', inputKey: 'rcNumber', inputLabel: 'RC Number (Filled above)', disabled: true, fileKey: 'rcFile' },
+                { key: 'insurance', label: 'Insurance Document', inputKey: 'insuranceNumber', inputLabel: 'Insurance No (Filled above)', disabled: true, fileKey: 'insuranceFile' }
               ].map((doc) => (
                 <div key={doc.key} className="flex flex-col gap-3 rounded-xl border border-border p-4 bg-background/50">
                   <span className="text-sm font-medium text-foreground">{doc.label}</span>
-                  <label className="cursor-pointer flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface hover:bg-surface-hover hover:border-primary/40 transition-all text-center p-2 group h-32 relative overflow-hidden">
-                    <input type="file" className="hidden" accept=".pdf,application/pdf" onChange={handleDocChange(doc.key)} />
+                  <div 
+                    className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface text-center p-2 h-32 relative overflow-hidden cursor-pointer hover:bg-muted/10 transition-colors"
+                    onClick={() => document.getElementById(doc.fileKey).click()}
+                  >
+                    <input 
+                      id={doc.fileKey} 
+                      type="file" 
+                      accept=".pdf,application/pdf" 
+                      className="hidden" 
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          if (file.type !== 'application/pdf') return alert('Only PDF files are allowed');
+                          if (file.size > 2 * 1024 * 1024) return alert('File size must be less than 2 MB');
+                          setDocuments(prev => ({...prev, [doc.key]: file}));
+                          setDocumentPreviews(prev => ({...prev, [doc.key]: URL.createObjectURL(file)}));
+                        }
+                      }} 
+                    />
                     {documentPreviews[doc.key] ? (
-                      <div className="w-full h-full relative group/img rounded flex flex-col items-center justify-center bg-primary/10 text-primary">
+                      <div className="w-full h-full relative rounded flex flex-col items-center justify-center bg-primary/10 text-primary">
                         <FileText size={32} className="mb-2" />
-                        <span className="text-xs font-semibold px-2 text-center truncate w-full">Document Selected</span>
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity">
-                          <CloudUpload size={20} className="text-white" />
-                        </div>
+                        <span className="text-xs font-semibold px-2 text-center truncate w-full">
+                          {documents[doc.key] ? documents[doc.key].name : (
+                            <a href={documentPreviews[doc.key]} target="_blank" rel="noreferrer" className="text-primary hover:underline hover:text-primary/80" onClick={(e) => e.stopPropagation()}>
+                              View PDF
+                            </a>
+                          )}
+                        </span>
                       </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center">
-                        <CloudUpload size={20} className="text-muted mb-2 group-hover:text-primary transition-colors" />
-                        <span className="text-xs text-muted">Upload PDF</span>
+                        <CloudUpload size={20} className="text-muted mb-2" />
+                        <span className="text-xs font-medium text-primary">Click to Upload PDF</span>
+                        <span className="text-[10px] text-muted mt-1">Maximum 2 MB</span>
                       </div>
                     )}
-                  </label>
+                  </div>
                   {!doc.disabled && (
                     <Input id={doc.inputKey} type="text" value={form[doc.inputKey]} onChange={update(doc.inputKey)} placeholder={doc.inputLabel} required className="h-9 text-xs" />
                   )}
@@ -637,9 +582,6 @@ function DeliveryPartnersAdd() {
             <div className="space-y-3">
               {[
                 { title: "Active", text: "Partner can accept and deliver orders.", color: "text-success", bg: "bg-success", varName: "success" },
-                { title: "Inactive", text: "Partner is inactive.", color: "text-warning", bg: "bg-warning", varName: "warning" },
-                { title: "Pending", text: "Partner is awaiting verification.", color: "text-info", bg: "bg-info", varName: "info" },
-                { title: "Blocked", text: "Partner is blocked.", color: "text-danger", bg: "bg-danger", varName: "danger" },
               ].map(({ title, text, color, bg, varName }) => (
                 <div
                   key={title}
