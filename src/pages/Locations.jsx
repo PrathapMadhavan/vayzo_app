@@ -45,13 +45,6 @@ const STATUS_MAP = {
   RESTRICTED: "danger",
 };
 
-const TABS = [
-  "All Locations",
-  "Active",
-  "Inactive",
-  "Restricted"
-];
-
 const toTitleCase = (str) => {
   if (!str) return "";
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -62,12 +55,12 @@ export default function Locations() {
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [hoveredLocation, setHoveredLocation] = useState(null);
 
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All Status");
   const [city, setCity] = useState("All Cities");
   const [zone, setZone] = useState("All Zones");
-  const [activeTab, setActiveTab] = useState("All Locations");
 
   const [deleteModalId, setDeleteModalId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -103,9 +96,6 @@ export default function Locations() {
     if (status !== "All Status") {
       filtered = filtered.filter((l) => l.status === status.toUpperCase());
     }
-    if (activeTab !== "All Locations") {
-      filtered = filtered.filter((l) => l.status === activeTab.toUpperCase());
-    }
     if (city !== "All Cities") {
       filtered = filtered.filter((l) => l.city === city);
     }
@@ -113,7 +103,7 @@ export default function Locations() {
       filtered = filtered.filter((l) => l.zone === zone);
     }
     return filtered;
-  }, [locations, query, status, activeTab, city, zone]);
+  }, [locations, query, status, city, zone]);
 
   const hasFilters = query || status !== "All Status" || city !== "All Cities" || zone !== "All Zones";
   
@@ -252,28 +242,6 @@ export default function Locations() {
             hasActiveFilters={hasFilters}
             onReset={resetFilters}
           />
-          {/* Tabs */}
-          <div className="px-4 sm:px-6 pt-0 border-t border-border/50">
-            <nav className="flex gap-5 overflow-x-auto scrollbar-none w-full mt-4">
-              {TABS.map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => {
-                    setActiveTab(tab);
-                    setCurrentPage(1);
-                  }}
-                  className={`whitespace-nowrap border-b-2 px-2 pb-2 text-sm font-medium transition ${
-                    activeTab === tab
-                      ? "border-primary text-primary"
-                      : "border-transparent text-muted hover:text-foreground hover:border-border"
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </nav>
-          </div>
         </Card>
       </div>
 
@@ -317,6 +285,8 @@ export default function Locations() {
                       return (
                         <tr
                           key={loc.id}
+                          onMouseEnter={() => setHoveredLocation(loc)}
+                          onMouseLeave={() => setHoveredLocation(null)}
                           onClick={() => navigate(`/locations/${loc.id}`)}
                           className="border-b border-border transition-colors hover:bg-background last:border-0 cursor-pointer"
                         >
@@ -409,7 +379,7 @@ export default function Locations() {
             </div>
             
             {/* Mock Map Area */}
-            <MockMap className="flex-1" />
+            <MockMap className="flex-1" zone={hoveredLocation?.zone || ""} city={hoveredLocation?.city || "Madurai"} address={hoveredLocation?.name || ""} />
 
             {/* Map Legend */}
             <div className="p-4 bg-surface border-t border-border shrink-0">

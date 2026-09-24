@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Save, ArrowLeft } from "lucide-react";
+import { Save, ArrowLeft, MapPin } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
-import { createLocation, getLocationById } from "../api/locationsApi";
+import Badge from "../components/ui/Badge";
+import { createLocation, getLocationById, updateLocation } from "../api/locationsApi";
 
 export default function LocationsAdd() {
   const navigate = useNavigate();
@@ -79,40 +80,66 @@ export default function LocationsAdd() {
 
     try {
       setLoading(true);
-      await createLocation(finalData);
-      alert("Location added successfully!");
-      navigate("/locations");
+      if (isEdit) {
+        await updateLocation(id, finalData);
+        alert("Location updated successfully!");
+        navigate(`/locations/${id}`);
+      } else {
+        await createLocation(finalData);
+        alert("Location added successfully!");
+        navigate("/locations");
+      }
     } catch (err) {
-      alert("Failed to create location.");
+      alert(isEdit ? "Failed to update location." : "Failed to create location.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCancel = () => {
+    if (isEdit) {
+      navigate(`/locations/${id}`);
+    } else {
+      navigate("/locations");
+    }
+  };
+
   return (
     <section className="min-h-full bg-background p-4 sm:p-6 pb-20">
-      <div className="max-w-3xl mx-auto flex flex-col gap-6">
+      <div className="w-full mx-auto flex flex-col gap-6">
         
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="secondary" 
-            className="h-10 w-10 p-0 rounded-full shrink-0" 
-            onClick={() => navigate("/locations")}
-          >
-            <ArrowLeft size={18} />
-          </Button>
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-bold text-foreground">
-              {isEdit ? "Edit Location" : "Add New Location"}
-            </h1>
-            <p className="text-sm text-muted">
-              {isEdit ? "Update location details and settings" : "Create a new delivery or service location"}
-            </p>
-          </div>
-        </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+          {/* Dynamic Location Header Card */}
+          <Card className="p-4 sm:p-5">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <MapPin size={24} />
+                </div>
+                <div>
+                  <div className="flex items-start gap-3">
+                    <h1 className="text-xl font-bold text-foreground pt-0.5">{formData.name || "Location Name"}</h1>
+                    <Badge variant={formData.status === 'ACTIVE' ? 'success' : 'danger'} className="px-2 py-0 shadow-sm text-[11px]">
+                      {formData.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-medium text-muted mt-1">
+                    <MapPin size={12} className="shrink-0" />
+                    <span>{formData.fullName || "Full Address, City"}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <Button type="button" variant="outline" className="flex-1 sm:flex-none" onClick={handleCancel}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" className="flex-1 sm:flex-none gap-2 shadow-sm" disabled={loading}>
+                  <Save size={16} /> Save Changes
+                </Button>
+              </div>
+            </div>
+          </Card>
           <Card className="p-6 flex flex-col gap-6">
             <div className="border-b border-border pb-4">
               <h2 className="text-lg font-bold text-foreground">Location Information</h2>
@@ -264,14 +291,7 @@ export default function LocationsAdd() {
             </div>
           </Card>
 
-          <div className="flex justify-end gap-3">
-            <Button type="button" variant="secondary" onClick={() => navigate("/locations")}>
-              Cancel
-            </Button>
-            <Button type="submit" className="gap-2 px-6 shadow-md" disabled={loading}>
-              <Save size={18} /> {loading ? "Saving..." : "Save Location"}
-            </Button>
-          </div>
+
         </form>
       </div>
     </section>

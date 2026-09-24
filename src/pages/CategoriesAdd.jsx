@@ -6,6 +6,7 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import { createCategory, getCategoryById, updateCategory, getCategories } from "../api/categoriesApi";
+import { getProductsByCategory } from "../api/productsApi";
 
 const types = [
   "Select type",
@@ -48,6 +49,8 @@ function CategoriesAdd() {
   const [dbId, setDbId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [childCategories, setChildCategories] = useState([]);
+  const [menuItems, setMenuItems] = useState([]);
   const fileInputRef = useRef(null);
 
   const handleImageChange = (e) => {
@@ -103,6 +106,17 @@ function CategoriesAdd() {
           description: data.description || "",
           parentId: data.parentId || "",
         });
+
+        // Load related data
+        const allCats = await getCategories();
+        setChildCategories(allCats.filter(c => c.parentId === data.id));
+        
+        try {
+          const products = await getProductsByCategory(categoryId);
+          setMenuItems(products || []);
+        } catch (e) {
+          console.error("Failed to load products", e);
+        }
       }
     } catch (err) {
       setError("Unable to load category details.");
@@ -344,6 +358,54 @@ function CategoriesAdd() {
           </div>
 
         </form>
+
+        {/* Read-Only Related Data (only shown on Edit) */}
+        {isEditing && (
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+              <h3 className="mb-4 text-base font-semibold text-foreground">Related Child Categories</h3>
+              {childCategories.length > 0 ? (
+                <ul className="space-y-2">
+                  {childCategories.map(child => (
+                    <li key={child.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-background">
+                      <div className="h-2 w-2 rounded-full bg-primary shrink-0"></div>
+                      <span className="text-sm font-medium text-foreground">{child.name}</span>
+                      <Badge variant={child.status === 'Active' ? 'success' : 'danger'} className="ml-auto text-[10px] px-1.5 py-0 h-4">
+                        {child.status}
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted italic">No child categories found.</p>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+              <h3 className="mb-4 text-base font-semibold text-foreground">Related Menu Items</h3>
+              {menuItems.length > 0 ? (
+                <ul className="space-y-2">
+                  {menuItems.map(item => (
+                    <li key={item.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-background">
+                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        {item.image ? <img src={item.image} alt="" className="h-full w-full object-cover rounded-lg" /> : <ShieldCheck size={14} />}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-foreground">{item.name}</span>
+                        <span className="text-xs text-muted">${Number(item.price).toFixed(2)}</span>
+                      </div>
+                      <Badge variant={item.status === 'Available' ? 'success' : 'danger'} className="ml-auto text-[10px] px-1.5 py-0 h-4">
+                        {item.status}
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted italic">No menu items linked to this category.</p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -105,9 +105,6 @@ function LocationsDetails() {
         
         {/* Navigation Breadcrumb & Back */}
         <div className="flex flex-col gap-2">
-          <div className="text-sm text-muted font-medium">
-            Dashboard &gt; Locations &gt; Location Details
-          </div>
           <button 
             onClick={() => navigate("/locations")}
             className="flex items-center gap-2 text-sm font-bold text-foreground hover:text-primary transition-colors w-fit pt-2"
