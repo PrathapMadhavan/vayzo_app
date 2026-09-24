@@ -17,12 +17,21 @@ function restoreUrl(req) {
     return;
   }
 
+  // Vercel catch-all fallback: /api/[...path]
+  const segments = req.query?.path;
+  if (segments != null) {
+    const suffix = Array.isArray(segments) ? segments.join("/") : String(segments);
+    parsed.searchParams.delete("path");
+    const qs = parsed.searchParams.toString();
+    req.url = `/api/${suffix}`.replace(/\/{2,}/g, "/") + (qs ? `?${qs}` : "");
+    return;
+  }
+
   if (
-    current.startsWith("/api/v1/") ||
-    current.startsWith("/api/settings") ||
-    current.startsWith("/api/deliveryPartners") ||
+    current.startsWith("/api/") ||
     current.startsWith("/settings") ||
-    current.startsWith("/deliveryPartners")
+    current.startsWith("/deliveryPartners") ||
+    current.startsWith("/restaurant_products")
   ) {
     return;
   }

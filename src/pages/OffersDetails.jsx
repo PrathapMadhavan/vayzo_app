@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Tag, Calendar, Users, Activity, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Tag, Calendar, Users, Activity, ShoppingBag, Edit2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
@@ -118,10 +118,18 @@ export default function OffersDetails() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="secondary" className="gap-2 shrink-0 shadow-sm bg-surface" onClick={() => navigate(`/offers/edit/${offer.id}`)}>
-            Edit Offer
+          <Button 
+            variant="primary" 
+            className="rounded-xl shadow-sm px-5" 
+            onClick={() => navigate(`/offers/edit/${offer.id}`)}
+          >
+            <Edit2 size={15} className="mr-2" /> Edit Offer
           </Button>
-          <Button variant="danger" className="gap-2 shrink-0 shadow-sm bg-danger text-danger border-transparent hover:bg-danger/50 hover:text-white" onClick={() => setDeleteModalOpen(true)}>
+          <Button 
+            variant="danger" 
+            className="shadow-sm" 
+            onClick={() => setDeleteModalOpen(true)}
+          >
             Delete
           </Button>
         </div>

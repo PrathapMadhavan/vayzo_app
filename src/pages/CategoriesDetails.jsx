@@ -7,25 +7,31 @@ import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
 import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
-import { getCategoryById, updateCategory } from "../api/categoriesApi";
-import { getProductsByCategory, addProduct } from "../api/productsApi";
+import ActionMenu from "../components/ui/ActionMenu";
+import { getCategoryById, updateCategory, getCategories } from "../api/categoriesApi";
+import { getProductsByCategory, addProduct, updateProduct, deleteProduct } from "../api/productsApi";
 
 function CategoriesDetails() {
   const navigate = useNavigate();
   const { categoryId } = useParams();
  
   const [category, setCategory] = useState(null);
+  const [parentCategory, setParentCategory] = useState(null);
+  const [childCategories, setChildCategories] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   // Modal State
   const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
+  const [editingMenuId, setEditingMenuId] = useState(null);
   const [menuForm, setMenuForm] = useState({
     name: "",
     price: "",
     status: "Available",
-    image: null
+    image: null,
+    categoryId: ""
   });
   const [menuSubmitting, setMenuSubmitting] = useState(false);
   const fileInputRef = useRef(null);
@@ -34,13 +40,19 @@ function CategoriesDetails() {
     try {
       setLoading(true);
       setError("");
-      const [catData, productsData] = await Promise.all([
+      const [catData, productsData, allCats] = await Promise.all([
         getCategoryById(categoryId),
-        getProductsByCategory(categoryId)
+        getProductsByCategory(categoryId),
+        getCategories()
       ]);
       if (isMounted) {
         setCategory(catData);
         setMenuItems(productsData || []);
+        if (catData.parentId) {
+          setParentCategory(allCats.find(c => c.id === catData.parentId) || null);
+        }
+        setChildCategories(allCats.filter(c => c.parentId === catData.id));
+        setAllCategories(allCats || []);
       }
     } catch {
       if (isMounted) setError("Unable to load category details.");
@@ -76,28 +88,82 @@ function CategoriesDetails() {
     
     setMenuSubmitting(true);
     try {
-      const newMenu = {
-        id: `M${Date.now()}`,
-        categoryId: categoryId,
-        name: menuForm.name,
-        price: parseFloat(menuForm.price),
-        status: menuForm.status,
-        image: menuForm.image,
-        createdDate: new Date().toISOString()
-      };
-      await addProduct(newMenu);
+      const targetCategoryId = menuForm.categoryId || categoryId;
+
+      if (editingMenuId) {
+        const currentItem = menuItems.find(m => m.id === editingMenuId);
+        const oldCategoryId = currentItem ? currentItem.categoryId : null;
+
+        const updateData = {
+          name: menuForm.name,
+          price: parseFloat(menuForm.price),
+          status: menuForm.status,
+          image: menuForm.image,
+          categoryId: targetCategoryId,
+        };
+        await updateProduct(editingMenuId, updateData);
+
+        if (oldCategoryId && oldCategoryId !== targetCategoryId) {
+           const oldCat = allCategories.find(c => c.id === oldCategoryId) || category;
+           const oldCatCount = Math.max((oldCat.itemCount || 1) - 1, 0);
+           await updateCategory(oldCategoryId, { ...oldCat, itemCount: oldCatCount });
+           
+           const newCat = allCategories.find(c => c.id === targetCategoryId);
+           if (newCat) {
+             const newCatCount = (newCat.itemCount || 0) + 1;
+             await updateCategory(targetCategoryId, { ...newCat, itemCount: newCatCount });
+           }
+        }
+      } else {
+        const newMenu = {
+          id: `M${Date.now()}`,
+          categoryId: targetCategoryId,
+          name: menuForm.name,
+          price: parseFloat(menuForm.price),
+          status: menuForm.status,
+          image: menuForm.image,
+          createdDate: new Date().toISOString()
+        };
+        await addProduct(newMenu);
+        
+        // Update item count on category
+        const targetCat = allCategories.find(c => c.id === targetCategoryId) || category;
+        const newCount = (targetCat.itemCount || 0) + 1;
+        await updateCategory(targetCategoryId, { ...targetCat, itemCount: newCount });
+      }
       
-      // Update item count on category
-      const newCount = (category.itemCount || 0) + 1;
-      await updateCategory(category.id, { ...category, itemCount: newCount });
-      
-      setMenuForm({ name: "", price: "", status: "Available", image: null });
+      setMenuForm({ name: "", price: "", status: "Available", image: null, categoryId: "" });
+      setEditingMenuId(null);
       setIsMenuModalOpen(false);
       loadData(); // Refresh data
     } catch (err) {
-      alert("Failed to add menu item.");
+      alert("Failed to save menu item.");
     } finally {
       setMenuSubmitting(false);
+    }
+  };
+
+  const handleEditMenuClick = (item) => {
+    setEditingMenuId(item.id);
+    setMenuForm({
+      name: item.name || "",
+      price: item.price || "",
+      status: item.status || "Available",
+      image: item.image || null,
+      categoryId: item.categoryId || categoryId
+    });
+    setIsMenuModalOpen(true);
+  };
+
+  const handleDeleteMenuClick = async (itemId) => {
+    if (!window.confirm("Are you sure you want to delete this menu item?")) return;
+    try {
+      await deleteProduct(itemId);
+      const newCount = Math.max((category.itemCount || 1) - 1, 0);
+      await updateCategory(category.id, { ...category, itemCount: newCount });
+      loadData();
+    } catch (error) {
+      alert("Failed to delete menu item.");
     }
   };
 
@@ -197,7 +263,11 @@ function CategoriesDetails() {
           <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-foreground">Category Menus</h2>
-              <Button size="sm" className="shadow-sm shadow-primary/20" onClick={() => setIsMenuModalOpen(true)}>
+              <Button size="sm" className="shadow-sm shadow-primary/20" onClick={() => {
+                setMenuForm({ name: "", price: "", status: "Available", image: null, categoryId: categoryId });
+                setEditingMenuId(null);
+                setIsMenuModalOpen(true);
+              }}>
                 + Add Menu Item
               </Button>
             </div>
@@ -210,7 +280,11 @@ function CategoriesDetails() {
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-1">No menus added yet</h3>
                 <p className="text-sm text-muted mb-6 max-w-xs">There are currently no menu items associated with this category. Add your first item!</p>
-                <Button onClick={() => setIsMenuModalOpen(true)}>+ Add Menu Item</Button>
+                <Button onClick={() => {
+                  setMenuForm({ name: "", price: "", status: "Available", image: null, categoryId: categoryId });
+                  setEditingMenuId(null);
+                  setIsMenuModalOpen(true);
+                }}>+ Add Menu Item</Button>
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
@@ -230,9 +304,12 @@ function CategoriesDetails() {
                         {item.status}
                       </Badge>
                     </div>
-                    <button className="h-8 w-8 rounded-full hover:bg-background flex items-center justify-center text-muted transition-colors">
-                      <MoreVertical size={16} />
-                    </button>
+                    <ActionMenu 
+                      actions={[
+                        { label: "Edit", icon: Edit2, onClick: () => handleEditMenuClick(item) },
+                        { label: "Delete", icon: Trash2, onClick: () => handleDeleteMenuClick(item.id), danger: true }
+                      ]} 
+                    />
                   </div>
                 ))}
               </div>
@@ -293,18 +370,52 @@ function CategoriesDetails() {
                   <div>
                     <p className="text-xs font-semibold text-muted uppercase tracking-wider">Parent Category</p>
                     <p className="text-sm font-medium text-foreground">
-                      {category.parentId ? category.parentId : "None (Top-Level)"}
+                      {parentCategory ? parentCategory.name : category.parentId ? category.parentId : "None (Top-Level)"}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Child Categories */}
+            {childCategories.length > 0 && (
+              <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+                <h3 className="mb-5 text-base font-bold text-foreground">Child Categories</h3>
+                <ul className="space-y-3">
+                  {childCategories.map(child => (
+                    <li key={child.id} className="flex items-center gap-3">
+                      <div className="h-2 w-2 rounded-full bg-primary shrink-0"></div>
+                      <span 
+                        className="text-sm font-medium text-foreground hover:text-primary cursor-pointer transition-colors"
+                        onClick={() => {
+                          navigate(`/categories/${child.id}`);
+                          window.scrollTo(0, 0);
+                        }}
+                      >
+                        {child.name}
+                      </span>
+                      <Badge variant={child.status === 'Active' ? 'success' : 'danger'} className="ml-auto text-[10px] px-1.5 py-0 h-4">
+                        {child.status}
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Add Menu Item Modal */}
-      <Modal isOpen={isMenuModalOpen} onClose={() => setIsMenuModalOpen(false)} title="Add Menu Item">
+      {/* Add/Edit Menu Item Modal */}
+      <Modal 
+        isOpen={isMenuModalOpen} 
+        onClose={() => {
+          setIsMenuModalOpen(false);
+          setEditingMenuId(null);
+          setMenuForm({ name: "", price: "", status: "Available", image: null, categoryId: "" });
+        }} 
+        title={editingMenuId ? "Edit Menu Item" : "Add Menu Item"}
+      >
         <form onSubmit={handleAddMenu} className="space-y-4">
           <Input 
             label="Menu Name" 
@@ -327,6 +438,12 @@ function CategoriesDetails() {
             options={["Available", "Out of Stock"]} 
             value={menuForm.status} 
             onChange={(e) => setMenuForm({...menuForm, status: e.target.value})} 
+          />
+          <Select 
+            label="Category" 
+            options={allCategories.map(c => ({ label: c.name, value: c.id }))} 
+            value={menuForm.categoryId || categoryId} 
+            onChange={(e) => setMenuForm({...menuForm, categoryId: e.target.value})} 
           />
           
           <div>

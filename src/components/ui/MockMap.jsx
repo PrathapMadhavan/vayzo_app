@@ -1,6 +1,11 @@
 import { MapPin } from "lucide-react";
 
-export default function MockMap({ className = "", city = "Madurai", address = "" }) {
+export default function MockMap({ className = "", city = "Madurai", address = "", zone = "" }) {
+  const showNorth = !zone || zone.toLowerCase().includes("north");
+  const showWest = !zone || zone.toLowerCase().includes("west");
+  const showEast = !zone || zone.toLowerCase().includes("east");
+  const showSouth = !zone || zone.toLowerCase().includes("south");
+
   return (
     <div className={`bg-border/20 relative overflow-hidden flex items-center justify-center group cursor-grab active:cursor-grabbing ${className}`}>
       {/* Map Background Pattern */}
@@ -18,28 +23,36 @@ export default function MockMap({ className = "", city = "Madurai", address = ""
       </div>
 
       {/* North Zone */}
-      <div className="absolute top-[10%] left-[30%] right-[20%] bottom-[50%] bg-info/20 border-2 border-info rounded-[30px] rounded-br-[100px] flex items-center justify-center transition-transform hover:scale-[1.02]">
-        <span className="bg-info text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg whitespace-nowrap">North Zone</span>
-        <MapPin size={24} className="text-info absolute top-[20%] right-[30%] drop-shadow-md" fill="white" />
-      </div>
+      {showNorth && (
+        <div className="absolute top-[10%] left-[30%] right-[20%] bottom-[50%] bg-info/20 border-2 border-info rounded-[30px] rounded-br-[100px] flex items-center justify-center transition-transform hover:scale-[1.02]">
+          <span className="bg-info text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg whitespace-nowrap">North Zone</span>
+          <MapPin size={24} className="text-info absolute top-[20%] right-[30%] drop-shadow-md" fill="white" />
+        </div>
+      )}
 
       {/* West Zone */}
-      <div className="absolute top-[40%] left-[10%] right-[55%] bottom-[20%] bg-warning/20 border-2 border-warning rounded-[40px] rounded-tl-[80px] flex items-center justify-center transition-transform hover:scale-[1.02]">
-        <span className="bg-warning text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg whitespace-nowrap">West Zone</span>
-        <MapPin size={24} className="text-warning absolute top-[30%] left-[20%] drop-shadow-md" fill="white" />
-      </div>
+      {showWest && (
+        <div className="absolute top-[40%] left-[10%] right-[55%] bottom-[20%] bg-warning/20 border-2 border-warning rounded-[40px] rounded-tl-[80px] flex items-center justify-center transition-transform hover:scale-[1.02]">
+          <span className="bg-warning text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg whitespace-nowrap">West Zone</span>
+          <MapPin size={24} className="text-warning absolute top-[30%] left-[20%] drop-shadow-md" fill="white" />
+        </div>
+      )}
 
       {/* East Zone */}
-      <div className="absolute top-[45%] left-[55%] right-[10%] bottom-[25%] bg-success/20 border-2 border-success rounded-[30px] rounded-tr-[90px] flex items-center justify-center transition-transform hover:scale-[1.02]">
-        <span className="bg-success text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg whitespace-nowrap">East Zone</span>
-        <MapPin size={24} className="text-success absolute bottom-[30%] right-[20%] drop-shadow-md" fill="white" />
-      </div>
+      {showEast && (
+        <div className="absolute top-[45%] left-[55%] right-[10%] bottom-[25%] bg-success/20 border-2 border-success rounded-[30px] rounded-tr-[90px] flex items-center justify-center transition-transform hover:scale-[1.02]">
+          <span className="bg-success text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg whitespace-nowrap">East Zone</span>
+          <MapPin size={24} className="text-success absolute bottom-[30%] right-[20%] drop-shadow-md" fill="white" />
+        </div>
+      )}
 
       {/* South Zone */}
-      <div className="absolute top-[70%] left-[25%] right-[30%] bottom-[5%] bg-danger/20 border-2 border-danger rounded-[20px] rounded-bl-[60px] flex items-center justify-center transition-transform hover:scale-[1.02]">
-        <span className="bg-danger text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg whitespace-nowrap">South Zone</span>
-        <MapPin size={24} className="text-danger absolute top-[10%] left-[30%] drop-shadow-md" fill="white" />
-      </div>
+      {showSouth && (
+        <div className="absolute top-[70%] left-[25%] right-[30%] bottom-[5%] bg-danger/20 border-2 border-danger rounded-[20px] rounded-bl-[60px] flex items-center justify-center transition-transform hover:scale-[1.02]">
+          <span className="bg-danger text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg whitespace-nowrap">South Zone</span>
+          <MapPin size={24} className="text-danger absolute top-[10%] left-[30%] drop-shadow-md" fill="white" />
+        </div>
+      )}
 
       {/* Map Controls */}
       <div className="absolute right-4 bottom-4 flex flex-col gap-1 z-10 bg-surface shadow-md rounded-lg overflow-hidden border border-border">

@@ -36,6 +36,7 @@ import OffersDetails from "./pages/OffersDetails";
 
 import Locations from "./pages/Locations";
 import LocationsAdd from "./pages/LocationsAdd";
+import LocationsDetails from "./pages/LocationsDetails";
 
 import Earnings from "./pages/Earnings";
 
@@ -156,6 +157,8 @@ function App() {
               <Route path="/locations" element={<Outlet />}>
                 <Route index element={<Locations />} />
                 <Route path="add" element={<LocationsAdd />} />
+                <Route path="edit/:id" element={<LocationsAdd />} />
+                <Route path=":id" element={<LocationsDetails />} />
               </Route>
 
               {/* Earnings */}

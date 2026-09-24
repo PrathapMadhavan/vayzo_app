@@ -15,6 +15,14 @@
       "destination": "/api?p=/api/deliveryPartners"
     },
     {
+      "source": "/api/restaurant_products",
+      "destination": "/api?p=/api/restaurant_products"
+    },
+    {
+      "source": "/api/restaurant_products/:path*",
+      "destination": "/api?p=/api/restaurant_products/:path*"
+    },
+    {
       "source": "/settings/:path*",
       "destination": "/api?p=/settings/:path*"
     },
@@ -23,12 +31,24 @@
       "destination": "/api?p=/deliveryPartners"
     },
     {
+      "source": "/restaurant_products",
+      "destination": "/api?p=/api/restaurant_products"
+    },
+    {
+      "source": "/restaurant_products/:path*",
+      "destination": "/api?p=/api/restaurant_products/:path*"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
   "functions": {
     "api/index.js": {
+      "includeFiles": "db.json",
+      "maxDuration": 30
+    },
+    "api/[...path].js": {
       "includeFiles": "db.json",
       "maxDuration": 30
     },

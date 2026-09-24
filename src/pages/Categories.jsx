@@ -4,8 +4,9 @@ import {
   Eye, Pencil, Plus, RotateCcw, 
   Trash2, LayoutGrid, CheckCircle, AlertCircle, 
   Filter, ShoppingBag, Utensils, Pill, Store,
-  Carrot, Baby, Coffee, Download
+  Carrot, Baby, Coffee, Download, Bike, Car
 } from "lucide-react";
+
 
 import Button from "../components/ui/Button";
 import SearchInput from "../components/ui/SearchInput";
@@ -81,8 +82,7 @@ export default function Categories() {
       setLoading(true);
       setError("");
       const data = await getCategories();
-      // Only keep top-level categories (parentId is empty or null)
-      setCategories(data.filter(c => !c.parentId));
+      setCategories(data);
     } catch (err) {
       setError("Unable to load categories.");
     } finally {
@@ -214,8 +214,30 @@ export default function Categories() {
         />
       </div>
 
-      <Card noPadding className="flex flex-col mb-2">
-        <FilterPanel
+      {/* Tabs Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="flex items-center justify-center gap-2 bg-primary text-white rounded-xl py-3 px-4 font-semibold shadow-sm cursor-pointer transition-transform hover:scale-[1.02]">
+          <Utensils size={20} />
+          <span>Food Delivery</span>
+        </div>
+        <div className="flex items-center justify-center gap-2 bg-surface text-foreground border border-border rounded-xl py-3 px-4 font-semibold shadow-sm cursor-pointer hover:bg-background transition-transform hover:scale-[1.02]">
+          <ShoppingBag size={20} />
+          <span>Buy & Get It</span>
+        </div>
+        <div className="flex items-center justify-center gap-2 bg-surface text-foreground border border-border rounded-xl py-3 px-4 font-semibold shadow-sm cursor-pointer hover:bg-background transition-transform hover:scale-[1.02]">
+          <Bike size={20} />
+          <span>Bike Ride</span>
+        </div>
+        <div className="flex items-center justify-center gap-2 bg-surface text-foreground border border-border rounded-xl py-3 px-4 font-semibold shadow-sm cursor-pointer hover:bg-background transition-transform hover:scale-[1.02]">
+          <Car size={20} />
+          <span>Car Booking</span>
+        </div>
+      </div>
+
+      {/* Main Categories Box */}
+      <Card noPadding className="flex flex-col mt-2">
+
+          <FilterPanel
           search={
             <SearchInput
               id="category-search"
@@ -261,23 +283,23 @@ export default function Categories() {
         />
       </Card>
 
-      {/* 4. Categories table */}
+      {/* Categories table */}
       <div className="flex flex-col gap-6 mt-2">
-        {error ? (
-          <div className="p-8 text-center text-sm font-medium text-danger">
-            {error}
-          </div>
-        ) : (
-          <Table
-            headers={categoryTableHeaders}
-            currentCount={paginatedCategories.length}
-            totalCount={filteredCategories.length}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-            minWidth="1000px"
-            className="border-0 shadow-none rounded-none bg-transparent"
-          >
+          {error ? (
+            <div className="p-8 text-center text-sm font-medium text-danger">
+              {error}
+            </div>
+          ) : (
+            <Table
+              headers={categoryTableHeaders}
+              currentCount={paginatedCategories.length}
+              totalCount={filteredCategories.length}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              minWidth="1000px"
+              className="border-0 shadow-none rounded-none bg-transparent"
+            >
             {loading ? (
               <tr>
                 <td
@@ -312,7 +334,7 @@ export default function Categories() {
                   </td>
 
                   <td className="px-5 py-4 text-sm font-medium text-muted">
-                    {category.parentId || "-"}
+                    {category.parentId ? (categories.find(c => c.id === category.parentId)?.name || category.parentId) : "-"}
                   </td>
 
                   <td className="px-5 py-4 text-sm text-muted max-w-[200px] truncate">
