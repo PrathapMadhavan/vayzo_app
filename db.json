@@ -21,46 +21,6 @@
       "role": "Delivery Partner",
       "status": "Active",
       "profileImage": "/uploads/01M2JMAKZ2V5FQQ7F9B1KBM7FX.jpeg"
-    },
-    {
-      "id": "01M3901H8PD4R2XHW9RPCTT8JQ",
-      "name": "Dup2",
-      "email": "dup2@vayzo.com",
-      "mobileNumber": "7777777777",
-      "role": "Delivery Partner",
-      "status": "Active",
-      "profileImage": null,
-      "created_at": "2026-09-24T06:01:00.950Z"
-    },
-    {
-      "id": "01M3906Q9Q2EP53137PJPA7BNM",
-      "name": "JSON Test",
-      "email": "json@vayzo.com",
-      "mobileNumber": "4444444444",
-      "role": "Delivery Partner",
-      "status": "Active",
-      "profileImage": null,
-      "created_at": "2026-09-24T06:03:50.967Z"
-    },
-    {
-      "id": "01M3906QAAQQ6NSMKPM7PRAQ7P",
-      "name": "Dup",
-      "email": "image@vayzo.com",
-      "mobileNumber": "3333333333",
-      "role": "Delivery Partner",
-      "status": "Active",
-      "profileImage": null,
-      "created_at": "2026-09-24T06:03:50.986Z"
-    },
-    {
-      "id": "01M3906XZWP10WHAG82B92F4DT",
-      "name": "Image Partner",
-      "email": "image1790229837632@vayzo.com",
-      "mobileNumber": "7729837633",
-      "role": "Delivery Partner",
-      "status": "Active",
-      "profileImage": "/uploads/01M3906Y0M3F2DT8S1X0AJTB4A.png",
-      "created_at": "2026-09-24T06:03:57.820Z"
     }
   ],
   "orders": [
@@ -1858,23 +1818,6 @@
     {
       "id": "01M3901H8554GT4RQWVBHVJ2MQ",
       "partner_id": "01M3901H85NX11X602755X7SP3"
-    },
-    {
-      "id": "01M3901H8PGSHSM41P4S7RMADG",
-      "partner_id": "01M3901H8PD4R2XHW9RPCTT8JQ"
-    },
-    {
-      "id": "01M3906Q9QB0QAQTJS4B7NEP1Y",
-      "partner_id": "01M3906Q9Q2EP53137PJPA7BNM",
-      "vehicleName": "Honda"
-    },
-    {
-      "id": "01M3906QAA05CCVN60GZBST81B",
-      "partner_id": "01M3906QAAQQ6NSMKPM7PRAQ7P"
-    },
-    {
-      "id": "01M3906XZWK6KSRC25HW24MPHW",
-      "partner_id": "01M3906XZWP10WHAG82B92F4DT"
     }
   ],
   "partner_bank_accounts": [
@@ -1897,22 +1840,6 @@
     {
       "id": "01M3901H85NEK18RZ7BR6F5JZV",
       "partner_id": "01M3901H85NX11X602755X7SP3"
-    },
-    {
-      "id": "01M3901H8PS83ZS9E4RBHEZ879",
-      "partner_id": "01M3901H8PD4R2XHW9RPCTT8JQ"
-    },
-    {
-      "id": "01M3906Q9Q2YQXNM9J3N5NRQSM",
-      "partner_id": "01M3906Q9Q2EP53137PJPA7BNM"
-    },
-    {
-      "id": "01M3906QAA7V5JS95S096QBJG4",
-      "partner_id": "01M3906QAAQQ6NSMKPM7PRAQ7P"
-    },
-    {
-      "id": "01M3906XZW55M5CTCBSFVFAEXR",
-      "partner_id": "01M3906XZWP10WHAG82B92F4DT"
     }
   ],
   "restaurant_categories": [
@@ -2499,34 +2426,6 @@
       "id": "01M3901H85MRBAQ7NRP12QGPKY",
       "user_id": "01M3901H85NX11X602755X7SP3",
       "partner_code": "DP-660933",
-      "online_status": "Online",
-      "verification_status": "Pending"
-    },
-    {
-      "id": "01M3901H8PSB9E3R2CS6WHRJ22",
-      "user_id": "01M3901H8PD4R2XHW9RPCTT8JQ",
-      "partner_code": "DP-660950",
-      "online_status": "Online",
-      "verification_status": "Pending"
-    },
-    {
-      "id": "01M3906Q9QTWNZ00RJY6ZX7ZJ3",
-      "user_id": "01M3906Q9Q2EP53137PJPA7BNM",
-      "partner_code": "DP-830967",
-      "online_status": "Online",
-      "verification_status": "Pending"
-    },
-    {
-      "id": "01M3906QAAPSWYZZ8TC12NC9EW",
-      "user_id": "01M3906QAAQQ6NSMKPM7PRAQ7P",
-      "partner_code": "DP-830986",
-      "online_status": "Online",
-      "verification_status": "Pending"
-    },
-    {
-      "id": "01M3906XZWB55745AT9XZ7AY2C",
-      "user_id": "01M3906XZWP10WHAG82B92F4DT",
-      "partner_code": "DP-837820",
       "online_status": "Online",
       "verification_status": "Pending"
     }
