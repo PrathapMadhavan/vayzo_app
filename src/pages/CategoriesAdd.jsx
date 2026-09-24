@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Search, Check, ChevronDown } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
@@ -52,6 +52,20 @@ function CategoriesAdd() {
   const [childCategories, setChildCategories] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const fileInputRef = useRef(null);
+
+  const [isParentDropdownOpen, setIsParentDropdownOpen] = useState(false);
+  const [parentDropdownSearchText, setParentDropdownSearchText] = useState("");
+  const parentDropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (parentDropdownRef.current && !parentDropdownRef.current.contains(event.target)) {
+        setIsParentDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -267,16 +281,82 @@ function CategoriesAdd() {
               <div className="grid gap-6 sm:grid-cols-2">
                 <div className="w-full flex flex-col gap-1.5">
                   <label className="text-sm font-medium text-foreground">Parent Category</label>
-                  <select
-                    value={form.parentId || ""}
-                    onChange={update("parentId")}
-                    className="w-full h-11 px-3 bg-surface border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
-                  >
-                    <option value="">None (Top-Level)</option>
-                    {parents.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
+                  <div className="relative" ref={parentDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsParentDropdownOpen(!isParentDropdownOpen)}
+                      className="w-full flex items-center justify-between bg-surface border border-border rounded-xl px-3 h-11 text-sm text-foreground hover:border-primary/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    >
+                      <span className={form.parentId ? "text-foreground truncate" : "text-muted truncate"}>
+                        {form.parentId 
+                          ? parents.find(p => p.id === form.parentId)?.name || "None (Top-Level)"
+                          : "None (Top-Level)"}
+                      </span>
+                      <ChevronDown size={16} className={`text-muted transition-transform duration-200 ${isParentDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+
+                    {isParentDropdownOpen && (
+                      <div className="absolute z-[100] top-full mt-2 w-full bg-surface border border-border rounded-xl shadow-lg overflow-hidden flex flex-col max-h-72">
+                        <div className="p-2 border-b border-border/50 shrink-0">
+                          <div className="relative">
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" size={14} />
+                            <input
+                              type="text"
+                              placeholder="Search categories..."
+                              value={parentDropdownSearchText}
+                              onChange={(e) => setParentDropdownSearchText(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Escape") setIsParentDropdownOpen(false);
+                              }}
+                              className="w-full pl-8 pr-3 py-2 text-sm bg-surface-hover border border-transparent focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors placeholder:text-muted/50"
+                              autoFocus
+                            />
+                          </div>
+                        </div>
+                        <div className="overflow-y-auto scrollbar-thin p-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              update("parentId")({ target: { value: "" } });
+                              setIsParentDropdownOpen(false);
+                              setParentDropdownSearchText("");
+                            }}
+                            className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition-colors ${!form.parentId ? "bg-primary/10 text-primary font-medium" : "hover:bg-surface-hover text-foreground"}`}
+                          >
+                            <span className="text-sm">None (Top-Level)</span>
+                            {!form.parentId && <Check size={16} />}
+                          </button>
+                          
+                          {parents
+                            .filter(p => p.name.toLowerCase().includes(parentDropdownSearchText.toLowerCase()))
+                            .map(p => {
+                              const isSelected = form.parentId === p.id;
+                              return (
+                                <button
+                                  key={p.id}
+                                  type="button"
+                                  onClick={() => {
+                                    update("parentId")({ target: { value: p.id } });
+                                    setIsParentDropdownOpen(false);
+                                    setParentDropdownSearchText("");
+                                  }}
+                                  className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition-colors ${isSelected ? "bg-primary/10 text-primary font-medium" : "hover:bg-surface-hover text-foreground"}`}
+                                >
+                                  <span className="text-sm truncate">{p.name}</span>
+                                  {isSelected && <Check size={16} className="shrink-0" />}
+                                </button>
+                              );
+                            })}
+                            
+                          {parents.filter(p => p.name.toLowerCase().includes(parentDropdownSearchText.toLowerCase())).length === 0 && (
+                            <div className="p-4 text-center text-sm text-muted">
+                              No categories found
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <StatusSelect

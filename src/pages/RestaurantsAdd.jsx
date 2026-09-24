@@ -23,6 +23,7 @@ import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import Card from "../components/ui/Card";
 import Modal from "../components/ui/Modal";
+import Badge from "../components/ui/Badge";
 import {
   createRestaurant,
   getRestaurantById,
@@ -101,12 +102,19 @@ function RestaurantsAdd() {
   const [categorySearchText, setCategorySearchText] = useState("");
   const categoryDropdownRef = useRef(null);
 
+  const [isMenuDropdownOpen, setIsMenuDropdownOpen] = useState(false);
+  const [menuDropdownSearchText, setMenuDropdownSearchText] = useState("");
+  const menuDropdownRef = useRef(null);
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       setOpenDropdownId(null);
       if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target)) {
         setIsCategoryDropdownOpen(false);
+      }
+      if (menuDropdownRef.current && !menuDropdownRef.current.contains(e.target)) {
+        setIsMenuDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -772,9 +780,9 @@ function RestaurantsAdd() {
                       </div>
                       
                       <div className="flex flex-col items-center gap-1.5 px-4 shrink-0">
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${item.status !== false ? 'text-success bg-success/10' : 'text-muted bg-surface-hover'}`}>
-                          {item.status !== false ? 'Active' : 'Inactive'}
-                        </span>
+                        <Badge variant={item.status !== false && item.status !== "Inactive" && item.status !== "inactive" ? "success" : "danger"} className="text-[10px] px-2 py-0.5">
+                          {item.status !== false && item.status !== "Inactive" && item.status !== "inactive" ? 'Active' : 'Inactive'}
+                        </Badge>
                         <CustomToggle 
                           checked={item.status !== false} 
                           onChange={(val) => {
@@ -977,38 +985,101 @@ function RestaurantsAdd() {
 
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">Menu Items</label>
-              <div className="relative flex items-center w-full rounded-lg border border-border bg-surface transition-colors focus-within:border-primary overflow-hidden">
-                <select
-                  value={editingMenuItem.menuItemId || ""}
-                  onChange={(e) => {
-                    const selectedMasterItem = categoryMenuItems.find(i => i.id === e.target.value);
-                    setEditingMenuItem(prev => ({ 
-                      ...prev, 
-                      menuItemId: e.target.value,
-                      ...(selectedMasterItem && {
-                        name: selectedMasterItem.name || prev.name,
-                        price: selectedMasterItem.price || prev.price,
-                        foodType: selectedMasterItem.foodType || prev.foodType,
-                        image: selectedMasterItem.image || prev.image,
-                        images: selectedMasterItem.image ? [selectedMasterItem.image, ...(prev.images || []).slice(1)] : prev.images
-                      })
-                    }));
+              <div className="relative" ref={menuDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (editingMenuItem.categoryId || editingMenuItem.category) {
+                      setIsMenuDropdownOpen(!isMenuDropdownOpen);
+                    }
                   }}
-                  className={`w-full bg-transparent py-2.5 pl-3.5 pr-10 text-sm outline-none appearance-none cursor-pointer ${(!editingMenuItem.categoryId && !editingMenuItem.category) ? "text-muted/50" : "text-foreground"}`}
+                  className={`w-full flex items-center justify-between bg-surface-hover text-sm outline-none border border-border rounded-lg px-3 h-10 hover:border-primary/50 transition-colors ${(!editingMenuItem.categoryId && !editingMenuItem.category) ? "text-muted/50 cursor-not-allowed opacity-70" : "text-foreground"}`}
                   disabled={!editingMenuItem.categoryId && !editingMenuItem.category}
                 >
-                  <option className="bg-surface text-foreground" value="" disabled>Select Menu Item</option>
-                  {(editingMenuItem.categoryId || editingMenuItem.category) && categoryMenuItems.length === 0 ? (
-                    <option className="bg-surface text-foreground" value="" disabled>No menu items available for this category</option>
-                  ) : (
-                    categoryMenuItems.map(item => (
-                      <option className="bg-surface text-foreground" key={item.id} value={item.id}>{item.name}</option>
-                    ))
-                  )}
-                </select>
-                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
+                  <span className={editingMenuItem.menuItemId ? "text-foreground truncate" : "text-muted/70 truncate"}>
+                    {editingMenuItem.menuItemId && categoryMenuItems.find(i => i.id === editingMenuItem.menuItemId)
+                      ? categoryMenuItems.find(i => i.id === editingMenuItem.menuItemId).name 
+                      : "Select Menu Item"}
+                  </span>
+                  <ChevronDown size={16} className={`text-muted transition-transform duration-200 ${isMenuDropdownOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {isMenuDropdownOpen && (
+                  <div className="absolute z-[100] top-full mt-2 w-full min-w-[240px] bg-surface border border-border rounded-xl shadow-lg overflow-hidden flex flex-col">
+                    <div className="p-2 border-b border-border/50 shrink-0">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" size={14} />
+                        <input
+                          type="text"
+                          placeholder="Search menu items..."
+                          value={menuDropdownSearchText}
+                          onChange={(e) => setMenuDropdownSearchText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Escape") setIsMenuDropdownOpen(false);
+                          }}
+                          className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border border-transparent focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors placeholder:text-muted/50"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div className="max-h-60 overflow-y-auto scrollbar-thin p-1">
+                      {categoryMenuItems.length === 0 ? (
+                        <div className="p-4 text-center text-sm text-muted">
+                          No menu items available for this category
+                        </div>
+                      ) : (
+                        <>
+                          {categoryMenuItems
+                            .filter(i => i.name.toLowerCase().includes(menuDropdownSearchText.toLowerCase()))
+                            .map(item => {
+                              const isSelected = editingMenuItem.menuItemId === item.id;
+                              return (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingMenuItem(prev => ({ 
+                                      ...prev, 
+                                      menuItemId: item.id,
+                                      name: item.name || prev.name,
+                                      price: item.price || prev.price,
+                                      foodType: item.foodType || prev.foodType,
+                                      image: item.image || prev.image,
+                                      images: item.image ? [item.image, ...(prev.images || []).slice(1)] : prev.images
+                                    }));
+                                    setIsMenuDropdownOpen(false);
+                                    setMenuDropdownSearchText("");
+                                  }}
+                                  className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${isSelected ? "bg-primary/10" : "hover:bg-surface-hover"}`}
+                                >
+                                  <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center ${isSelected ? "bg-primary text-white" : "bg-primary/10 text-primary"}`}>
+                                    {item.image ? (
+                                      <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                                    ) : (
+                                      <Utensils size={16} />
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className={`text-sm truncate ${isSelected ? "font-medium text-primary" : "text-foreground"}`}>
+                                      {item.name}
+                                    </div>
+                                  </div>
+                                  {isSelected && (
+                                    <Check size={16} className="text-primary shrink-0" />
+                                  )}
+                                </button>
+                              );
+                          })}
+                          {categoryMenuItems.filter(i => i.name.toLowerCase().includes(menuDropdownSearchText.toLowerCase())).length === 0 && (
+                            <div className="p-4 text-center text-sm text-muted">
+                              No matching menu items found
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

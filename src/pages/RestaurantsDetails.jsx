@@ -57,10 +57,17 @@ function RestaurantsDetails() {
   const [categorySearchText, setCategorySearchText] = useState("");
   const categoryDropdownRef = useRef(null);
 
+  const [isMenuDropdownOpen, setIsMenuDropdownOpen] = useState(false);
+  const [menuDropdownSearchText, setMenuDropdownSearchText] = useState("");
+  const menuDropdownRef = useRef(null);
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target)) {
         setIsCategoryDropdownOpen(false);
+      }
+      if (menuDropdownRef.current && !menuDropdownRef.current.contains(e.target)) {
+        setIsMenuDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -346,7 +353,6 @@ function RestaurantsDetails() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-foreground">Menu Items ({(restaurant.menuItems || []).length})</h2>
-                <p className="text-sm text-muted mt-1">Manage your restaurant's menu items. Add, edit or remove items as needed.</p>
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                 <div className="relative w-full sm:w-64">
@@ -365,34 +371,7 @@ function RestaurantsDetails() {
               </div>
             </div>
 
-            {/* Category Pills Filter */}
-            {categories.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none pt-2">
-                <button
-                  onClick={() => setSelectedCategory("All Categories")}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
-                    selectedCategory === "All Categories"
-                      ? "bg-primary text-white shadow-sm"
-                      : "bg-surface border border-border text-foreground hover:border-primary/50"
-                  }`}
-                >
-                  All Categories
-                </button>
-                {categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategory(cat.id)}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
-                      selectedCategory === cat.id
-                        ? "bg-primary text-white shadow-sm"
-                        : "bg-surface border border-border text-foreground hover:border-primary/50"
-                    }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-              </div>
-            )}
+
 
             {(restaurant.menuItems || []).length === 0 ? (
               <div className="text-center py-16 px-4 bg-surface rounded-xl border border-border border-dashed">
@@ -459,8 +438,8 @@ function RestaurantsDetails() {
                       </div>
                       
                       <div className="mt-2.5 flex items-center">
-                         <Badge variant={item.status ? "success" : "secondary"} className="text-[10px] px-2 py-0.5">
-                           {item.status ? "Active" : "Inactive"}
+                         <Badge variant={item.status !== false && item.status !== "Inactive" && item.status !== "inactive" ? "success" : "danger"} className="text-[10px] px-2 py-0.5">
+                           {item.status !== false && item.status !== "Inactive" && item.status !== "inactive" ? "Active" : "Inactive"}
                          </Badge>
                       </div>
                     </div>
@@ -639,34 +618,102 @@ function RestaurantsDetails() {
 
             <div>
               <label className="text-xs font-medium text-muted mb-1 block">Menu Items</label>
-              <select
-                className={`w-full bg-surface-hover text-sm outline-none border border-border rounded-lg px-3 h-10 ${(!editingMenuItem.categoryId && !editingMenuItem.category) ? "text-muted/50 cursor-not-allowed" : "text-foreground"}`}
-                value={editingMenuItem.menuItemId || ""}
-                onChange={(e) => {
-                  const selectedMasterItem = categoryMenuItems.find(i => i.id === e.target.value);
-                  setEditingMenuItem(prev => ({ 
-                    ...prev, 
-                    menuItemId: e.target.value,
-                    ...(selectedMasterItem && {
-                      name: selectedMasterItem.name || prev.name,
-                      price: selectedMasterItem.price || prev.price,
-                      foodType: selectedMasterItem.foodType || prev.foodType,
-                      image: selectedMasterItem.image || prev.image,
-                      images: selectedMasterItem.image ? [selectedMasterItem.image, ...(prev.images || []).slice(1)] : prev.images
-                    })
-                  }));
-                }}
-                disabled={!editingMenuItem.categoryId && !editingMenuItem.category}
-              >
-                <option value="" disabled>Select Menu Item</option>
-                {(editingMenuItem.categoryId || editingMenuItem.category) && categoryMenuItems.length === 0 ? (
-                  <option value="" disabled>No menu items available for this category</option>
-                ) : (
-                  categoryMenuItems.map(item => (
-                    <option key={item.id} value={item.id}>{item.name}</option>
-                  ))
+              <div className="relative" ref={menuDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (editingMenuItem.categoryId || editingMenuItem.category) {
+                      setIsMenuDropdownOpen(!isMenuDropdownOpen);
+                    }
+                  }}
+                  className={`w-full flex items-center justify-between bg-surface-hover text-sm outline-none border border-border rounded-lg px-3 h-10 hover:border-primary/50 transition-colors ${(!editingMenuItem.categoryId && !editingMenuItem.category) ? "text-muted/50 cursor-not-allowed opacity-70" : "text-foreground"}`}
+                  disabled={!editingMenuItem.categoryId && !editingMenuItem.category}
+                >
+                  <span className={editingMenuItem.menuItemId ? "text-foreground truncate" : "text-muted/70 truncate"}>
+                    {editingMenuItem.menuItemId && categoryMenuItems.find(i => i.id === editingMenuItem.menuItemId)
+                      ? categoryMenuItems.find(i => i.id === editingMenuItem.menuItemId).name 
+                      : "Select Menu Item"}
+                  </span>
+                  <ChevronDown size={16} className={`text-muted transition-transform duration-200 ${isMenuDropdownOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {isMenuDropdownOpen && (
+                  <div className="absolute z-[100] top-full mt-2 w-full min-w-[240px] bg-surface border border-border rounded-xl shadow-lg overflow-hidden flex flex-col">
+                    <div className="p-2 border-b border-border/50 shrink-0">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" size={14} />
+                        <input
+                          type="text"
+                          placeholder="Search menu items..."
+                          value={menuDropdownSearchText}
+                          onChange={(e) => setMenuDropdownSearchText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Escape") setIsMenuDropdownOpen(false);
+                          }}
+                          className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border border-transparent focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors placeholder:text-muted/50"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div className="max-h-60 overflow-y-auto scrollbar-thin p-1">
+                      {categoryMenuItems.length === 0 ? (
+                        <div className="p-4 text-center text-sm text-muted">
+                          No menu items available for this category
+                        </div>
+                      ) : (
+                        <>
+                          {categoryMenuItems
+                            .filter(i => i.name.toLowerCase().includes(menuDropdownSearchText.toLowerCase()))
+                            .map(item => {
+                              const isSelected = editingMenuItem.menuItemId === item.id;
+                              return (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingMenuItem(prev => ({ 
+                                      ...prev, 
+                                      menuItemId: item.id,
+                                      name: item.name || prev.name,
+                                      price: item.price || prev.price,
+                                      foodType: item.foodType || prev.foodType,
+                                      image: item.image || prev.image,
+                                      images: item.image ? [item.image, ...(prev.images || []).slice(1)] : prev.images
+                                    }));
+                                    setIsMenuDropdownOpen(false);
+                                    setMenuDropdownSearchText("");
+                                  }}
+                                  className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${isSelected ? "bg-primary/10" : "hover:bg-surface-hover"}`}
+                                >
+                                  <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center ${isSelected ? "bg-primary text-white" : "bg-primary/10 text-primary"}`}>
+                                    {item.image ? (
+                                      <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                                    ) : (
+                                      <Utensils size={16} />
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className={`text-sm truncate ${isSelected ? "font-medium text-primary" : "text-foreground"}`}>
+                                      {item.name}
+                                    </div>
+                                  </div>
+                                  {isSelected && (
+                                    <Check size={16} className="text-primary shrink-0" />
+                                  )}
+                                </button>
+                              );
+                          })}
+                          {categoryMenuItems.filter(i => i.name.toLowerCase().includes(menuDropdownSearchText.toLowerCase())).length === 0 && (
+                            <div className="p-4 text-center text-sm text-muted">
+                              No matching menu items found
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
                 )}
-              </select>
+              </div>
             </div>
 
             <div>
