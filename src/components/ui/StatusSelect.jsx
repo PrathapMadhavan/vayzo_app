@@ -1,6 +1,7 @@
 import Select from "./Select";
 
 function StatusSelect({
+  name,
   value,
   onChange,
   label,
@@ -11,6 +12,7 @@ function StatusSelect({
   return (
     <Select
       id={id}
+      name={name}
       value={value}
       onChange={onChange}
       label={label}

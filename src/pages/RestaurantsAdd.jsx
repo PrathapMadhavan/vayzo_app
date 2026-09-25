@@ -11,7 +11,10 @@ import {
   GripVertical,
   Store,
   Utensils,
-  MoreVertical
+  MoreVertical,
+  Search,
+  Check,
+  ChevronDown
 } from "lucide-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 
@@ -20,6 +23,7 @@ import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import Card from "../components/ui/Card";
 import Modal from "../components/ui/Modal";
+import Badge from "../components/ui/Badge";
 import {
   createRestaurant,
   getRestaurantById,
@@ -27,6 +31,7 @@ import {
 } from "../api/restaurantsApi";
 import { validateImage } from "../utils/fileUtils";
 import { getCategories } from "../api/categoriesApi";
+import { getProductsByCategory } from "../api/productsApi";
 
 function RequiredLabel({ text }) {
   return (
@@ -91,12 +96,29 @@ function RestaurantsAdd() {
   const [editingMenuItem, setEditingMenuItem] = useState(null);
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [categoryMenuItems, setCategoryMenuItems] = useState([]);
+  
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [categorySearchText, setCategorySearchText] = useState("");
+  const categoryDropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
+  const [isMenuDropdownOpen, setIsMenuDropdownOpen] = useState(false);
+  const [menuDropdownSearchText, setMenuDropdownSearchText] = useState("");
+  const menuDropdownRef = useRef(null);
+
+  // Close dropdowns when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => setOpenDropdownId(null);
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
+    const handleClickOutside = (e) => {
+      setOpenDropdownId(null);
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target)) {
+        setIsCategoryDropdownOpen(false);
+      }
+      if (menuDropdownRef.current && !menuDropdownRef.current.contains(e.target)) {
+        setIsMenuDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -114,6 +136,23 @@ function RestaurantsAdd() {
     };
     fetchAllCategories();
   }, []);
+
+  useEffect(() => {
+    const fetchCategoryMenuItems = async () => {
+      const selectedCatId = editingMenuItem?.categoryId || (editingMenuItem?.category ? categories.find(c => c.name === editingMenuItem.category)?.id : null);
+      if (!selectedCatId) {
+        setCategoryMenuItems([]);
+        return;
+      }
+      try {
+        const items = await getProductsByCategory(selectedCatId);
+        setCategoryMenuItems(items || []);
+      } catch (err) {
+        console.error("Failed to load category menu items", err);
+      }
+    };
+    fetchCategoryMenuItems();
+  }, [editingMenuItem?.categoryId, editingMenuItem?.category, categories]);
 
   useEffect(() => {
     if (!isEditing) return;
@@ -741,9 +780,9 @@ function RestaurantsAdd() {
                       </div>
                       
                       <div className="flex flex-col items-center gap-1.5 px-4 shrink-0">
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${item.status !== false ? 'text-success bg-success/10' : 'text-muted bg-surface-hover'}`}>
-                          {item.status !== false ? 'Active' : 'Inactive'}
-                        </span>
+                        <Badge variant={item.status !== false && item.status !== "Inactive" && item.status !== "inactive" ? "success" : "danger"} className="text-[10px] px-2 py-0.5">
+                          {item.status !== false && item.status !== "Inactive" && item.status !== "inactive" ? 'Active' : 'Inactive'}
+                        </Badge>
                         <CustomToggle 
                           checked={item.status !== false} 
                           onChange={(val) => {
@@ -829,7 +868,7 @@ function RestaurantsAdd() {
         title={editingMenuItem?.isNew ? "Add Menu Item" : "Edit Menu Item"}
       >
         {editingMenuItem && (
-          <div className="space-y-5">
+          <div className="space-y-4">
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">Item Name</label>
               <Input
@@ -839,8 +878,101 @@ function RestaurantsAdd() {
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div>
+            <div className="flex gap-4">
+              <div className="flex-1" ref={categoryDropdownRef}>
+                <label className="text-sm font-medium text-foreground mb-1.5 block">Category</label>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                    className="w-full flex items-center justify-between bg-surface-hover text-sm text-foreground outline-none border border-border rounded-lg px-3 h-10 hover:border-primary/50 transition-colors"
+                    disabled={categoriesLoading || categoriesError}
+                  >
+                    <span className={editingMenuItem.category ? "text-foreground" : "text-muted/70"}>
+                      {categoriesLoading ? "Loading..." : categoriesError ? "Error loading" : (editingMenuItem.category || "Select Category")}
+                    </span>
+                    <ChevronDown size={16} className={`text-muted transition-transform duration-200 ${isCategoryDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {isCategoryDropdownOpen && (
+                    <div className="absolute z-[100] top-full mt-2 w-full min-w-[240px] bg-surface border border-border rounded-xl shadow-lg overflow-hidden flex flex-col">
+                      <div className="p-2 border-b border-border/50 shrink-0">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" size={14} />
+                          <input
+                            type="text"
+                            placeholder="Search category..."
+                            value={categorySearchText}
+                            onChange={(e) => setCategorySearchText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Escape") setIsCategoryDropdownOpen(false);
+                            }}
+                            className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border border-transparent focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors placeholder:text-muted/50"
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+                      <div className="max-h-60 overflow-y-auto scrollbar-thin p-1">
+                        {categories
+                          .filter(c => (c.status === "Active" || c.status === "active") && c.name.toLowerCase().includes(categorySearchText.toLowerCase()))
+                          .map(cat => {
+                            const isSelected = editingMenuItem.categoryId === cat.id || editingMenuItem.category === cat.name;
+                            return (
+                              <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => {
+                                  setEditingMenuItem(prev => ({ 
+                                    ...prev, 
+                                    category: cat.name,
+                                    categoryId: cat.id,
+                                    menuItemId: "" // Reset menu item when category changes
+                                  }));
+                                  setIsCategoryDropdownOpen(false);
+                                  setCategorySearchText("");
+                                }}
+                                className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${isSelected ? "bg-primary/10" : "hover:bg-surface-hover"}`}
+                              >
+                                <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center ${isSelected ? "bg-primary text-white" : "bg-primary/10 text-primary"}`}>
+                                  {cat.image ? (
+                                    <img src={cat.image} alt={cat.name} className="w-full h-full object-cover rounded-lg" />
+                                  ) : (
+                                    <Utensils size={16} />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className={`text-sm truncate ${isSelected ? "font-medium text-primary" : "text-foreground"}`}>
+                                    {cat.name}
+                                  </div>
+                                  <div className="text-xs text-muted">
+                                    {cat.itemCount || 0} menu items
+                                  </div>
+                                </div>
+                                {isSelected && (
+                                  <Check size={16} className="text-primary shrink-0" />
+                                )}
+                              </button>
+                            );
+                        })}
+                        {categories.filter(c => (c.status === "Active" || c.status === "active") && c.name.toLowerCase().includes(categorySearchText.toLowerCase())).length === 0 && (
+                          <div className="p-4 text-center text-sm text-muted">
+                            No active categories found
+                          </div>
+                        )}
+                        
+                        {/* Graceful fallback for inactive category currently selected */}
+                        {(editingMenuItem.categoryId || editingMenuItem.category) && !categories.some(c => c.id === (editingMenuItem.categoryId || editingMenuItem.category) && (c.status === "Active" || c.status === "active")) && (
+                          <div className="p-3 text-center text-xs text-muted border-t border-border/50">
+                            Current category is inactive
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="w-28 shrink-0">
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Price (₹)</label>
                 <Input
                   type="number"
@@ -850,48 +982,104 @@ function RestaurantsAdd() {
                 />
               </div>
             </div>
-            
+
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Category</label>
-              <div className="relative flex items-center w-full rounded-lg border border-border bg-surface transition-colors focus-within:border-primary overflow-hidden">
-                <select
-                  value={editingMenuItem.categoryId || editingMenuItem.category || ""}
-                  onChange={(e) => {
-                    const selectedCat = categories.find(c => c.id === e.target.value);
-                    setEditingMenuItem(prev => ({ 
-                      ...prev, 
-                      categoryId: e.target.value,
-                      category: selectedCat ? selectedCat.name : e.target.value
-                    }));
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Menu Items</label>
+              <div className="relative" ref={menuDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (editingMenuItem.categoryId || editingMenuItem.category) {
+                      setIsMenuDropdownOpen(!isMenuDropdownOpen);
+                    }
                   }}
-                  className="w-full bg-transparent py-2.5 pl-3.5 pr-10 text-sm text-foreground outline-none appearance-none cursor-pointer"
-                  disabled={categoriesLoading || categoriesError}
+                  className={`w-full flex items-center justify-between bg-surface-hover text-sm outline-none border border-border rounded-lg px-3 h-10 hover:border-primary/50 transition-colors ${(!editingMenuItem.categoryId && !editingMenuItem.category) ? "text-muted/50 cursor-not-allowed opacity-70" : "text-foreground"}`}
+                  disabled={!editingMenuItem.categoryId && !editingMenuItem.category}
                 >
-                  {categoriesLoading && <option className="bg-surface text-foreground" value="" disabled>Loading categories...</option>}
-                  {categoriesError && !categoriesLoading && <option className="bg-surface text-foreground" value="" disabled>Unable to load categories</option>}
-                  {!categoriesLoading && !categoriesError && categories.filter(c => c.status === "Active" || c.status === "active").length === 0 && (
-                    <option className="bg-surface text-foreground" value="" disabled>No active categories available</option>
-                  )}
-                  {!categoriesLoading && !categoriesError && categories.filter(c => c.status === "Active" || c.status === "active").length > 0 && (
-                    <option className="bg-surface text-foreground" value="" disabled>Select Category</option>
-                  )}
-                  
-                  {!categoriesLoading && !categoriesError && categories
-                    .filter(cat => cat.status === "Active" || cat.status === "active")
-                    .map(cat => (
-                    <option className="bg-surface text-foreground" key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                  
-                  {/* Graceful fallback for deleted/inactive categories */}
-                  {(editingMenuItem.categoryId || editingMenuItem.category) && !categories.some(c => c.id === (editingMenuItem.categoryId || editingMenuItem.category) && (c.status === "Active" || c.status === "active")) && (
-                    <option className="bg-surface text-foreground" value={editingMenuItem.categoryId || editingMenuItem.category} disabled>
-                      {editingMenuItem.category || "Inactive Category"} (Inactive)
-                    </option>
-                  )}
-                </select>
-                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
+                  <span className={editingMenuItem.menuItemId ? "text-foreground truncate" : "text-muted/70 truncate"}>
+                    {editingMenuItem.menuItemId && categoryMenuItems.find(i => i.id === editingMenuItem.menuItemId)
+                      ? categoryMenuItems.find(i => i.id === editingMenuItem.menuItemId).name 
+                      : "Select Menu Item"}
+                  </span>
+                  <ChevronDown size={16} className={`text-muted transition-transform duration-200 ${isMenuDropdownOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {isMenuDropdownOpen && (
+                  <div className="absolute z-[100] top-full mt-2 w-full min-w-[240px] bg-surface border border-border rounded-xl shadow-lg overflow-hidden flex flex-col">
+                    <div className="p-2 border-b border-border/50 shrink-0">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" size={14} />
+                        <input
+                          type="text"
+                          placeholder="Search menu items..."
+                          value={menuDropdownSearchText}
+                          onChange={(e) => setMenuDropdownSearchText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Escape") setIsMenuDropdownOpen(false);
+                          }}
+                          className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border border-transparent focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors placeholder:text-muted/50"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div className="max-h-60 overflow-y-auto scrollbar-thin p-1">
+                      {categoryMenuItems.length === 0 ? (
+                        <div className="p-4 text-center text-sm text-muted">
+                          No menu items available for this category
+                        </div>
+                      ) : (
+                        <>
+                          {categoryMenuItems
+                            .filter(i => i.name.toLowerCase().includes(menuDropdownSearchText.toLowerCase()))
+                            .map(item => {
+                              const isSelected = editingMenuItem.menuItemId === item.id;
+                              return (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingMenuItem(prev => ({ 
+                                      ...prev, 
+                                      menuItemId: item.id,
+                                      name: item.name || prev.name,
+                                      price: item.price || prev.price,
+                                      foodType: item.foodType || prev.foodType,
+                                      image: item.image || prev.image,
+                                      images: item.image ? [item.image, ...(prev.images || []).slice(1)] : prev.images
+                                    }));
+                                    setIsMenuDropdownOpen(false);
+                                    setMenuDropdownSearchText("");
+                                  }}
+                                  className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${isSelected ? "bg-primary/10" : "hover:bg-surface-hover"}`}
+                                >
+                                  <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center ${isSelected ? "bg-primary text-white" : "bg-primary/10 text-primary"}`}>
+                                    {item.image ? (
+                                      <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                                    ) : (
+                                      <Utensils size={16} />
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className={`text-sm truncate ${isSelected ? "font-medium text-primary" : "text-foreground"}`}>
+                                      {item.name}
+                                    </div>
+                                  </div>
+                                  {isSelected && (
+                                    <Check size={16} className="text-primary shrink-0" />
+                                  )}
+                                </button>
+                              );
+                          })}
+                          {categoryMenuItems.filter(i => i.name.toLowerCase().includes(menuDropdownSearchText.toLowerCase())).length === 0 && (
+                            <div className="p-4 text-center text-sm text-muted">
+                              No matching menu items found
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

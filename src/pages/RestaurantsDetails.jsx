@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { 
   ArrowLeft, MapPin, Phone, Mail, Clock, Store, Star, ShoppingBag, 
-  Pencil, Plus, Trash2, CloudUpload, Search, GripVertical 
+  Pencil, Plus, Trash2, CloudUpload, Search, GripVertical,
+  Check, ChevronDown, Utensils
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -13,6 +14,7 @@ import Input from "../components/ui/Input";
 
 import { getRestaurantById, updateRestaurant, deleteRestaurant, updateRestaurantStatus } from "../api/restaurantsApi";
 import { getCategories } from "../api/categoriesApi";
+import { getProductsByCategory } from "../api/productsApi";
 import { fileToBase64 } from "../utils/fileUtils";
 
 function CustomToggle({ checked, onChange }) {
@@ -44,10 +46,33 @@ function RestaurantsDetails() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [statusError, setStatusError] = useState("");
   const [activeTab, setActiveTab] = useState("Menu Items");
+  const [categoryMenuItems, setCategoryMenuItems] = useState([]);
 
   const [categories, setCategories] = useState([]);
   const [menuSearch, setMenuSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [editingMenuItem, setEditingMenuItem] = useState(null);
+  
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [categorySearchText, setCategorySearchText] = useState("");
+  const categoryDropdownRef = useRef(null);
+
+  const [isMenuDropdownOpen, setIsMenuDropdownOpen] = useState(false);
+  const [menuDropdownSearchText, setMenuDropdownSearchText] = useState("");
+  const menuDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target)) {
+        setIsCategoryDropdownOpen(false);
+      }
+      if (menuDropdownRef.current && !menuDropdownRef.current.contains(e.target)) {
+        setIsMenuDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -89,6 +114,23 @@ function RestaurantsDetails() {
     };
     fetchCats();
   }, []);
+
+  useEffect(() => {
+    const fetchCategoryMenuItems = async () => {
+      const selectedCatId = editingMenuItem?.categoryId || (editingMenuItem?.category ? categories.find(c => c.name === editingMenuItem.category)?.id : null);
+      if (!selectedCatId) {
+        setCategoryMenuItems([]);
+        return;
+      }
+      try {
+        const items = await getProductsByCategory(selectedCatId);
+        setCategoryMenuItems(items || []);
+      } catch (err) {
+        console.error("Failed to load category menu items", err);
+      }
+    };
+    fetchCategoryMenuItems();
+  }, [editingMenuItem?.categoryId, editingMenuItem?.category, categories]);
 
   const handleDelete = async () => {
     setDeleteLoading(true);
@@ -171,9 +213,19 @@ function RestaurantsDetails() {
     );
   }
 
-  const filteredMenuItems = (restaurant.menuItems || []).filter(item => 
-    item.name.toLowerCase().includes(menuSearch.toLowerCase())
-  );
+  const filteredMenuItems = (restaurant.menuItems || []).filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(menuSearch.toLowerCase());
+    
+    // Find the category object for the selectedCategory to match by name if categoryId is missing
+    const selectedCatObj = categories.find(c => c.id === selectedCategory);
+    
+    const matchesCategory = 
+      selectedCategory === "All Categories" || 
+      item.categoryId === selectedCategory || 
+      (selectedCatObj && item.category === selectedCatObj.name);
+      
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <section className="min-h-full bg-background relative">
@@ -301,7 +353,6 @@ function RestaurantsDetails() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-foreground">Menu Items ({(restaurant.menuItems || []).length})</h2>
-                <p className="text-sm text-muted mt-1">Manage your restaurant's menu items. Add, edit or remove items as needed.</p>
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                 <div className="relative w-full sm:w-64">
@@ -319,6 +370,8 @@ function RestaurantsDetails() {
                 </Button>
               </div>
             </div>
+
+
 
             {(restaurant.menuItems || []).length === 0 ? (
               <div className="text-center py-16 px-4 bg-surface rounded-xl border border-border border-dashed">
@@ -385,8 +438,8 @@ function RestaurantsDetails() {
                       </div>
                       
                       <div className="mt-2.5 flex items-center">
-                         <Badge variant={item.status ? "success" : "secondary"} className="text-[10px] px-2 py-0.5">
-                           {item.status ? "Active" : "Inactive"}
+                         <Badge variant={item.status !== false && item.status !== "Inactive" && item.status !== "inactive" ? "success" : "danger"} className="text-[10px] px-2 py-0.5">
+                           {item.status !== false && item.status !== "Inactive" && item.status !== "inactive" ? "Active" : "Inactive"}
                          </Badge>
                       </div>
                     </div>
@@ -466,23 +519,93 @@ function RestaurantsDetails() {
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div>
+            <div className="flex gap-4">
+              <div className="flex-1" ref={categoryDropdownRef}>
                 <label className="text-xs font-medium text-muted mb-1 block">Category</label>
-                <select
-                  className="w-full bg-surface-hover text-sm text-foreground outline-none border border-border rounded-lg px-3 h-10"
-                  value={editingMenuItem.category}
-                  onChange={(e) => setEditingMenuItem(prev => ({ ...prev, category: e.target.value }))}
-                >
-                  <option value="" disabled>Select Category</option>
-                  {categories
-                    .filter(cat => cat.type === "Food")
-                    .map(cat => (
-                    <option key={cat.id} value={cat.name}>{cat.name}</option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+                    className="w-full flex items-center justify-between bg-surface-hover text-sm text-foreground outline-none border border-border rounded-lg px-3 h-10 hover:border-primary/50 transition-colors"
+                  >
+                    <span className={editingMenuItem.category ? "text-foreground" : "text-muted/70"}>
+                      {editingMenuItem.category || "Select Category"}
+                    </span>
+                    <ChevronDown size={16} className={`text-muted transition-transform duration-200 ${isCategoryDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {isCategoryDropdownOpen && (
+                    <div className="absolute z-[100] top-full mt-2 w-full min-w-[240px] bg-surface border border-border rounded-xl shadow-lg overflow-hidden flex flex-col">
+                      <div className="p-2 border-b border-border/50 shrink-0">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" size={14} />
+                          <input
+                            type="text"
+                            placeholder="Search category..."
+                            value={categorySearchText}
+                            onChange={(e) => setCategorySearchText(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Escape") setIsCategoryDropdownOpen(false);
+                            }}
+                            className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border border-transparent focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors placeholder:text-muted/50"
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+                      <div className="max-h-60 overflow-y-auto scrollbar-thin p-1">
+                        {categories
+                          .filter(c => c.name.toLowerCase().includes(categorySearchText.toLowerCase()))
+                          .map(cat => {
+                            const isSelected = editingMenuItem.categoryId === cat.id || editingMenuItem.category === cat.name;
+                            return (
+                              <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => {
+                                  setEditingMenuItem(prev => ({ 
+                                    ...prev, 
+                                    category: cat.name,
+                                    categoryId: cat.id,
+                                    menuItemId: "" // Reset menu item when category changes
+                                  }));
+                                  setIsCategoryDropdownOpen(false);
+                                  setCategorySearchText("");
+                                }}
+                                className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${isSelected ? "bg-primary/10" : "hover:bg-surface-hover"}`}
+                              >
+                                <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center ${isSelected ? "bg-primary text-white" : "bg-primary/10 text-primary"}`}>
+                                  {cat.image ? (
+                                    <img src={cat.image} alt={cat.name} className="w-full h-full object-cover rounded-lg" />
+                                  ) : (
+                                    <Utensils size={16} />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className={`text-sm truncate ${isSelected ? "font-medium text-primary" : "text-foreground"}`}>
+                                    {cat.name}
+                                  </div>
+                                  <div className="text-xs text-muted">
+                                    {cat.itemCount || 0} menu items
+                                  </div>
+                                </div>
+                                {isSelected && (
+                                  <Check size={16} className="text-primary shrink-0" />
+                                )}
+                              </button>
+                            );
+                        })}
+                        {categories.filter(c => c.name.toLowerCase().includes(categorySearchText.toLowerCase())).length === 0 && (
+                          <div className="p-4 text-center text-sm text-muted">
+                            No categories found
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div>
+
+              <div className="w-28 shrink-0">
                 <label className="text-xs font-medium text-muted mb-1 block">Price (₹)</label>
                 <Input
                   type="number"
@@ -490,6 +613,106 @@ function RestaurantsDetails() {
                   onChange={(e) => setEditingMenuItem(prev => ({ ...prev, price: e.target.value }))}
                   placeholder="0.00"
                 />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted mb-1 block">Menu Items</label>
+              <div className="relative" ref={menuDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (editingMenuItem.categoryId || editingMenuItem.category) {
+                      setIsMenuDropdownOpen(!isMenuDropdownOpen);
+                    }
+                  }}
+                  className={`w-full flex items-center justify-between bg-surface-hover text-sm outline-none border border-border rounded-lg px-3 h-10 hover:border-primary/50 transition-colors ${(!editingMenuItem.categoryId && !editingMenuItem.category) ? "text-muted/50 cursor-not-allowed opacity-70" : "text-foreground"}`}
+                  disabled={!editingMenuItem.categoryId && !editingMenuItem.category}
+                >
+                  <span className={editingMenuItem.menuItemId ? "text-foreground truncate" : "text-muted/70 truncate"}>
+                    {editingMenuItem.menuItemId && categoryMenuItems.find(i => i.id === editingMenuItem.menuItemId)
+                      ? categoryMenuItems.find(i => i.id === editingMenuItem.menuItemId).name 
+                      : "Select Menu Item"}
+                  </span>
+                  <ChevronDown size={16} className={`text-muted transition-transform duration-200 ${isMenuDropdownOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {isMenuDropdownOpen && (
+                  <div className="absolute z-[100] top-full mt-2 w-full min-w-[240px] bg-surface border border-border rounded-xl shadow-lg overflow-hidden flex flex-col">
+                    <div className="p-2 border-b border-border/50 shrink-0">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" size={14} />
+                        <input
+                          type="text"
+                          placeholder="Search menu items..."
+                          value={menuDropdownSearchText}
+                          onChange={(e) => setMenuDropdownSearchText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Escape") setIsMenuDropdownOpen(false);
+                          }}
+                          className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border border-transparent focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors placeholder:text-muted/50"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+                    <div className="max-h-60 overflow-y-auto scrollbar-thin p-1">
+                      {categoryMenuItems.length === 0 ? (
+                        <div className="p-4 text-center text-sm text-muted">
+                          No menu items available for this category
+                        </div>
+                      ) : (
+                        <>
+                          {categoryMenuItems
+                            .filter(i => i.name.toLowerCase().includes(menuDropdownSearchText.toLowerCase()))
+                            .map(item => {
+                              const isSelected = editingMenuItem.menuItemId === item.id;
+                              return (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingMenuItem(prev => ({ 
+                                      ...prev, 
+                                      menuItemId: item.id,
+                                      name: item.name || prev.name,
+                                      price: item.price || prev.price,
+                                      foodType: item.foodType || prev.foodType,
+                                      image: item.image || prev.image,
+                                      images: item.image ? [item.image, ...(prev.images || []).slice(1)] : prev.images
+                                    }));
+                                    setIsMenuDropdownOpen(false);
+                                    setMenuDropdownSearchText("");
+                                  }}
+                                  className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${isSelected ? "bg-primary/10" : "hover:bg-surface-hover"}`}
+                                >
+                                  <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center ${isSelected ? "bg-primary text-white" : "bg-primary/10 text-primary"}`}>
+                                    {item.image ? (
+                                      <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+                                    ) : (
+                                      <Utensils size={16} />
+                                    )}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className={`text-sm truncate ${isSelected ? "font-medium text-primary" : "text-foreground"}`}>
+                                      {item.name}
+                                    </div>
+                                  </div>
+                                  {isSelected && (
+                                    <Check size={16} className="text-primary shrink-0" />
+                                  )}
+                                </button>
+                              );
+                          })}
+                          {categoryMenuItems.filter(i => i.name.toLowerCase().includes(menuDropdownSearchText.toLowerCase())).length === 0 && (
+                            <div className="p-4 text-center text-sm text-muted">
+                              No matching menu items found
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
