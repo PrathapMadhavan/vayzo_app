@@ -26,7 +26,7 @@ import { useEffect, useState } from "react";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 
-import { getDeliveryPartnerById, updateDeliveryPartner, getDeliveryPartnerLocation } from "../api/deliveryPartnersApi";
+import { getDeliveryPartnerById, updateDeliveryPartner } from "../api/deliveryPartnersApi";
 import { createActivityLog } from "../api/activityLogsApi";
 import Modal from "../components/ui/Modal";
 import Avatar from "../components/ui/Avatar";
@@ -35,8 +35,8 @@ const getValue = (value) => value || "--";
 
 const InfoRow = ({ label, value }) => (
   <div className="flex flex-col sm:flex-row sm:items-start py-3 border-b border-border/40 last:border-0 gap-1 sm:gap-4">
-    <span className="text-[13px] sm:text-sm text-muted sm:min-w-[150px] shrink-0">{label}</span>
-    <span className="text-sm sm:text-[15px] text-foreground font-medium break-words">{getValue(value)}</span>
+    <span className="text-[13px] sm:text-sm text-muted sm:min-w-37.5 shrink-0">{label}</span>
+    <span className="text-sm sm:text-[15px] text-foreground font-medium wrap-break-word">{getValue(value)}</span>
   </div>
 );
 
@@ -66,7 +66,8 @@ const EmptyState = ({ message, icon: Icon = FileText }) => (
 );
 
 export default function DeliveryPartner() {
-  const { partnerId } = useParams();
+  
+  const { id } = useParams();
   const navigate = useNavigate();
 
   const [partnerData, setPartnerData] = useState(null);
@@ -96,20 +97,10 @@ export default function DeliveryPartner() {
     }, 800);
   };
 
-  const handleBlockPartner = async () => {
-    setIsBlocking(true);
-    try {
-      await updateDeliveryPartner(partnerId, { status: "Blocked" });
-      setPartnerData(prev => ({ ...prev, partner: { ...prev.partner, status: "Blocked" } }));
-      setBlockModalOpen(false);
-    } catch (err) {
-      alert("Failed to block partner");
-    } finally {
-      setIsBlocking(false);
-    }
-  };
+  
 
   const viewDocument = (name, url) => {
+
     if (!url) {
       alert("Document not uploaded yet.");
       return;
@@ -123,7 +114,7 @@ export default function DeliveryPartner() {
     try {
       setLoading(true);
       setError(null);
-      const data = await getDeliveryPartnerById(partnerId);
+      const data = await getDeliveryPartnerById(id);
       setPartnerData(data);
     } catch (err) {
       setError(err.message || "Failed to load delivery partner");
@@ -133,10 +124,10 @@ export default function DeliveryPartner() {
   };
 
   useEffect(() => {
-    if (partnerId) {
+    if (id) {
       loadPartner();
     }
-  }, [partnerId]);
+  }, [id]);
 
   if (loading) {
     return (
@@ -165,9 +156,10 @@ export default function DeliveryPartner() {
     );
   }
 
-  const { partner, personalDetails, vehicle, earnings, bankAccount, documents, activity } = partnerData;
+  const partner = partnerData;
+  const { activity } = partnerData;
 
-  const isBlocked = partner?.status === 'Blocked' || partner?.status === 'BLOCKED';
+
   const isOnline = partner?.onlineStatus === 'Online';
 
   const tabs = [
@@ -180,11 +172,11 @@ export default function DeliveryPartner() {
     { id: 'activity', label: 'Activity Logs' },
   ];
 
-  const dummyPayouts = [
-    { id: 'PO-12093', date: '15 Sep 2026', amount: 3450, status: 'Completed', method: 'Bank Transfer' },
-    { id: 'PO-12042', date: '08 Sep 2026', amount: 4100, status: 'Completed', method: 'Bank Transfer' },
-    { id: 'PO-11985', date: '01 Sep 2026', amount: 3800, status: 'Completed', method: 'Bank Transfer' },
-  ];
+
+
+
+
+
 
   return (
     <div className="min-h-full bg-background pb-10">
@@ -204,18 +196,8 @@ export default function DeliveryPartner() {
             <span className="hidden sm:inline">Send Message</span>
             <span className="sm:hidden">Message</span>
           </Button>
-          <Button
-            size="sm"
-            onClick={() => setBlockModalOpen(true)}
-            disabled={isBlocked}
-            variant="danger"
-            className="flex items-center justify-center gap-1.5 text-xs sm:text-sm shadow-sm"
-          >
-            <Ban size={14} /> 
-            <span className="hidden sm:inline">Block Partner</span>
-            <span className="sm:hidden">Block</span>
-          </Button>
-          <Button variant="primary" size="sm" onClick={() => navigate(`/delivery/edit/${partnerId}`)} className="flex items-center justify-center gap-1.5 text-xs sm:text-sm shadow-sm">
+          
+          <Button variant="primary" size="sm" onClick={() => navigate(`/delivery/edit/${id}`)} className="flex items-center justify-center gap-1.5 text-xs sm:text-sm shadow-sm">
             <Pencil size={14} /> 
             <span className="hidden sm:inline">Edit Partner</span>
             <span className="sm:hidden">Edit</span>
@@ -228,7 +210,7 @@ export default function DeliveryPartner() {
         {/* Top row: avatar + identity + stats */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 px-6 py-5">
           {/* Avatar + name */}
-          <div className="flex items-center gap-4 shrink-0 lg:w-[350px]">
+          <div className="flex items-center gap-4 shrink-0 lg:w-87.5">
             <div className="relative shrink-0">
               <Avatar
                 src={partner?.profileImage}
@@ -244,17 +226,17 @@ export default function DeliveryPartner() {
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap mb-1">
                 <h1 className="text-xl font-bold text-foreground truncate">{partner?.name}</h1>
-                <Badge variant={isBlocked ? 'danger' : 'success'} className="h-5 px-1.5 text-[10px]">
-                  {isBlocked ? 'Blocked' : partner?.status || 'Active'}
+                <Badge variant={'success'} className="h-5 px-1.5 text-[10px]">
+                  {partner?.status || 'Active'}
                 </Badge>
               </div>
 
               <div className="flex flex-col gap-1 mt-1">
-                <div className="flex items-center gap-1.5 text-[13px] text-muted">
-                  <Star size={13} className="text-amber-500 fill-amber-500 shrink-0" /> 
-                  <span className="font-semibold text-foreground">{Number(partner?.rating || 0).toFixed(1)}</span> 
-                  <span>({partner?.reviewCount || 0} Reviews)</span>
-                </div>
+
+
+
+
+
                 {partner?.mobileNumber && (
                   <div className="flex items-center gap-1.5 text-[13px] text-muted truncate">
                     <Phone size={13} className="shrink-0" /> <span className="truncate">{partner.mobileNumber}</span>
@@ -265,16 +247,8 @@ export default function DeliveryPartner() {
                     <Mail size={13} className="shrink-0" /> <span className="truncate">{partner.email}</span>
                   </div>
                 )}
-                {partner?.joinedAt && (
-                  <div className="flex items-center gap-1.5 text-[13px] text-muted truncate">
-                    <CalendarDays size={13} className="shrink-0" /> <span className="truncate">Joined on {partner.joinedAt}</span>
-                  </div>
-                )}
-                {partner?.location && (
-                  <div className="flex items-center gap-1.5 text-[13px] text-muted truncate">
-                    <MapPin size={13} className="shrink-0" /> <span className="truncate">{partner.location}</span>
-                  </div>
-                )}
+                
+                
               </div>
             </div>
           </div>
@@ -284,19 +258,13 @@ export default function DeliveryPartner() {
 
           {/* Stats row */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-4 gap-x-4 gap-y-6 lg:gap-y-8 w-full flex-1 pb-2 lg:pb-0">
-            <StatBox label="Partner ID"        value={partner?.partnerId} />
-            <StatBox label="Vehicle"           value={vehicle?.vehicleType || 'Bike'} />
-            <StatBox label="Total Orders"      value={partner?.totalOrders || 0} />
-            <StatBox label="Completion Rate"   value={partner?.completionRate !== undefined ? `${partner.completionRate}%` : '--'} />
-            <StatBox label="Cancellation Rate" value={partner?.cancellationRate !== undefined ? `${partner.cancellationRate}%` : '--'} />
-            <StatBox label="Total Earnings"    value={partner?.totalEarnings !== undefined ? `₹${Number(partner.totalEarnings).toLocaleString()}` : '--'} color="success" />
-            <StatBox label="Today's Earnings"  value={partner?.todayEarnings !== undefined ? `₹${Number(partner.todayEarnings).toLocaleString()}` : '--'} color="primary" />
-            <StatBox label="Last Order"        value={partner?.lastActivityAt || '--'} />
-          </div>
+            <StatBox label="Partner ID"        value={partner?.id} />
+            <StatBox label="Vehicle"           value={partner?.vehicleType || 'Bike'} />
+            </div>
         </div>
 
         {/* Tabs navigation */}
-        <div className="flex items-center gap-2 px-3 border-t border-border overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex items-center gap-2 px-3 border-t border-border overflow-x-auto scrollbar-none">
           {tabs.map(tab => (
             <button
               key={tab.id}
@@ -326,15 +294,15 @@ export default function DeliveryPartner() {
                 <h3 className="font-semibold text-foreground">Personal Information</h3>
               </div>
               <div className="p-5">
-                <InfoRow label="Full Name"      value={personalDetails?.name || partner?.name} />
-                <InfoRow label="Date of Birth"  value={personalDetails?.dateOfBirth} />
-                <InfoRow label="Gender"         value={personalDetails?.gender} />
-                <InfoRow label="Alternate Mobile"     value={personalDetails?.alternativeMobile} />
-                <InfoRow label="Emergency Contact" value={personalDetails?.emergencyContact} />
-                <InfoRow label="Emergency Relationship"  value={personalDetails?.emergencyContactRelation} />
-                <InfoRow label="Emergency Contact Number"  value={personalDetails?.emergencyMobile} />
-                <InfoRow label="Aadhaar Number"    value={personalDetails?.aadhaarNumber} />
-                <InfoRow label="PAN Number"    value={personalDetails?.panNumber} />
+                <InfoRow label="Full Name"      value={partner?.name} />
+                <InfoRow label="Date of Birth"  value={partner?.dateOfBirth} />
+                <InfoRow label="Gender"         value={partner?.gender} />
+                <InfoRow label="Alternate Mobile"     value={partner?.alternateMobile} />
+                <InfoRow label="Emergency Contact" value={partner?.emergencyContact} />
+
+                <InfoRow label="Emergency Contact Number"  value={partner?.emergencyMobile} />
+                <InfoRow label="Aadhaar Number"    value={partner?.aadhaarNumber} />
+                <InfoRow label="PAN Number"    value={partner?.panNumber} />
               </div>
             </div>
 
@@ -345,13 +313,13 @@ export default function DeliveryPartner() {
                 <h3 className="font-semibold text-foreground">Vehicle Information</h3>
               </div>
               <div className="p-5">
-                <InfoRow label="Vehicle Type"   value={vehicle?.vehicleType} />
-                <InfoRow label="Vehicle Name"   value={vehicle?.vehicleName} />
-                <InfoRow label="Vehicle Number" value={vehicle?.vehicleNumber} />
-                <InfoRow label="RC Number"      value={vehicle?.rcNumber} />
-                <InfoRow label="Insurance Provider" value={vehicle?.insuranceProvider} />
-                <InfoRow label="Insurance Number"  value={vehicle?.insuranceNumber} />
-                <InfoRow label="Insurance Valid Till"  value={vehicle?.validTill} />
+                <InfoRow label="Vehicle Type"   value={partner?.vehicleType} />
+                <InfoRow label="Vehicle Name"   value={partner?.vehicleName} />
+                <InfoRow label="Vehicle Number" value={partner?.vehicleNumber} />
+                <InfoRow label="RC Number"      value={partner?.rcNumber} />
+                <InfoRow label="Insurance Provider" value={partner?.insuranceProvider} />
+                <InfoRow label="Insurance Number"  value={partner?.insuranceNumber} />
+                <InfoRow label="Insurance Valid Till"  value={partner?.insuranceValidTill} />
               </div>
             </div>
 
@@ -362,10 +330,10 @@ export default function DeliveryPartner() {
                 <h3 className="font-semibold text-foreground">Bank Information</h3>
               </div>
               <div className="p-5">
-                <InfoRow label="Bank Name"      value={bankAccount?.bankName} />
-                <InfoRow label="Account Number" value={bankAccount?.accountNumberMasked || bankAccount?.accountNumber} />
-                <InfoRow label="IFSC Code"      value={bankAccount?.ifscCode} />
-                <InfoRow label="Account Holder Name" value={bankAccount?.accountHolderName} />
+                <InfoRow label="Bank Name"      value={partner?.bankName} />
+                <InfoRow label="Account Number" value={partner?.accountNumber} />
+                <InfoRow label="IFSC Code"      value={partner?.ifscCode} />
+                <InfoRow label="Account Holder Name" value={partner?.accountHolderName} />
               </div>
             </div>
           </div>
@@ -378,33 +346,44 @@ export default function DeliveryPartner() {
               <FileText size={17} className="text-primary" />
               <h3 className="font-semibold text-foreground">Uploaded Documents</h3>
             </div>
-            <div className="p-5">
-              {documents && documents.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {documents.map((doc, idx) => (
-                    <div key={idx} className="flex flex-col p-5 rounded-xl border border-border/50 bg-background/50 hover:bg-muted/5 transition-colors group cursor-pointer shadow-sm" onClick={() => viewDocument(doc.document_type?.replace(/_/g, ' '), doc.document_url)}>
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                          <FileText size={18} className="text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-foreground text-sm uppercase truncate">
-                            {doc.document_type?.replace(/_/g, ' ')}
-                          </p>
-                          <Badge variant={doc.verification_status === "VERIFIED" || doc.verification_status === "Verified" ? "success" : "warning"} className="h-5 px-1.5 text-[10px] mt-1">
-                            {doc.verification_status || 'Pending'}
-                          </Badge>
-                        </div>
-                        <Eye size={18} className="text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                      <div className="text-xs space-y-1.5 mt-auto pt-3 border-t border-border/30">
-                        <p className="text-muted flex justify-between">Doc Number: <span className="text-foreground font-medium">{doc.document_number ? doc.document_number.slice(-4).padStart(doc.document_number.length, '*') : '--'}</span></p>
-                        <p className="text-muted flex justify-between">Expires: <span className="text-foreground font-medium">{doc.expires_at || '--'}</span></p>
-                      </div>
-                    </div>
-                  ))}
+            <div className="p-5 flex flex-col gap-3">
+              {partner?.aadhaarDocumentUrl && (
+                <div className="flex items-center justify-between p-4 border border-border rounded-xl bg-surface hover:bg-surface-hover transition-colors">
+                  <div className="flex items-center gap-3">
+                    <FileText size={18} className="text-primary" />
+                    <h4 className="font-semibold text-sm text-foreground">Aadhaar</h4>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => viewDocument('Aadhaar', partner.aadhaarDocumentUrl)}>View</Button>
                 </div>
-              ) : (
+              )}
+              {partner?.panDocumentUrl && (
+                <div className="flex items-center justify-between p-4 border border-border rounded-xl bg-surface hover:bg-surface-hover transition-colors">
+                  <div className="flex items-center gap-3">
+                    <FileText size={18} className="text-primary" />
+                    <h4 className="font-semibold text-sm text-foreground">PAN</h4>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => viewDocument('PAN', partner.panDocumentUrl)}>View</Button>
+                </div>
+              )}
+              {partner?.rcDocumentUrl && (
+                <div className="flex items-center justify-between p-4 border border-border rounded-xl bg-surface hover:bg-surface-hover transition-colors">
+                  <div className="flex items-center gap-3">
+                    <FileText size={18} className="text-primary" />
+                    <h4 className="font-semibold text-sm text-foreground">RC Document</h4>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => viewDocument('RC Document', partner.rcDocumentUrl)}>View</Button>
+                </div>
+              )}
+              {partner?.insuranceDocumentUrl && (
+                <div className="flex items-center justify-between p-4 border border-border rounded-xl bg-surface hover:bg-surface-hover transition-colors">
+                  <div className="flex items-center gap-3">
+                    <FileText size={18} className="text-primary" />
+                    <h4 className="font-semibold text-sm text-foreground">Insurance</h4>
+                  </div>
+                  <Button variant="secondary" size="sm" onClick={() => viewDocument('Insurance', partner.insuranceDocumentUrl)}>View</Button>
+                </div>
+              )}
+              {(!partner?.aadhaarDocumentUrl && !partner?.panDocumentUrl && !partner?.rcDocumentUrl && !partner?.insuranceDocumentUrl) && (
                 <EmptyState message="No documents available." />
               )}
             </div>
@@ -419,28 +398,28 @@ export default function DeliveryPartner() {
               <h3 className="font-semibold text-foreground">Earnings Summary</h3>
             </div>
             <div className="p-5">
-              {earnings ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                  <div className="bg-success/10 border border-success/20 rounded-xl p-5 shadow-sm">
-                    <p className="text-xs text-success font-medium mb-1">Total Earnings</p>
-                    <p className="text-2xl font-bold text-foreground">₹{earnings.totalEarnings ? earnings.totalEarnings.toLocaleString() : '0'}</p>
-                  </div>
-                  <div className="bg-primary/10 border border-primary/20 rounded-xl p-5 shadow-sm">
-                    <p className="text-xs text-primary font-medium mb-1">This Week</p>
-                    <p className="text-2xl font-bold text-foreground">₹{earnings.thisWeek ? earnings.thisWeek.toLocaleString() : '0'}</p>
-                  </div>
-                  <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-5 shadow-sm">
-                    <p className="text-xs text-indigo-500 font-medium mb-1">This Month</p>
-                    <p className="text-2xl font-bold text-foreground">₹{earnings.thisMonth ? earnings.thisMonth.toLocaleString() : '0'}</p>
-                  </div>
-                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-5 shadow-sm">
-                    <p className="text-xs text-amber-500 font-medium mb-1">Total Payouts</p>
-                    <p className="text-2xl font-bold text-foreground">₹{earnings.totalPayouts ? earnings.totalPayouts.toLocaleString() : '0'}</p>
-                  </div>
-                </div>
-              ) : (
-                <EmptyState message="No earnings information available." />
-              )}
+              <EmptyState message="Earnings information unavailable." />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             </div>
           </div>
         )}
@@ -453,29 +432,29 @@ export default function DeliveryPartner() {
               <h3 className="font-semibold text-foreground">Payout History</h3>
             </div>
             <div className="p-5">
-              <div className="space-y-3">
-                {dummyPayouts.map(payout => (
-                  <div key={payout.id} className="flex items-center justify-between p-4 rounded-xl border border-border/50 hover:bg-muted/5 transition-colors shadow-sm bg-background/50">
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center shrink-0 text-success">
-                        <TrendingUp size={18} />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground text-sm">{payout.id}</p>
-                        <p className="text-xs text-muted flex items-center gap-2 mt-0.5">
-                          <span>{payout.date}</span>
-                          <span>•</span>
-                          <span>{payout.method}</span>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-success">+₹{payout.amount.toLocaleString()}</p>
-                      <Badge variant="success" className="h-5 px-1.5 text-[10px] mt-1">{payout.status}</Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <EmptyState message="Payout information unavailable." />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             </div>
           </div>
         )}
@@ -559,13 +538,13 @@ export default function DeliveryPartner() {
             <Avatar src={partner?.profileImage} identifier={partner?.name} className="h-10 w-10 rounded-full shrink-0" />
             <div className="min-w-0">
               <p className="font-medium text-foreground text-sm truncate">{partner?.name}</p>
-              <p className="text-xs text-muted break-all">{partner?.partnerId} • {partner?.mobileNumber || partner?.email}</p>
+              <p className="text-xs text-muted break-all">{partner?.id} • {partner?.mobileNumber || partner?.email}</p>
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Message</label>
             <textarea
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary min-h-[100px]"
+              className="w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary min-h-25"
               placeholder="e.g. Please ensure you carry your delivery bag for all future orders."
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
@@ -580,18 +559,10 @@ export default function DeliveryPartner() {
         </div>
       </Modal>
 
-      <Modal isOpen={isBlockModalOpen} onClose={() => setBlockModalOpen(false)} title="Block Partner">
-        <p className="text-sm text-muted">Are you sure you want to block {partner?.name}? They will no longer be able to accept orders.</p>
-        <div className="flex justify-end gap-3 mt-6">
-          <Button variant="secondary" onClick={() => setBlockModalOpen(false)}>Cancel</Button>
-          <Button variant="danger" onClick={handleBlockPartner} disabled={isBlocking}>
-            {isBlocking ? "Blocking..." : "Confirm Block"}
-          </Button>
-        </div>
-      </Modal>
+      
 
       <Modal isOpen={isDocumentModalOpen} onClose={() => setDocumentModalOpen(false)} title={`View ${selectedDocumentName}`}>
-        <div className="flex flex-col items-center justify-center min-h-[200px] p-4">
+        <div className="flex flex-col items-center justify-center min-h-50 p-4">
           {!selectedDocumentUrl ? (
             <div className="text-center">
               <FileText size={40} className="mx-auto text-muted mb-3 opacity-50" />
@@ -599,9 +570,9 @@ export default function DeliveryPartner() {
               <p className="text-xs text-muted/70 mt-1">This partner hasn't uploaded their {selectedDocumentName} yet.</p>
             </div>
           ) : selectedDocumentUrl.toLowerCase().endsWith('.pdf') ? (
-            <iframe src={selectedDocumentUrl} className="w-full h-[400px] rounded border border-border" title={selectedDocumentName} />
+            <iframe src={selectedDocumentUrl} className="w-full h-100 rounded border border-border" title={selectedDocumentName} />
           ) : (
-            <img src={selectedDocumentUrl} alt={selectedDocumentName} className="max-w-full max-h-[400px] rounded object-contain" />
+            <img src={selectedDocumentUrl} alt={selectedDocumentName} className="max-w-full max-h-100 rounded object-contain" />
           )}
         </div>
         <div className="flex justify-end mt-4">

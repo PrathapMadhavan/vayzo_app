@@ -134,7 +134,7 @@ function App() {
                   path="edit/:partnerId"
                   element={<DeliveryPartnersAdd />}
                 />
-                <Route path=":partnerId" element={<DeliveryPartner />} />
+                <Route path=":id" element={<DeliveryPartner />} />
               </Route>
 
               {/* Categories */}

@@ -6,8 +6,8 @@ export async function getOrders(filters = {}) {
   let url = ENDPOINT;
   
   const queryParams = [];
-  if (filters.serviceType) {
-    queryParams.push(`serviceType=${filters.serviceType}`);
+  if (filters.service_type) {
+    queryParams.push(`service_type=${filters.service_type}`);
   }
   
   if (filters.status && filters.status !== "All Status") {
@@ -18,22 +18,16 @@ export async function getOrders(filters = {}) {
     url += `?${queryParams.join("&")}`;
   }
   
-  return apiRequest(url, {}, "Unable to load requests");
+  const data = await apiRequest(url, {}, "Unable to load requests");
+  return data?.data ? data.data : data;
 }
 
 export async function getOrderById(orderId) {
-  // Try orderId field first (e.g. "ORD1001"), then fallback to id
-  let data = await apiRequest(`${ENDPOINT}?orderId=${orderId}`, {}, "Unable to load order");
-
-  if (!data || data.length === 0) {
-    data = await apiRequest(`${ENDPOINT}?id=${orderId}`, {}, "Unable to load order");
-  }
-
-  if (!data || !data.length) {
+  const data = await apiRequest(`${ENDPOINT}/${orderId}`, {}, "Unable to load order");
+  if (!data) {
     throw new Error("Order not found");
   }
-
-  return data[0];
+  return data?.data ? data.data : data;
 }
 
 export async function createOrder(orderData) {
@@ -61,8 +55,9 @@ export async function updateOrder(id, orderData) {
   }, "Unable to update request");
 }
 
-export async function deleteOrder(id) {
-  return apiRequest(`${ENDPOINT}/${id}`, {
-    method: "DELETE",
-  }, "Unable to delete request");
+export async function updateOrderStatus(id, statusData) {
+  return apiRequest(`${ENDPOINT}/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify(statusData),
+  }, "Unable to update request status");
 }

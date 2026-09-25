@@ -16,13 +16,18 @@ export async function apiRequest(endpoint, options = {}, customErrorMessage = "A
   const requestPromise = (async () => {
     try {
       const fetchHeaders = new Headers();
-      fetchHeaders.append("Content-Type", "application/json");
 
       // Attach any custom headers passed in options
       if (options && options.headers) {
         Object.entries(options.headers).forEach(([key, value]) => {
           fetchHeaders.set(key, value);
         });
+      }
+
+      if (options && options.body instanceof FormData) {
+        // Let browser generate multipart/form-data boundary
+      } else if (!fetchHeaders.has("Content-Type")) {
+        fetchHeaders.append("Content-Type", "application/json");
       }
 
       // Do not attach token for authentication endpoints (e.g. login, otp, forgot-password)

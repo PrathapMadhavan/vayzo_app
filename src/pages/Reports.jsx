@@ -178,7 +178,7 @@ function Reports() {
                   id="report-type"
                   value={reportType}
                   onChange={(e) => setReportType(e.target.value)}
-                  className="w-full sm:w-[150px]"
+                  className="w-full sm:w-37.5"
                 >
                   <option value="All">All Reports</option>
                   <option value="Sales">Sales</option>
@@ -191,7 +191,7 @@ function Reports() {
                   id="status"
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
-                  className="w-full sm:w-[150px]"
+                  className="w-full sm:w-37.5"
                 >
                   <option value="All Status">All Status</option>
                   <option value="Completed">Completed</option>
