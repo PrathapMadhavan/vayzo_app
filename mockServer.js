@@ -1017,10 +1017,16 @@ app.get('/api/v1/admin/partners', (req, res) => {
 });
 
 app.get('/api/v1/admin/partners/:id', (req, res) => {
-  const db = router.db;
-  const user = db.get('users').find({ id: req.params.id, role: 'Delivery Partner' }).value();
-  if (!user) return res.status(404).json({ success: false, message: 'Partner not found' });
-  res.json(mapCanonicalPartner(user, db));
+    const db = router.db;
+    const id = req.params.id;
+    let user = db.get('users').find({ id: id, role: 'Delivery Partner' }).value();
+    if (user) return res.json(mapCanonicalPartner(user, db));
+    
+    // Fallback to legacy partners
+    let legacy = db.get('partners').find({ id: id }).value();
+    if (legacy) return res.json(legacy);
+    
+    return res.status(404).json({ success: false, message: 'Partner not found' });
 });
 
 app.post('/api/v1/admin/partners', uploadPartnerFiles, (req, res) => {
@@ -1125,9 +1131,13 @@ app.post('/api/v1/admin/partners', uploadPartnerFiles, (req, res) => {
 app.patch('/api/v1/admin/partners/:id', uploadPartnerFiles, (req, res) => {
   const db = router.db;
   const userId = req.params.id;
-  const user = db.get('users').find({ id: userId, role: 'Delivery Partner' }).value();
-  
-  if (!user) return res.status(404).json({ success: false, message: 'Partner not found' });
+  let user = db.get('users').find({ id: userId, role: 'Delivery Partner' }).value();
+    let isLegacy = false;
+    if (!user) {
+      user = db.get('partners').find({ id: userId }).value();
+      isLegacy = true;
+    }
+    if (!user) return res.status(404).json({ success: false, message: 'Partner not found' });
   const data = req.body;
   
   if (data.email) {
@@ -1153,8 +1163,12 @@ app.patch('/api/v1/admin/partners/:id', uploadPartnerFiles, (req, res) => {
     userUpdates.profileImage = '/uploads/' + req.files.profileImage[0].filename;
   }
   if (Object.keys(userUpdates).length > 0) {
-    db.get('users').find({ id: userId }).assign(userUpdates).write();
-  }
+      if (isLegacy) {
+        db.get('partners').find({ id: userId }).assign(userUpdates).write();
+      } else {
+        db.get('users').find({ id: userId }).assign(userUpdates).write();
+      }
+    }
 
   const profileFields = ['dateOfBirth', 'gender', 'alternateMobile', 'emergencyContact', 'emergencyMobile', 'address', 'city', 'aadhaarNumber', 'panNumber'];
   const profile = db.get('partner_profiles').find({ user_id: userId }).value();
@@ -1234,8 +1248,13 @@ app.patch('/api/v1/admin/partners/:id', uploadPartnerFiles, (req, res) => {
   handlePatchDoc('rcFile', 'RC');
   handlePatchDoc('insuranceFile', 'INSURANCE');
 
-  const updatedUser = db.get('users').find({ id: userId }).value();
-  res.json({ success: true, data: mapCanonicalPartner(updatedUser, db) });
+  let updatedUser = db.get('users').find({ id: userId }).value();
+  if (!updatedUser) {
+    updatedUser = db.get('partners').find({ id: userId }).value();
+    res.json({ success: true, data: updatedUser });
+  } else {
+    res.json({ success: true, data: mapCanonicalPartner(updatedUser, db) });
+  }
 });
 // --- END DELIVERY PARTNERS API IMPLEMENTATION ---
 

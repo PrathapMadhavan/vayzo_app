@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
-  Eye, Pencil, Plus, RotateCcw, 
-  Trash2, LayoutGrid, CheckCircle, AlertCircle, 
-  Filter, ShoppingBag, Utensils, Pill, Store,
-  Carrot, Baby, Coffee, Download, Bike, Car
+ Eye, Pencil, Plus, RotateCcw, 
+ Trash2, LayoutGrid, CheckCircle, AlertCircle, 
+ Filter, ShoppingBag, Utensils, Pill, Store,
+ Carrot, Baby, Coffee, Download, Bike, Car
 } from "lucide-react";
 
 
@@ -24,406 +24,433 @@ import { getCategories, deleteCategory, updateCategory } from "../api/categories
 import { exportToCSV } from "../utils/exportUtils";
 
 const statusOptions = [
-  "All Status",
-  "Active",
-  "Inactive",
-  "Deleted",
+ "All Status",
+ "Active",
+ "Inactive",
+ "Deleted",
 ];
 
 const categoryTableHeaders = [
-  "No.",
-  "Category",
-  "Parent Category",
-  "Description",
-  "Status",
-  "Items",
-  "Created At",
-  "Actions",
+ "No.",
+ "Category",
+ "Parent Category",
+ "Description",
+ "Status",
+ "Items",
+ "Created At",
+ "Actions",
 ];
 
 // Helper to assign a random icon based on name
 const getCategoryIcon = (name) => {
-  const n = name?.toLowerCase() || "";
-  if (n.includes('food') || n.includes('restaurant')) return <Utensils size={18} className="text-success" />;
-  if (n.includes('grocer') || n.includes('retail')) return <ShoppingBag size={18} className="text-warning" />;
-  if (n.includes('pharmacy') || n.includes('medicine')) return <Pill size={18} className="text-primary" />;
-  if (n.includes('fruit') || n.includes('veg')) return <Carrot size={18} className="text-success" />;
-  if (n.includes('baby')) return <Baby size={18} className="text-primary" />;
-  if (n.includes('beverage') || n.includes('drink')) return <Coffee size={18} className="text-info" />;
-  return <Store size={18} className="text-primary" />;
+ const n = name?.toLowerCase() || "";
+ if (n.includes('food') || n.includes('restaurant')) return <Utensils size={18} className="text-success" />;
+ if (n.includes('grocer') || n.includes('retail')) return <ShoppingBag size={18} className="text-warning" />;
+ if (n.includes('pharmacy') || n.includes('medicine')) return <Pill size={18} className="text-primary" />;
+ if (n.includes('fruit') || n.includes('veg')) return <Carrot size={18} className="text-success" />;
+ if (n.includes('baby')) return <Baby size={18} className="text-primary" />;
+ if (n.includes('beverage') || n.includes('drink')) return <Coffee size={18} className="text-info" />;
+ return <Store size={18} className="text-primary" />;
 };
 
 const getCategoryIconBg = (name) => {
-  const n = name?.toLowerCase() || "";
-  if (n.includes('food') || n.includes('restaurant') || n.includes('fruit') || n.includes('veg')) return "bg-success/10";
-  if (n.includes('grocer') || n.includes('retail')) return "bg-warning/10";
-  if (n.includes('beverage') || n.includes('drink')) return "bg-info/10";
-  return "bg-primary/10";
+ const n = name?.toLowerCase() || "";
+ if (n.includes('food') || n.includes('restaurant') || n.includes('fruit') || n.includes('veg')) return "bg-success/10";
+ if (n.includes('grocer') || n.includes('retail')) return "bg-warning/10";
+ if (n.includes('beverage') || n.includes('drink')) return "bg-info/10";
+ return "bg-primary/10";
 };
 
 export default function Categories() {
-  const navigate = useNavigate();
+ const navigate = useNavigate();
 
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  
-  const [deleteModalId, setDeleteModalId] = useState(null);
+ const [categories, setCategories] = useState([]);
+ const [loading, setLoading] = useState(true);
+ const [error, setError] = useState("");
+ 
+ const [deleteModalId, setDeleteModalId] = useState(null);
 
-  // Filters
-  const [searchText, setSearchText] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All Status");
+ // Filters
+ const [searchText, setSearchText] = useState("");
+ const [statusFilter, setStatusFilter] = useState("All Status");
+ const [activeTab, setActiveTab] = useState("Food Delivery");
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+ const [currentPage, setCurrentPage] = useState(1);
+ const itemsPerPage = 20;
 
-  const loadCategories = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const data = await getCategories();
-      setCategories(data);
-    } catch (err) {
-      setError("Unable to load categories.");
-    } finally {
-      setLoading(false);
-    }
-  };
+ const loadCategories = async () => {
+ try {
+ setLoading(true);
+ setError("");
+ const data = await getCategories();
+ setCategories(data);
+ } catch (err) {
+ setError("Unable to load categories.");
+ } finally {
+ setLoading(false);
+ }
+ };
 
-  useEffect(() => {
-    loadCategories();
-  }, []);
+ useEffect(() => {
+ loadCategories();
+ }, []);
 
-  const filteredCategories = useMemo(() => {
-    return categories.filter((category) => {
-      // Hide soft-deleted items unless explicitly filtering for "Deleted"
-      if (statusFilter !== "Deleted" && category.status === "Deleted") {
-        return false;
-      }
+ const filteredCategories = useMemo(() => {
+ return categories.filter((category) => {
+ // Hide soft-deleted items unless explicitly filtering for "Deleted"
+ if (statusFilter !== "Deleted" && category.status === "Deleted") {
+ return false;
+ }
 
-      const matchSearch =
-        searchText === "" ||
-        category.name?.toLowerCase().includes(searchText.toLowerCase());
+ const matchSearch =
+ searchText === "" ||
+ category.name?.toLowerCase().includes(searchText.toLowerCase());
 
-      const matchStatus =
-        statusFilter === "All Status" || category.status === statusFilter;
+ const matchStatus =
+ statusFilter === "All Status" || category.status === statusFilter;
+ 
+ let matchTab = true;
+ if (activeTab === "Food Delivery") {
+ matchTab = category.name?.toLowerCase().match(/food|biryani|pizza|burger|chinese/);
+ } else if (activeTab === "Buy & Get It") {
+ matchTab = category.name?.toLowerCase().match(/grocer|retail|fruit|veg|pharmacy|medicine/);
+ } else if (activeTab === "Bike Ride") {
+ matchTab = category.name?.toLowerCase().match(/bike|ride/);
+ } else if (activeTab === "Car Booking") {
+ matchTab = category.name?.toLowerCase().match(/car|cab|taxi/);
+ }
+ 
+ // Fallback: if there's no matching category in the DB for other tabs, just return matchTab
+ // Actually since all mock data is food, the other tabs will be empty, which is correct.
 
-      return matchSearch && matchStatus;
-    });
-  }, [categories, searchText, statusFilter]);
+ return matchSearch && matchStatus && matchTab;
+ });
+ }, [categories, searchText, statusFilter, activeTab]);
 
-  const hasFilters = searchText !== "" || statusFilter !== "All Status";
+ const hasFilters = searchText !== "" || statusFilter !== "All Status";
 
-  const resetFilters = () => {
-    setSearchText("");
-    setStatusFilter("All Status");
-    setCurrentPage(1);
-  };
+ const resetFilters = () => {
+ setSearchText("");
+ setStatusFilter("All Status");
+ setCurrentPage(1);
+ };
 
-  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage) || 1;
-  const paginatedCategories = filteredCategories.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+ const totalPages = Math.ceil(filteredCategories.length / itemsPerPage) || 1;
+ const paginatedCategories = filteredCategories.slice(
+ (currentPage - 1) * itemsPerPage,
+ currentPage * itemsPerPage
+ );
 
-  const maxStatus = useMemo(() => {
-    return paginatedCategories.reduce((max, c) => {
-      const val = c.status || "Active";
-      return val.length > max.length ? val : max;
-    }, "");
-  }, [paginatedCategories]);
+ const maxStatus = useMemo(() => {
+ return paginatedCategories.reduce((max, c) => {
+ const val = c.status || "Active";
+ return val.length > max.length ? val : max;
+ }, "");
+ }, [paginatedCategories]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchText, statusFilter]);
+ useEffect(() => {
+ setCurrentPage(1);
+ }, [searchText, statusFilter, activeTab]);
 
-  const handleDeleteCategory = async () => {
-    if (!deleteModalId) return;
-    try {
-      const categoryToDelete = categories.find(c => c.id === deleteModalId);
-      if (categoryToDelete) {
-        const updatedCategory = { ...categoryToDelete, status: "Deleted" };
-        await updateCategory(deleteModalId, updatedCategory);
-        setCategories(categories.map((c) => c.id === deleteModalId ? updatedCategory : c));
-      }
-      setDeleteModalId(null);
-      const newFilteredLength = filteredCategories.length - 1;
-      const newTotalPages = Math.ceil(newFilteredLength / itemsPerPage) || 1;
-      if (currentPage > newTotalPages) {
-        setCurrentPage(newTotalPages);
-      }
-    } catch (err) {
-      alert("Failed to delete category");
-    }
-  };
+ const handleDeleteCategory = async () => {
+ if (!deleteModalId) return;
+ try {
+ const categoryToDelete = categories.find(c => c.id === deleteModalId);
+ if (categoryToDelete) {
+ const updatedCategory = { ...categoryToDelete, status: "Deleted" };
+ await updateCategory(deleteModalId, updatedCategory);
+ setCategories(categories.map((c) => c.id === deleteModalId ? updatedCategory : c));
+ }
+ setDeleteModalId(null);
+ const newFilteredLength = filteredCategories.length - 1;
+ const newTotalPages = Math.ceil(newFilteredLength / itemsPerPage) || 1;
+ if (currentPage > newTotalPages) {
+ setCurrentPage(newTotalPages);
+ }
+ } catch (err) {
+ alert("Failed to delete category");
+ }
+ };
 
-  const handleToggleStatus = async (category) => {
-    if (category.status === "Deleted") return;
-    try {
-      const newStatus = category.status === "Active" ? "Inactive" : "Active";
-      const updatedCategory = { ...category, status: newStatus };
-      await updateCategory(category.id, updatedCategory);
-      setCategories(categories.map((c) => c.id === category.id ? updatedCategory : c));
-    } catch (err) {
-      alert("Failed to update status");
-    }
-  };
+ const handleToggleStatus = async (category) => {
+ if (category.status === "Deleted") return;
+ try {
+ const newStatus = category.status === "Active" ? "Inactive" : "Active";
+ const updatedCategory = { ...category, status: newStatus };
+ await updateCategory(category.id, updatedCategory);
+ setCategories(categories.map((c) => c.id === category.id ? updatedCategory : c));
+ } catch (err) {
+ alert("Failed to update status");
+ }
+ };
 
-  return (
-    <section className="min-h-full bg-background p-4 sm:p-6 pb-20 flex flex-col gap-6">
-      
-      {/* 2. Stat Cards Row */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          variant="horizontal"
-          title="Total Categories"
-          value={categories.length}
-          trend="9.1%"
-          icon={LayoutGrid}
-          colorClass="text-primary"
-          bgClass="bg-primary/10"
-        />
-        <StatCard
-          variant="horizontal"
-          title="Active Categories"
-          value={categories.filter((c) => c.status === "Active").length}
-          trend="11.1%"
-          icon={CheckCircle}
-          colorClass="text-success"
-          bgClass="bg-success/10"
-        />
-        <StatCard
-          variant="horizontal"
-          title="Inactive Categories"
-          value={categories.filter((c) => c.status === "Inactive").length}
-          trend="33.3%"
-          isNegative
-          icon={AlertCircle}
-          colorClass="text-warning"
-          bgClass="bg-warning/10"
-        />
-        <StatCard
-          variant="horizontal"
-          title="Deleted Categories"
-          value={categories.filter((c) => c.status === "Deleted").length}
-          trend="50%"
-          isNegative
-          icon={Trash2}
-          colorClass="text-danger"
-          bgClass="bg-danger/10"
-        />
-      </div>
+ return (
+ <section className="min-h-full bg-background p-4 sm:p-6 pb-20 flex flex-col gap-6">
+ 
+ {/* 2. Stat Cards Row */}
+ <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+ <StatCard
+ variant="horizontal"
+ title="Total Categories"
+ value={categories.length}
+ trend="9.1%"
+ icon={LayoutGrid}
+ colorClass="text-primary"
+ bgClass="bg-primary/10"
+ />
+ <StatCard
+ variant="horizontal"
+ title="Active Categories"
+ value={categories.filter((c) => c.status === "Active").length}
+ trend="11.1%"
+ icon={CheckCircle}
+ colorClass="text-success"
+ bgClass="bg-success/10"
+ />
+ <StatCard
+ variant="horizontal"
+ title="Inactive Categories"
+ value={categories.filter((c) => c.status === "Inactive").length}
+ trend="33.3%"
+ isNegative
+ icon={AlertCircle}
+ colorClass="text-warning"
+ bgClass="bg-warning/10"
+ />
+ <StatCard
+ variant="horizontal"
+ title="Deleted Categories"
+ value={categories.filter((c) => c.status === "Deleted").length}
+ trend="50%"
+ isNegative
+ icon={Trash2}
+ colorClass="text-danger"
+ bgClass="bg-danger/10"
+ />
+ </div>
 
-      {/* Tabs Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="flex items-center justify-center gap-2 bg-primary text-white rounded-xl py-3 px-4 font-semibold shadow-sm cursor-pointer transition-transform hover:scale-[1.02]">
-          <Utensils size={20} />
-          <span>Food Delivery</span>
-        </div>
-        <div className="flex items-center justify-center gap-2 bg-surface text-foreground border border-border rounded-xl py-3 px-4 font-semibold shadow-sm cursor-pointer hover:bg-background transition-transform hover:scale-[1.02]">
-          <ShoppingBag size={20} />
-          <span>Buy & Get It</span>
-        </div>
-        <div className="flex items-center justify-center gap-2 bg-surface text-foreground border border-border rounded-xl py-3 px-4 font-semibold shadow-sm cursor-pointer hover:bg-background transition-transform hover:scale-[1.02]">
-          <Bike size={20} />
-          <span>Bike Ride</span>
-        </div>
-        <div className="flex items-center justify-center gap-2 bg-surface text-foreground border border-border rounded-xl py-3 px-4 font-semibold shadow-sm cursor-pointer hover:bg-background transition-transform hover:scale-[1.02]">
-          <Car size={20} />
-          <span>Car Booking</span>
-        </div>
-      </div>
+ {/* Tabs Row */}
+ <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+ {[
+ { label: "Food Delivery", icon: Utensils },
+ { label: "Buy & Get It", icon: ShoppingBag },
+ { label: "Bike Ride", icon: Bike },
+ { label: "Car Booking", icon: Car }
+ ].map((tab) => (
+ <div 
+ key={tab.label}
+ onClick={() => setActiveTab(tab.label)}
+ className={`flex items-center justify-center gap-2 rounded-xl py-3 px-4 font-semibold shadow-sm cursor-pointer transition-colors ${
+ activeTab === tab.label 
+ ? 'bg-primary text-white border-primary' 
+ : 'bg-surface text-foreground border border-border hover:bg-background'
+ }`}
+ >
+ <tab.icon size={20} />
+ <span>{tab.label}</span>
+ </div>
+ ))}
+ </div>
 
-      {/* Main Categories Box */}
-      <Card noPadding className="flex flex-col mt-2">
+ {/* Main Categories Box */}
+ <Card noPadding className="flex flex-col mt-2">
 
-          <FilterPanel
-          search={
-            <SearchInput
-              id="category-search"
-              value={searchText}
-              onChange={(event) => setSearchText(event.target.value)}
-              placeholder="Search category by name..."
-            />
-          }
-          actions={
-            <>
-              <Button
-                variant="secondary"
-                size="sm"
-                type="button"
-                className="h-10 w-full sm:w-auto"
-                onClick={() => exportToCSV(filteredCategories, "categories.csv")}
-              >
-                <Download size={14} className="mr-1" />
-                Export
-              </Button>
-              <Button 
-                size="sm" 
-                className="gap-2 shrink-0 shadow-md h-10 w-full sm:w-auto px-4" 
-                onClick={() => navigate("/categories/add")}
-              >
-                <Plus size={16} /> Add Category
-              </Button>
-            </>
-          }
-          filters={
-            <>
-              <Select
-                id="category-status"
-                value={statusFilter}
-                options={statusOptions}
-                onChange={(event) => setStatusFilter(event.target.value)}
-                className="w-full lg:w-[150px]"
-              />
-            </>
-          }
-          hasActiveFilters={hasFilters}
-          onReset={resetFilters}
-        />
-      </Card>
+ <FilterPanel
+ search={
+ <SearchInput
+ id="category-search"
+ value={searchText}
+ onChange={(event) => setSearchText(event.target.value)}
+ placeholder="Search category by name..."
+ />
+ }
+ actions={
+ <>
+ <Button
+ variant="secondary"
+ size="sm"
+ type="button"
+ className="h-10 w-full sm:w-auto"
+ onClick={() => exportToCSV(filteredCategories, "categories.csv")}
+ >
+ <Download size={14} className="mr-1" />
+ Export
+ </Button>
+ <Button 
+ size="sm" 
+ className="gap-2 shrink-0 shadow-md h-10 w-full sm:w-auto px-4" 
+ onClick={() => navigate(`/categories/add?parent=${encodeURIComponent(activeTab)}`)}
+ >
+ <Plus size={16} /> Add Category
+ </Button>
+ </>
+ }
+ filters={
+ <>
+ <Select
+ id="category-status"
+ value={statusFilter}
+ options={statusOptions}
+ onChange={(event) => setStatusFilter(event.target.value)}
+ className="w-full lg:w-37.5"
+ />
+ </>
+ }
+ hasActiveFilters={hasFilters}
+ onReset={resetFilters}
+ />
+ </Card>
 
-      {/* Categories table */}
-      <div className="flex flex-col gap-6 mt-2">
-          {error ? (
-            <div className="p-8 text-center text-sm font-medium text-danger">
-              {error}
-            </div>
-          ) : (
-            <Table
-              headers={categoryTableHeaders}
-              currentCount={paginatedCategories.length}
-              totalCount={filteredCategories.length}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              minWidth="1000px"
-              className="border-0 shadow-none rounded-none bg-transparent"
-            >
-            {loading ? (
-              <tr>
-                <td
-                  colSpan={categoryTableHeaders.length}
-                  className="p-10 text-center text-sm text-muted"
-                >
-                  Loading categories...
-                </td>
-              </tr>
-            ) : paginatedCategories.length ? (
-              paginatedCategories.map((category, index) => (
-                <tr
-                  key={category.id}
-                  className="border-b border-border last:border-0 transition-colors hover:bg-background/50 bg-surface"
-                >
-                  <td className="whitespace-nowrap px-5 py-4 font-medium text-foreground">
-                    {String((currentPage - 1) * itemsPerPage + index + 1).padStart(2, "0")}
-                  </td>
-                  
-                  <td className="px-5 py-4">
-                    <div 
-                      className="flex items-center gap-3 cursor-pointer group"
-                      onClick={() => navigate(`/categories/${category.id}`)}
-                    >
-                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${getCategoryIconBg(category.name)}`}>
-                        {getCategoryIcon(category.name)}
-                      </div>
-                      <span className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">
-                        {category.name}
-                      </span>
-                    </div>
-                  </td>
+ {/* Categories table */}
+ <div className="flex flex-col gap-6 mt-2">
+ {error ? (
+ <div className="p-8 text-center text-sm font-medium text-danger">
+ {error}
+ </div>
+ ) : (
+ <Table
+ headers={categoryTableHeaders}
+ currentCount={paginatedCategories.length}
+ totalCount={filteredCategories.length}
+ currentPage={currentPage}
+ totalPages={totalPages}
+ onPageChange={setCurrentPage}
+ minWidth="1000px"
+ className="border-0 shadow-none rounded-none bg-transparent"
+ >
+ {loading ? (
+ <tr>
+ <td
+ colSpan={categoryTableHeaders.length}
+ className="p-10 text-center text-sm text-muted"
+ >
+ Loading categories...
+ </td>
+ </tr>
+ ) : paginatedCategories.length ? (
+ paginatedCategories.map((category, index) => (
+ <tr
+ key={category.id}
+ onClick={() => navigate(`/categories/${category.id}`)}
+ className="border-b border-border last:border-0 transition-colors hover:bg-background/50 bg-surface cursor-pointer"
+ >
+ <td className="whitespace-nowrap px-5 py-4 font-medium text-foreground">
+ {String((currentPage - 1) * itemsPerPage + index + 1).padStart(2, "0")}
+ </td>
+ 
+ <td className="px-5 py-4">
+ <div className="flex items-center gap-3 group">
+ <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${getCategoryIconBg(category.name)}`}>
+ {getCategoryIcon(category.name)}
+ </div>
+ <span className="font-semibold text-foreground text-sm">
+ {category.name}
+ </span>
+ </div>
+ </td>
 
-                  <td className="px-5 py-4 text-sm font-medium text-muted">
-                    {category.parentId ? (categories.find(c => c.id === category.parentId)?.name || category.parentId) : "-"}
-                  </td>
+ <td className="px-5 py-4 text-sm font-medium text-muted">
+ {category.parentId || activeTab}
+ </td>
 
-                  <td className="px-5 py-4 text-sm text-muted max-w-[200px] truncate">
-                    {category.description || "-"}
-                  </td>
+ <td className="px-5 py-4 text-sm text-muted max-w-50 truncate">
+ {category.description || `Various items under ${category.name}`}
+ </td>
 
-                  <td className="px-5 py-4">
-                    <button
-                      type="button"
-                      disabled={category.status === 'Deleted'}
-                      onClick={() => handleToggleStatus(category)}
-                      className={`text-xs font-semibold px-3 py-1.5 rounded-md border transition-all ${
-                        category.status === 'Active'
-                          ? 'bg-success/10 text-success border-success/30 hover:bg-success/20'
-                          : category.status === 'Deleted'
-                          ? 'bg-danger/10 text-danger border-danger/30 cursor-not-allowed'
-                          : 'bg-warning/10 text-warning-dark border-warning/30 hover:bg-warning/20'
-                      }`}
-                    >
-                      {category.status || "Active"}
-                    </button>
-                  </td>
+ <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+ <button
+ type="button"
+ disabled={category.status === 'Deleted'}
+ onClick={(e) => {
+ e.stopPropagation();
+ handleToggleStatus(category);
+ }}
+ className={`text-xs font-semibold px-3 py-1.5 rounded-md border transition-all ${
+ category.status === 'Active'
+ ? 'bg-success/10 text-success border-success/30 hover:bg-success/20'
+ : category.status === 'Deleted'
+ ? 'bg-danger/10 text-danger border-danger/30 cursor-not-allowed'
+ : 'bg-warning/10 text-warning-dark border-warning/30 hover:bg-warning/20'
+ }`}
+ >
+ {category.status || "Active"}
+ </button>
+ </td>
 
-                  <td className="px-5 py-4 text-sm font-medium text-muted">
-                    {category.itemCount || 0}
-                  </td>
+ <td className="px-5 py-4 text-sm font-medium">
+ <span 
+ className="text-primary hover:underline cursor-pointer"
+ onClick={(e) => {
+ e.stopPropagation();
+ navigate(`/categories/${category.id}`);
+ }}
+ >
+ {category.itemCount || 0} Items
+ </span>
+ </td>
 
-                  <td className="whitespace-nowrap px-5 py-4">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium text-foreground">
-                        {category.createdDate ? new Date(category.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "16 Jan 2025"}
-                      </span>
-                      <span className="text-xs text-muted">
-                        10:24 AM
-                      </span>
-                    </div>
-                  </td>
+ <td className="whitespace-nowrap px-5 py-4">
+ <div className="flex flex-col">
+ <span className="text-sm font-medium text-foreground">
+ {category.createdDate ? new Date(category.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "16 Jan 2025"}
+ </span>
+ <span className="text-xs text-muted">
+ 10:24 AM
+ </span>
+ </div>
+ </td>
 
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2">
-                      <ActionMenu
-                        actions={[
-                          {
-                            label: "View",
-                            icon: Eye,
-                            onClick: () => navigate(`/categories/${category.id}`),
-                          },
-                          {
-                            label: "Edit",
-                            icon: Pencil,
-                            onClick: () => navigate(`/categories/edit/${category.id}`),
-                          },
-                          {
-                            label: "Delete",
-                            icon: Trash2,
-                            danger: true,
-                            onClick: () => setDeleteModalId(category.id),
-                          },
-                        ]}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={categoryTableHeaders.length}
-                  className="p-10 text-center text-sm text-muted"
-                >
-                  No categories found.
-                </td>
-              </tr>
-            )}
-          </Table>
-        )}
-      </div>
-      
-      <Modal 
-        isOpen={!!deleteModalId} 
-        onClose={() => setDeleteModalId(null)} 
-        title="Delete Category"
-      >
-        <p className="text-sm text-muted">Are you sure you want to delete this category? This action cannot be undone.</p>
-        <div className="mt-6 flex justify-end gap-3">
-          <Button variant="secondary" onClick={() => setDeleteModalId(null)}>Cancel</Button>
-          <Button className="bg-danger hover:bg-danger/90 text-white border-0" onClick={handleDeleteCategory}>Delete</Button>
-        </div>
-      </Modal>
-    </section>
-  );
+ <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+ <div className="flex items-center gap-2">
+ <ActionMenu
+ actions={[
+ {
+ label: "View",
+ icon: Eye,
+ onClick: () => navigate(`/categories/${category.id}`),
+ },
+ {
+ label: "Edit",
+ icon: Pencil,
+ onClick: () => navigate(`/categories/edit/${category.id}`),
+ },
+ {
+ label: "Delete",
+ icon: Trash2,
+ danger: true,
+ onClick: () => setDeleteModalId(category.id),
+ },
+ ]}
+ />
+ </div>
+ </td>
+ </tr>
+ ))
+ ) : (
+ <tr>
+ <td
+ colSpan={categoryTableHeaders.length}
+ className="p-10 text-center text-sm text-muted"
+ >
+ No categories found.
+ </td>
+ </tr>
+ )}
+ </Table>
+ )}
+ </div>
+ 
+ <Modal 
+ isOpen={!!deleteModalId} 
+ onClose={() => setDeleteModalId(null)} 
+ title="Delete Category"
+ >
+ <p className="text-sm text-muted">Are you sure you want to delete this category? This action cannot be undone.</p>
+ <div className="mt-6 flex justify-end gap-3">
+ <Button variant="secondary" onClick={() => setDeleteModalId(null)}>Cancel</Button>
+ <Button className="bg-danger hover:bg-danger/90 text-white border-0" onClick={handleDeleteCategory}>Delete</Button>
+ </div>
+ </Modal>
+ </section>
+ );
 }

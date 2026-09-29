@@ -1,335 +1,126 @@
 {
   "users": [
     {
-      "id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "public_id": "01M2JJETQ6WJ112WB6SN2KZE6E",
-      "name": "Haripriyan N",
-      "email": "hari@gmail.com",
-      "mobileNumber": "8438285161",
+      "id": "WGAOOLL"
+    },
+    {
+      "id": "7BT_qRl"
+    },
+    {
+      "id": "01M3C77C0V944H9787HZK71YRJ",
+      "public_id": "01M3C77C0VT4JD12ZZ3F5D8Q78",
+      "name": "Dias S",
+      "email": "dias@gmail.com",
+      "mobileNumber": "0312888888",
       "role": "Customer",
       "status": "Active",
       "isVerified": true,
-      "joinedOn": "2026-09-15",
-      "profileImage": "/uploads/01M2MWRQ98A3HHRJHNHZCDYST4.jpg"
+      "joinedOn": "2026-09-25",
+      "profileImage": "/uploads/01M3C77C0E9Q9JVH4EEH32C0F8.png",
+      "address": "No 45, Anna Nagar West, 6th Main Road, Chennai"
     },
     {
-      "id": "01M2JMAM1C56EPQZ6N9VD1G62B",
-      "name": "Dias S",
-      "email": "admin@vayzo.com",
-      "mobileNumber": "0975177502",
-      "phone": "0975177502",
-      "role": "Delivery Partner",
+      "id": "01M3M3WWGCG4Z87GY73TTTW1EB",
+      "public_id": "01M3M3WWGCGE34ZAYD5V63Q5SW",
+      "name": "Haripriyan N",
+      "email": "hari@gmail.com",
+      "mobileNumber": "9746428283",
+      "role": "Customer",
       "status": "Active",
-      "profileImage": "/uploads/01M2JMAKZ2V5FQQ7F9B1KBM7FX.jpeg"
+      "isVerified": true,
+      "joinedOn": "2026-09-28",
+      "profileImage": "/uploads/01M3M3WWF4QWP7T5CED9YMZQ6G.jpeg"
     }
   ],
   "orders": [
     {
-      "orderId": "ORD2001",
-      "customerName": "Prathap M 1",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2001",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2003",
-      "customerName": "Prathap M 3",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2003",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2004",
-      "customerName": "Prathap M 4",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2004",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2005",
-      "customerName": "Prathap M 5",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2005",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2006",
-      "customerName": "Prathap M 6",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2006",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2007",
-      "customerName": "Prathap M 7",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2007",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2009",
-      "customerName": "Prathap M 9",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2009",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2010",
-      "customerName": "Prathap M 10",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2010",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2011",
-      "customerName": "Prathap M 11",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2011",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2013",
-      "customerName": "Prathap M 13",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2013",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2014",
-      "customerName": "Prathap M 14",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2014",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2015",
-      "customerName": "Prathap M 15",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2015",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2016",
-      "customerName": "Prathap M 16",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2016",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2017",
-      "customerName": "Prathap M 17",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2017",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2018",
-      "customerName": "Prathap M 18",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2018",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2019",
-      "customerName": "Prathap M 19",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2019",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
-      "orderId": "ORD2020",
-      "customerName": "Prathap M 20",
-      "restaurantName": "Murugan Kadai",
-      "status": "DELIVERED",
-      "paymentStatus": "PAID",
-      "amount": 420,
-      "orderDate": "2026-08-27 11:20",
-      "deliveryPartner": "Sankar P",
-      "city": "Madurai",
-      "id": "ORD2020",
-      "deliveryPartnerVehicle": "Bike"
-    },
-    {
+      "id": "ORD-20260928-1001",
       "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "INVALID",
-      "id": "mdXCoCK"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "FOOD",
       "restaurant_id": "RST003",
-      "id": "zfo6YsU"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "BIKE_RIDE",
-      "id": "aS9hrHw"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "FOOD",
-      "restaurant_id": "RST003",
+      "status": "completed",
+      "total_estimated_amount": 850,
+      "created_at": "2026-09-28T06:52:45.735Z",
+      "payment_method": "UPI",
+      "payment_status": "Paid",
+      "dropoff_address_snapshot": "No 45, Anna Nagar West, 6th Main Road, Chennai",
+      "pickup_address_snapshot": "12, T.Nagar, Chennai",
+      "customer": {
+        "name": "Haripriyan N",
+        "email": "hari@gmail.com",
+        "phone": "8438285161"
+      },
+      "restaurant": {
+        "name": "Sangeetha Veg",
+        "phone": "+91 98765 43212",
+        "address": "78, T Nagar, Chennai - 600017"
+      },
       "items": [
         {
-          "name": "Pizza",
-          "quantity": 1
-        }
-      ],
-      "id": "3ON7KrP"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "INVALID",
-      "id": "Eyw5Wyi"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "FOOD",
-      "restaurant_id": "RST003",
-      "id": "vrQleft"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "BIKE_RIDE",
-      "id": "x3X7sID"
-    },
-    {
-      "customer_id": "new_cust",
-      "service_type": "FOOD",
-      "restaurant_id": "RST003",
-      "items": [
+          "id": "ITM1",
+          "name": "Mutton Biryani",
+          "variant": "Regular",
+          "quantity": 2,
+          "price": 300,
+          "total": 600
+        },
         {
-          "name": "Pizza",
-          "quantity": 1
-        }
-      ],
-      "id": "elPYBS2",
-      "status": "completed"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "BUY_GET",
-      "text_instruction": "Buy bread",
-      "pickups": [
+          "id": "ITM2",
+          "name": "Chicken 65",
+          "variant": "Half",
+          "quantity": 1,
+          "price": 150,
+          "total": 150
+        },
         {
-          "address": "Shop 1"
+          "id": "ITM3",
+          "name": "Coke",
+          "variant": "500ml",
+          "quantity": 2,
+          "price": 50,
+          "total": 100
         }
       ],
-      "id": "NEpW4bu"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "BIKE_RIDE",
-      "ride_details": {
-        "pickup": "A",
-        "drop": "B"
-      },
-      "id": "Zj-_Oj8"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "CAR_RIDE",
-      "ride_details": {
-        "pickup": "X",
-        "drop": "Y"
-      },
-      "id": "uB7KMnN"
+      "assignments": [
+        {
+          "partner_id": "Y1zeTMOWroc",
+          "status": "completed"
+        }
+      ],
+      "status_history": [
+        {
+          "status": "requested",
+          "timestamp": "2026-09-28T09:00:00Z"
+        },
+        {
+          "status": "restaurant_accepted",
+          "timestamp": "2026-09-28T09:05:00Z"
+        },
+        {
+          "status": "food_ready",
+          "timestamp": "2026-09-28T09:15:00Z"
+        },
+        {
+          "status": "searching_partner",
+          "timestamp": "2026-09-28T09:16:00Z"
+        },
+        {
+          "status": "partner_assigned",
+          "timestamp": "2026-09-28T09:18:00Z"
+        },
+        {
+          "status": "out_for_delivery",
+          "timestamp": "2026-09-28T09:20:00Z"
+        },
+        {
+          "status": "completed",
+          "timestamp": "2026-09-28T09:40:00Z"
+        }
+      ],
+      "partner_id": "01M2JMAM1C56EPQZ6N9VD1G62B",
+      "assignment": {
+        "partner_id": "01M3CBYEYPKV0C6PZ071WRBFNS",
+        "assignment_status": "completed"
+      }
     }
   ],
   "dashboard": {
@@ -339,15 +130,15 @@
         "trend": "+15.6% vs last week"
       },
       "grossRevenue": {
-        "value": "â‚¹12,48,650",
+        "value": "₹12,48,650",
         "trend": "+18.3% vs last week"
       },
       "commission": {
-        "value": "â‚¹1,87,425",
+        "value": "₹1,87,425",
         "trend": "+16.7% vs last week"
       },
       "netRevenue": {
-        "value": "â‚¹10,61,225",
+        "value": "₹10,61,225",
         "trend": "+17.2% vs last week"
       },
       "newUsers": {
@@ -357,39 +148,11 @@
     },
     "recentOrders": [
       {
-        "id": "ORD124587",
+        "id": "ORD-20260928-1001",
         "restaurant": "ABC Cafe",
-        "amount": "â‚¹589.00",
+        "amount": "₹589.00",
         "date": "21 May, 10:30 AM",
         "status": "Delivered"
-      },
-      {
-        "id": "ORD124586",
-        "restaurant": "Pizza Hub",
-        "amount": "â‚¹349.00",
-        "date": "21 May, 10:20 AM",
-        "status": "Out for Delivery"
-      },
-      {
-        "id": "ORD124585",
-        "restaurant": "Food Express",
-        "amount": "â‚¹678.00",
-        "date": "21 May, 10:15 AM",
-        "status": "Preparing"
-      },
-      {
-        "id": "ORD124584",
-        "restaurant": "Burger Point",
-        "amount": "â‚¹420.00",
-        "date": "21 May, 10:05 AM",
-        "status": "Confirmed"
-      },
-      {
-        "id": "ORD124583",
-        "restaurant": "Spice House",
-        "amount": "â‚¹315.00",
-        "date": "21 May, 09:55 AM",
-        "status": "Pending"
       }
     ],
     "ordersByService": [
@@ -446,31 +209,31 @@
         "id": 1,
         "name": "ABC Cafe",
         "orders": 1245,
-        "revenue": "â‚¹2,45,320"
+        "revenue": "₹2,45,320"
       },
       {
         "id": 2,
         "name": "Food Express",
         "orders": 985,
-        "revenue": "â‚¹1,87,650"
+        "revenue": "₹1,87,650"
       },
       {
         "id": 3,
         "name": "Pizza Hub",
         "orders": 876,
-        "revenue": "â‚¹1,45,230"
+        "revenue": "₹1,45,230"
       },
       {
         "id": 4,
         "name": "Burger Point",
         "orders": 765,
-        "revenue": "â‚¹1,25,450"
+        "revenue": "₹1,25,450"
       },
       {
         "id": 5,
         "name": "Spice House",
         "orders": 654,
-        "revenue": "â‚¹98,750"
+        "revenue": "₹98,750"
       }
     ],
     "recentTransactions": [
@@ -478,7 +241,7 @@
         "id": "TXN984512",
         "type": "Order Payment",
         "related": "Order #ORD124587",
-        "amount": "â‚¹589.00",
+        "amount": "₹589.00",
         "method": "UPI",
         "status": "Success",
         "date": "21 May 2024, 10:30 AM"
@@ -487,7 +250,7 @@
         "id": "TXN984511",
         "type": "Payout",
         "related": "Payout to Karthik Raj",
-        "amount": "â‚¹1,245.00",
+        "amount": "₹1,245.00",
         "method": "Bank Transfer",
         "status": "Success",
         "date": "21 May 2024, 09:15 AM"
@@ -496,7 +259,7 @@
         "id": "TXN984510",
         "type": "Commission",
         "related": "Order #ORD124586",
-        "amount": "â‚¹52.35",
+        "amount": "₹52.35",
         "method": "Wallet",
         "status": "Success",
         "date": "21 May 2024, 09:10 AM"
@@ -505,7 +268,7 @@
         "id": "TXN984509",
         "type": "Refund",
         "related": "Order #ORD124581",
-        "amount": "â‚¹320.00",
+        "amount": "₹320.00",
         "method": "UPI",
         "status": "Refunded",
         "date": "20 May 2024, 08:45 PM"
@@ -514,7 +277,7 @@
         "id": "TXN984508",
         "type": "Order Payment",
         "related": "Order #ORD124582",
-        "amount": "â‚¹420.00",
+        "amount": "₹420.00",
         "method": "Card",
         "status": "Success",
         "date": "20 May 2024, 08:20 PM"
@@ -530,7 +293,7 @@
         "trend": "-3.2%"
       },
       "avgOrderValue": {
-        "value": "â‚¹288.40",
+        "value": "₹288.40",
         "trend": "+11.6%"
       },
       "repeatCustomers": {
@@ -946,7 +709,7 @@
       "usageMax": 30,
       "validFrom": "2026-10-02",
       "validTo": "2026-09-30",
-      "status": "SCHEDULED",
+      "status": "ACTIVE",
       "color": "primary",
       "platform": "App",
       "createdAt": "2026-09-21T07:57:15.196Z",
@@ -960,15 +723,15 @@
       "fullName": "Anna Nagar, Madurai, Tamil Nadu",
       "zone": "North Zone",
       "city": "Madurai",
-      "status": "INACTIVE",
+      "status": "ACTIVE",
       "orders30d": 1250,
-      "color": "warning"
+      "color": "success"
     },
     {
       "id": "2",
       "name": "Bharath Nagar",
       "fullName": "Bharath Nagar, melur, Tamil Nadu",
-      "zone": "Central Zone",
+      "zone": "East Zone",
       "city": "Madurai",
       "status": "ACTIVE",
       "orders30d": 980,
@@ -1082,34 +845,11 @@
       },
       "topPartners": [
         {
-          "name": "Murugan K",
-          "id": "DVP12563",
+          "id": "Y1zeTMOWroc",
+          "name": "HARII",
+          "image": "/images/avatar.jpg",
           "orders": 156,
           "earnings": 18760
-        },
-        {
-          "name": "Selvam R",
-          "id": "DVP12562",
-          "orders": 132,
-          "earnings": 15230
-        },
-        {
-          "name": "Kannan P",
-          "id": "DVP12561",
-          "orders": 128,
-          "earnings": 13890
-        },
-        {
-          "name": "Vikram J",
-          "id": "DVP12559",
-          "orders": 110,
-          "earnings": 12340
-        },
-        {
-          "name": "Sangeetha M",
-          "id": "DVP12558",
-          "orders": 98,
-          "earnings": 10450
         }
       ]
     },
@@ -1885,7 +1625,20 @@
       "id": "Y1zeTMOWroc"
     }
   ],
-  "partner_documents": [],
+  "partner_documents": [
+    {
+      "id": "01M3CB7FG0QKMCXRM9PZ5GD1DP",
+      "partner_id": "01M3CB7FG0KVEH7J4Z2NJS1DWG",
+      "document_type": "aadhaar",
+      "document_number": "123412341234"
+    },
+    {
+      "id": "01M3CB7FG0Z6R5PCS9SRRHQTTE",
+      "partner_id": "01M3CB7FG0KVEH7J4Z2NJS1DWG",
+      "document_type": "pan",
+      "document_number": "ABCDE1234F"
+    }
+  ],
   "partner_vehicles": [
     {
       "id": "01M2J2Q29P812D41TANG380M04",
@@ -1909,6 +1662,14 @@
     {
       "id": "01M3901H8554GT4RQWVBHVJ2MQ",
       "partner_id": "01M3901H85NX11X602755X7SP3"
+    },
+    {
+      "id": "01M3CB7FG08MZTZMRVFN59WJ3S",
+      "partner_id": "01M3CB7FG0KVEH7J4Z2NJS1DWG",
+      "vehicle_type": "Bike",
+      "make": "",
+      "model": "Honda Activa",
+      "registration_number": "TN01AB1234"
     }
   ],
   "partner_bank_accounts": [
@@ -1931,6 +1692,15 @@
     {
       "id": "01M3901H85NEK18RZ7BR6F5JZV",
       "partner_id": "01M3901H85NX11X602755X7SP3"
+    },
+    {
+      "id": "01M3CB7FG0WYBV4F8NPF2HR8SN",
+      "partner_id": "01M3CB7FG0KVEH7J4Z2NJS1DWG",
+      "bank_name": "State Bank of India",
+      "account_holder_name": "Test Partner",
+      "account_number": "12345678901234",
+      "ifsc_code": "SBIN0001234",
+      "is_primary": true
     }
   ],
   "restaurant_categories": [
@@ -2019,139 +1789,93 @@
   ],
   "requests": [
     {
+      "id": "ORD-20260928-1001",
       "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "FOOD",
       "restaurant_id": "RST003",
-      "items": [
-        {
-          "name": "Pizza",
-          "quantity": 1
-        }
-      ],
-      "id": "01M345SDPSRMKSC26YKDYGBXMG",
-      "status": "cancelled",
-      "created_at": "2026-09-22T09:05:14.459Z",
-      "updated_at": "2026-09-22T09:45:40.695Z",
-      "text_instruction": "leave at door"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "BUY_GET",
-      "text_instruction": "Buy bread",
-      "pickups": [
-        {
-          "address": "Shop 1"
-        }
-      ],
-      "id": "01M345SDQBHBNWTEYEGAZBFWYK",
-      "status": "partner_assigned",
-      "restaurant_id": null,
-      "created_at": "2026-09-22T09:05:14.476Z",
-      "updated_at": "2026-09-22T10:46:53.586Z"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "BIKE_RIDE",
-      "ride_details": {
-        "pickup": "A",
-        "drop": "B"
-      },
-      "id": "01M345SDQV2BVZ4E8RYGQMS5YR",
-      "status": "requested",
-      "restaurant_id": null,
-      "created_at": "2026-09-22T09:05:14.491Z",
-      "updated_at": "2026-09-22T09:05:14.491Z"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "CAR_RIDE",
-      "ride_details": {
-        "pickup": "X",
-        "drop": "Y"
-      },
-      "id": "01M345SDRAK8PD78VM6VSZRFFZ",
-      "status": "requested",
-      "restaurant_id": null,
-      "created_at": "2026-09-22T09:05:14.506Z",
-      "updated_at": "2026-09-22T09:05:14.506Z"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "FOOD",
-      "restaurant_id": "RST003",
-      "items": [
-        {
-          "name": "Pizza",
-          "quantity": 1
-        }
-      ],
-      "id": "01M345T0VAM8Y9W9ZFM5EV22EZ",
       "status": "completed",
-      "created_at": "2026-09-22T09:05:34.058Z",
-      "updated_at": "2026-09-22T09:05:34.267Z",
-      "text_instruction": "Leave at door"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "BUY_GET",
-      "text_instruction": "Buy bread",
-      "pickups": [
+      "total_estimated_amount": 850,
+      "created_at": "2026-09-28T06:52:45.735Z",
+      "payment_method": "UPI",
+      "payment_status": "Paid",
+      "dropoff_address_snapshot": "No 45, Anna Nagar West, 6th Main Road, Chennai",
+      "pickup_address_snapshot": "12, T.Nagar, Chennai",
+      "customer": {
+        "name": "Haripriyan N",
+        "email": "hari@gmail.com",
+        "phone": "8438285161"
+      },
+      "restaurant": {
+        "name": "Sangeetha Veg",
+        "phone": "+91 98765 43212",
+        "address": "78, T Nagar, Chennai - 600017"
+      },
+      "items": [
         {
-          "address": "Shop 1"
+          "id": "ITM1",
+          "name": "Mutton Biryani",
+          "variant": "Regular",
+          "quantity": 2,
+          "price": 300,
+          "total": 600
+        },
+        {
+          "id": "ITM2",
+          "name": "Chicken 65",
+          "variant": "Half",
+          "quantity": 1,
+          "price": 150,
+          "total": 150
+        },
+        {
+          "id": "ITM3",
+          "name": "Coke",
+          "variant": "500ml",
+          "quantity": 2,
+          "price": 50,
+          "total": 100
         }
       ],
-      "id": "01M345T0VWCK2T8XVS5HW08X9P",
-      "status": "requested",
-      "restaurant_id": null,
-      "created_at": "2026-09-22T09:05:34.076Z",
-      "updated_at": "2026-09-22T09:05:34.076Z"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "BIKE_RIDE",
-      "ride_details": {
-        "pickup": "A",
-        "drop": "B"
-      },
-      "id": "01M345T0WD6309GC5XWAVH1F57",
-      "status": "requested",
-      "restaurant_id": null,
-      "created_at": "2026-09-22T09:05:34.094Z",
-      "updated_at": "2026-09-22T09:05:34.094Z"
-    },
-    {
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "service_type": "CAR_RIDE",
-      "ride_details": {
-        "pickup": "X",
-        "drop": "Y"
-      },
-      "id": "01M345T0WYDAWWZKY36BP3K9GK",
-      "status": "requested",
-      "restaurant_id": null,
-      "created_at": "2026-09-22T09:05:34.110Z",
-      "updated_at": "2026-09-22T09:05:34.110Z"
-    },
-    {
-      "id": "REQ-FOOD-TEST-001",
-      "service_type": "FOOD",
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "restaurant_id": "RST002",
-      "status": "partner_assigned",
-      "total_estimated_amount": 500,
-      "dropoff_address_snapshot": "123 Main St, Test City",
-      "created_at": "2026-09-22T10:04:20.167Z",
-      "updated_at": "2026-09-22T10:24:08.726Z"
-    },
-    {
-      "id": "REQ-BUYGET-TEST-002",
-      "service_type": "BUY_GET",
-      "customer_id": "01M2JJETQ6JT0BAYG8S1M25A0H",
-      "status": "partner_assigned",
-      "total_estimated_amount": 150,
-      "dropoff_address_snapshot": "456 Buy St, Test City",
-      "created_at": "2026-09-22T10:04:20.167Z",
-      "updated_at": "2026-09-22T10:04:20.167Z"
+      "assignments": [
+        {
+          "partner_id": "Y1zeTMOWroc",
+          "status": "completed"
+        }
+      ],
+      "status_history": [
+        {
+          "status": "requested",
+          "timestamp": "2026-09-28T09:00:00Z"
+        },
+        {
+          "status": "restaurant_accepted",
+          "timestamp": "2026-09-28T09:05:00Z"
+        },
+        {
+          "status": "food_ready",
+          "timestamp": "2026-09-28T09:15:00Z"
+        },
+        {
+          "status": "searching_partner",
+          "timestamp": "2026-09-28T09:16:00Z"
+        },
+        {
+          "status": "partner_assigned",
+          "timestamp": "2026-09-28T09:18:00Z"
+        },
+        {
+          "status": "out_for_delivery",
+          "timestamp": "2026-09-28T09:20:00Z"
+        },
+        {
+          "status": "completed",
+          "timestamp": "2026-09-28T09:40:00Z"
+        }
+      ],
+      "partner_id": "01M2JMAM1C56EPQZ6N9VD1G62B",
+      "assignment": {
+        "partner_id": "01M3CBYEYPKV0C6PZ071WRBFNS",
+        "assignment_status": "completed"
+      }
     }
   ],
   "request_items": [
@@ -2476,6 +2200,13 @@
       "user_id": "01M2MTGGF4H48H71VWAAWSR30K",
       "balance": 0,
       "created_at": "2026-09-16T09:59:31.575Z"
+    },
+    {
+      "id": "01M3BVAPKSPEZ46G8HTNW3X6QY",
+      "public_id": "01M3BVAPKTNYF8DSGBJSYCMRY9",
+      "user_id": "01M3BVAPH6SVRCRHZD4WK15YEA",
+      "balance": 0,
+      "created_at": "2026-09-25T08:36:21.754Z"
     }
   ],
   "wallet_transactions": [],
@@ -2502,6 +2233,11 @@
       "id": "01M2MTGGF4ABD0PDMZYEFNPT7A",
       "user_id": "01M2MTGGF4H48H71VWAAWSR30K",
       "created_at": "2026-09-16T09:59:31.568Z"
+    },
+    {
+      "id": "01M3BVAPJMESA8QRYDYVEV4FC7",
+      "user_id": "01M3BVAPH6SVRCRHZD4WK15YEA",
+      "created_at": "2026-09-25T08:36:21.716Z"
     }
   ],
   "addresses": [],
@@ -2518,23 +2254,6 @@
     }
   ],
   "partner_profiles": [
-    {
-      "id": "Y1zeTMOWroc",
-      "user_id": "Y1zeTMOWroc",
-      "partner_code": "VYZ-PRT-2032",
-      "verification_status": "VERIFIED",
-      "online_status": "Online",
-      "rating_avg": 0,
-      "rating_count": 0,
-      "joined_at": "2026-09-11T13:23:26.484Z",
-      "dateOfBirth": "15 Aug 1995",
-      "gender": "Male",
-      "alternateMobile": "09751775024",
-      "emergencyContact": "Dias S",
-      "emergencyMobile": "09751775024",
-      "address": "145",
-      "city": "Keelayur"
-    },
     {
       "id": "01M2J2Q2984SYMFD0DMWH52WCX",
       "user_id": "01M2J2Q297C4AG26BGAKMMFMXN",
@@ -2554,6 +2273,23 @@
       "partner_code": "DP-660933",
       "online_status": "Online",
       "verification_status": "Pending"
+    },
+    {
+      "id": "01M3CB7FG0KVEH7J4Z2NJS1DWG",
+      "user_id": "01M3CB7FFY6P61A5MKME5N4FNV",
+      "partner_code": "VP-5N4FNV",
+      "verification_status": "Active",
+      "online_status": "Offline",
+      "gender": "Male",
+      "dateOfBirth": "1995-06-15",
+      "alternateMobile": null,
+      "emergencyContact": "Test Contact",
+      "emergencyMobile": "9100000002",
+      "address": "123 Test Street",
+      "city": "Chennai",
+      "rating_avg": 0,
+      "rating_count": 0,
+      "joined_at": "2026-09-25T13:14:13.376Z"
     }
   ],
   "request_assignments": [

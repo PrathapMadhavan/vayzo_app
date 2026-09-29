@@ -1,17 +1,33 @@
 // Partner Aggregation logic for mock server
 function getPartnerAggregatedData(db, partnerId) {
-  // Try to find by id or public partner_code
-  let profile = db.partner_profiles.find(p => p.id === partnerId || p.partner_code === partnerId);
+  let profile = null;
+  
+  if (db.partner_profiles) {
+    profile = db.partner_profiles.find(p => p.id === partnerId || p.partner_code === partnerId);
+    if (!profile && db.users) {
+      const user = db.users.find(u => u.id === partnerId && u.role === 'Delivery Partner');
+      if (user) {
+        profile = db.partner_profiles.find(p => p.user_id === user.id);
+      }
+    }
+  }
+
   // Fallback to legacy partners collection if profile not found
   let legacyPartner = null;
   if (!profile) {
-    legacyPartner = db.partners.find(p => p.id === partnerId);
+    legacyPartner = (db.partners || []).find(p => p.id === partnerId);
     if (!legacyPartner) return null;
   }
   
   const pId = profile ? profile.id : legacyPartner.id;
   const userId = profile ? profile.user_id : null;
-  const user = userId ? db.users.find(u => u.id === userId) : legacyPartner;
+  let user = userId ? (db.users || []).find(u => u.id === userId) : legacyPartner;
+  
+  if (!user && profile) {
+    // If we have a profile but no user, it might be a legacy partner where the profile points to a partner in the legacy partners collection instead of users.
+    legacyPartner = (db.partners || []).find(p => p.id === userId);
+    user = legacyPartner;
+  }
   
   if (!user && !legacyPartner) return null;
 
@@ -67,6 +83,7 @@ function getPartnerAggregatedData(db, partnerId) {
       partnerId: profile ? profile.partner_code : (legacyPartner ? legacyPartner.id : pId),
       name: user.name,
       status: user.status || (profile ? profile.verification_status : legacyPartner.status),
+      onlineStatus: user.onlineStatus || (legacyPartner ? legacyPartner.onlineStatus : 'Offline'),
       mobileNumber: user.mobileNumber,
       email: user.email,
       joinedAt: user.joinedOn || (profile ? profile.joined_at : ''),
