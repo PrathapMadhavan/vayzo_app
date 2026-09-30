@@ -75,7 +75,7 @@ function Table({
  ))}
  </tr>
  </thead>
- <tbody className="[&_tr]:h-16 [&_td]:align-middle [&_tr]:transition-all [&_tr:hover]:bg-primary/5 hover:[&_tr]:border-primary/50 hover:[&_tr_.text-foreground]:text-primary hover:[&_tr_.text-muted]:text-primary/80 [&_tr]:border-b [&_tr]:border-border [&_tr:last-child]:border-b-0">
+ <tbody className="[&_tr]:h-16 [&_td]:align-middle [&_tr]:transition-all [&_tr:hover]:bg-primary/5 [&_tr:hover]:border-primary/50 [&_tr:hover_.text-foreground]:text-primary [&_tr:hover_.text-muted]:text-primary/80 [&_tr]:border-b [&_tr]:border-border [&_tr:last-child]:border-b-0">
  {children}
  </tbody>
  </table>
