@@ -155,8 +155,8 @@ function Select({
  ? "cursor-not-allowed opacity-50"
  : "cursor-pointer",
  isSelected
- ? "bg-primary text-white"
- : "bg-surface text-foreground hover:bg-primary-light hover:text-primary",
+ ? "bg-primary/10 text-primary font-medium"
+ : "bg-surface text-foreground hover:bg-primary/5 hover:text-primary",
  ].join(" ")}
  >
  {option.label}
@@ -178,3 +178,4 @@ function Select({
 }
 
 export default Select;
+
