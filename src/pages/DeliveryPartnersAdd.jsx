@@ -86,15 +86,9 @@ function DeliveryPartnersAdd() {
  const loadPartnerData = async () => {
  try {
  setLoading(true);
- const data = await getDeliveryPartnerById(id);
+ const data = await getDeliveryPartnerById(id) || {};
 
- // API returns nested: { partner, personalDetails, vehicle, bankAccount, documents }
- const p = data.partner || {};
- const pd = data.personalDetails || {};
- const v = data.vehicle || {};
- const ba = data.bankAccount || {};
-
- const fullName = p.name || "";
+ const fullName = data.name || "";
  const nameParts = fullName.split(' ');
  const firstName = nameParts[0] || "";
  const lastName = nameParts.slice(1).join(' ');
@@ -102,32 +96,32 @@ function DeliveryPartnersAdd() {
  setForm({
  firstName,
  lastName,
- email: p.email || "",
- mobileNumber: p.mobileNumber || "",
- dateOfBirth: pd.dateOfBirth || "",
- gender: pd.gender || "Male",
- alternateMobile: pd.alternateMobile || "",
- emergencyContact: pd.emergencyContact || "",
- emergencyMobile: pd.emergencyMobile || "",
- address: pd.address || "",
- city: pd.city || "",
- vehicleType: v.vehicleType || vehicleOptions[0],
- vehicleName: v.vehicleName || "",
- vehicleNumber: v.vehicleNumber || "",
- rcNumber: v.rcNumber || "",
- insuranceProvider: v.insuranceProvider || "",
- insuranceNumber: v.insuranceNumber || "",
- insuranceValidTill: v.validTill || "",
- bankName: ba.bankName || "",
- accountHolderName: ba.accountHolderName || "",
- accountNumber: ba.accountNumberMasked || "",
- ifscCode: ba.ifscCode || "",
- status: p.status || statusOptions[0],
- onlineStatus: p.onlineStatus || onlineStatusOptions[0],
- aadhaarNumber: pd.aadhaarNumber || "",
- panNumber: pd.panNumber || "",
+ email: data.email || "",
+ mobileNumber: data.mobileNumber || "",
+ dateOfBirth: data.dateOfBirth || "",
+ gender: data.gender || "Male",
+ alternateMobile: data.alternateMobile || "",
+ emergencyContact: data.emergencyContact || "",
+ emergencyMobile: data.emergencyMobile || "",
+ address: data.address || "",
+ city: data.city || "",
+ vehicleType: data.vehicleType || vehicleOptions[0],
+ vehicleName: data.vehicleName || "",
+ vehicleNumber: data.vehicleNumber || "",
+ rcNumber: data.rcNumber || "",
+ insuranceProvider: data.insuranceProvider || "",
+ insuranceNumber: data.insuranceNumber || "",
+ insuranceValidTill: data.insuranceValidTill || "",
+ bankName: data.bankName || "State Bank of India",
+ accountHolderName: data.accountHolderName || "",
+ accountNumber: data.accountNumber || "",
+ ifscCode: data.ifscCode || "",
+ status: data.status || statusOptions[0],
+ onlineStatus: data.onlineStatus || onlineStatusOptions[0],
+ aadhaarNumber: data.aadhaarNumber || "",
+ panNumber: data.panNumber || "",
  });
- setImagePreview(p.profileImage || null);
+ setImagePreview(data.profileImage || null);
 
  // Map documents array to preview URLs by type
  const docs = Array.isArray(data.documents) ? data.documents : [];
@@ -250,7 +244,7 @@ function DeliveryPartnersAdd() {
  <section className="min-h-full bg-background p-4 sm:p-6">
  <div className="mx-auto max-w-7xl space-y-4">
  {/* Premium Page Header */}
- <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-primary to-primary-hover p-8 shadow-lg mb-6">
+ <div className="relative rounded-2xl bg-linear-to-r from-primary to-primary-hover p-8 shadow-lg mb-6">
  <div className="absolute top-0 right-0 -mt-10 -mr-10 h-40 w-40 rounded-full bg-white opacity-10 blur-2xl"></div>
  <div className="absolute bottom-0 left-10 -mb-10 h-32 w-32 rounded-full bg-white opacity-10 blur-2xl"></div>
  <div className="relative z-10 flex items-center justify-between">
@@ -298,7 +292,7 @@ function DeliveryPartnersAdd() {
  {error}
  </div>
  )}
- <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative overflow-hidden">
+ <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative">
  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
  <div className="mb-6 flex flex-col gap-1">
  <h2 className="text-lg font-semibold text-foreground">
@@ -392,7 +386,7 @@ function DeliveryPartnersAdd() {
  </span>
  <label
  htmlFor="profile-image"
- className="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-surface-hover/30 hover:bg-surface-hover hover:border-primary/50 transition-all text-center p-2 group h-48 lg:h-full relative overflow-hidden"
+ className="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-surface-hover/30 hover:bg-surface-hover hover:border-primary/50 transition-all text-center p-2 group h-48 lg:h-full relative"
  >
  <input
  type="file"
@@ -425,7 +419,7 @@ function DeliveryPartnersAdd() {
  </div>
  </div>
  
- <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative overflow-hidden">
+ <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative">
  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
  <h2 className="text-lg font-semibold text-foreground">
  Emergency Contact
@@ -450,7 +444,7 @@ function DeliveryPartnersAdd() {
  </div>
  </div>
 
- <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative overflow-hidden">
+ <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative">
  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
  <h2 className="text-lg font-semibold text-foreground">
  Address
@@ -463,7 +457,7 @@ function DeliveryPartnersAdd() {
  </div>
  </div>
 
- <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative overflow-hidden">
+ <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative">
  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
  <h2 className="text-lg font-semibold text-foreground">
  Vehicle Information
@@ -483,7 +477,7 @@ function DeliveryPartnersAdd() {
  </div>
  </div>
  
- <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative overflow-hidden">
+ <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative">
  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
  <h2 className="text-lg font-semibold text-foreground">
  Insurance
@@ -495,7 +489,7 @@ function DeliveryPartnersAdd() {
  </div>
  </div>
  
- <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative overflow-hidden">
+ <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative">
  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
  <h2 className="text-lg font-semibold text-foreground">
  Bank Information
@@ -523,7 +517,7 @@ function DeliveryPartnersAdd() {
  </div>
  </div>
  
- <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative overflow-hidden">
+ <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative">
  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
  <h2 className="text-lg font-semibold text-foreground">
  Account Information
@@ -548,7 +542,7 @@ function DeliveryPartnersAdd() {
  </div>
  </div>
  
- <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative overflow-hidden">
+ <div className="rounded-xl border border-border bg-surface shadow-sm p-4 sm:p-8 group hover:border-primary/50 transition-colors relative">
  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
  <div className="mb-6 flex flex-col gap-1">
  <h2 className="text-lg font-semibold text-foreground">
@@ -566,7 +560,7 @@ function DeliveryPartnersAdd() {
  <div key={doc.key} className="flex flex-col gap-3 rounded-xl border border-border p-4 bg-background/50">
  <span className="text-sm font-medium text-foreground">{doc.label}</span>
  <div 
- className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface text-center p-2 h-32 relative overflow-hidden cursor-pointer hover:bg-muted/10 transition-colors"
+ className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-surface text-center p-2 h-32 relative cursor-pointer hover:bg-muted/10 transition-colors"
  onClick={() => document.getElementById(doc.fileKey).click()}
  >
  <input 
@@ -636,7 +630,7 @@ function DeliveryPartnersAdd() {
  </form>
 
  <aside className="hidden xl:flex flex-col gap-6">
- <div className="rounded-xl border border-border bg-surface p-6 shadow-sm group hover:border-primary/50 transition-colors relative overflow-hidden">
+ <div className="rounded-xl border border-border bg-surface p-6 shadow-sm group hover:border-primary/50 transition-colors relative">
  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
  <h2 className="text-base font-semibold text-foreground border-b border-border pb-4 mb-4">
  Partner Guidelines
@@ -654,7 +648,7 @@ function DeliveryPartnersAdd() {
  </div>
  </div>
  
- <div className="rounded-xl border border-border bg-surface p-6 shadow-sm group hover:border-primary/50 transition-colors relative overflow-hidden">
+ <div className="rounded-xl border border-border bg-surface p-6 shadow-sm group hover:border-primary/50 transition-colors relative">
  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
  <h2 className="text-base font-semibold text-foreground border-b border-border pb-4 mb-4">
  Status Guide
@@ -712,3 +706,6 @@ function DeliveryPartnersAdd() {
 }
 
 export default DeliveryPartnersAdd;
+
+
+
