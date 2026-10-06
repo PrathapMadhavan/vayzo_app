@@ -268,7 +268,7 @@
   "restaurants": [
     {
       "name": "Hari foods ",
-      "slug": "Hari-foods",
+      "slug": "hari-foods-",
       "cuisines": [
         "South Indian Foods",
         "Biryani"
@@ -277,14 +277,14 @@
       "ownerName": "Hari",
       "address": "78, T Nagar, Chennai - 600017",
       "city": "Chennai",
-      "phone": "98765 43212",
+      "phone": "+91 9876543212",
       "email": "harifoods@gmail.com",
       "status": "Active",
-      "deliveryTime": "15-25 mins",
+      "deliveryTime": "30",
       "minimumOrder": 30,
       "deliveryCharge": 25,
-      "openingTime": "07:30 AM",
-      "closingTime": "10:00 PM",
+      "openingTime": "10:00",
+      "closingTime": "22:00",
       "menuItems": [
         {
           "id": "temp-1791270736499",

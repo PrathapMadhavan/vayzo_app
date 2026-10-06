@@ -48,7 +48,7 @@ const StatBox = ({ label, value, sub, color = 'default', className = "" }) => {
   return (
     <div className={`flex flex-col gap-1 px-3 sm:px-4 ${className} min-w-0`}>
       <p className={`text-[11px] sm:text-xs whitespace-nowrap ${color === 'white' ? 'text-white/70' : 'text-muted'}`}>{label}</p>
-      <div className={`text-sm sm:text-base font-bold truncate ${colorMap[color] || colorMap.default}`}>{getValue(value)}</div>
+      <div className={`text-sm sm:text-base font-bold ${colorMap[color] || colorMap.default}`}>{getValue(value)}</div>
       {sub && <p className={`text-xs ${color === 'white' ? 'text-white/50' : (colorMap[color] || colorMap.muted)}`}>{sub}</p>}
     </div>
   );
@@ -476,8 +476,14 @@ function RestaurantsDetails() {
       <div className="hidden lg:block h-24 w-px bg-white/20 mx-2 shrink-0 relative z-10" />
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-6 lg:gap-y-8 w-full flex-1 pb-2 lg:pb-0 relative z-10">
+      <div className="flex flex-wrap items-start gap-x-8 gap-y-6 lg:gap-y-8 w-full flex-1 pb-2 lg:pb-0 relative z-10">
         <StatBox label="Restaurant ID" value={restaurant?.id} color="white" />
+        <StatBox label="Total Orders" value={restaurant?.totalOrders || '--'} color="white" />
+        <StatBox label="Min Order" value={restaurant?.minimumOrder ? `₹${restaurant.minimumOrder}` : '--'} color="white" />
+        <StatBox label="Restaurant Time" value={restaurant?.openingTime && restaurant?.closingTime ? `${restaurant.openingTime} - ${restaurant.closingTime}` : '--'} color="white" />
+        <StatBox label="Owner" value={restaurant?.ownerName || restaurant?.owner || "--"} color="white" />
+        <StatBox label="Location" value={[restaurant?.address, restaurant?.city].filter(Boolean).join(', ') || '--'} color="white" className="max-w-xs" />
+        <StatBox label="Menu Items" value={(restaurant?.menuItems || []).length} color="white" />
         <div className="flex flex-col gap-1 px-3 sm:px-4 min-w-0">
           <p className="text-[11px] sm:text-xs whitespace-nowrap text-white/70">Rating</p>
           <div className="flex items-center gap-0.5 mt-1">
@@ -492,10 +498,6 @@ function RestaurantsDetails() {
           </div>
           <p className="text-xs text-white/50">{restaurant?.reviewsCount || 0} reviews</p>
         </div>
-        <StatBox label="Owner" value={restaurant?.ownerName || restaurant?.owner || "--"} color="white" />
-        <StatBox label="Location" value={[restaurant?.address, restaurant?.city].filter(Boolean).join(', ') || '--'} color="white" />
-        <StatBox label="Menu Items" value={(restaurant?.menuItems || []).length} color="white" />
-        <StatBox label="Total Orders" value={restaurant?.totalOrders || '--'} color="white" />
       </div>
     </div>
 

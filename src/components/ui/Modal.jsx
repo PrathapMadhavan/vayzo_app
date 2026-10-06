@@ -23,7 +23,7 @@ function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md" }) {
  </button>
  </div>
 
- <div className="overflow-y-auto scrollbar-thin pr-1 -mr-1">
+ <div className="overflow-y-auto overflow-x-hidden scrollbar-thin pr-1">
  {children}
  </div>
  </div>
