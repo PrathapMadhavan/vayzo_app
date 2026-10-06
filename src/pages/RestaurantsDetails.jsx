@@ -2,7 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { 
  ArrowLeft, MapPin, Phone, Mail, Clock, Store, Star, ShoppingBag, 
  Pencil, Plus, Trash2, CloudUpload, Search, GripVertical,
- Check, ChevronDown, Utensils, Camera , ShieldBan, MessageSquare} from "lucide-react";
+ Check, ChevronDown,
+  Lightbulb, Utensils, Camera , ShieldBan, MessageSquare} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Badge from "../components/ui/Badge";
@@ -14,7 +15,7 @@ import Avatar from "../components/ui/Avatar";
 
 import { getRestaurantById, updateRestaurant, deleteRestaurant, updateRestaurantStatus } from "../api/restaurantsApi";
 import { getCategories } from "../api/categoriesApi";
-import { getProductsByCategory } from "../api/productsApi";
+import { getProductsByCategory, getProductById } from "../api/productsApi";
 import { fileToBase64 } from "../utils/fileUtils";
 
 function CustomToggle({ checked, onChange }) {
@@ -150,7 +151,37 @@ function RestaurantsDetails() {
  const [selectedCategory, setSelectedCategory] = useState("All Categories");
  const [editingMenuItem, setEditingMenuItem] = useState(null);
  
- const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
+  const [editingVariantIndex, setEditingVariantIndex] = useState(-1);
+  const [variantForm, setVariantForm] = useState({ name: "", price: "", image: null });
+  const variantFileInputRef = useRef(null);
+
+  const handleVariantImageChange = async (e) => {
+    if (e.target.files?.[0]) {
+      try {
+        const base64 = await fileToBase64(e.target.files[0]);
+        setVariantForm({ ...variantForm, image: base64 });
+      } catch(err) {}
+    }
+  };
+
+  const handleSaveVariant = (e) => {
+    e.preventDefault();
+    if (!variantForm.name || !variantForm.price) return;
+    setEditingMenuItem(prev => {
+        const newV = [...(prev.variants || prev.varients || [])];
+        if (editingVariantIndex >= 0) {
+            newV[editingVariantIndex] = variantForm;
+        } else {
+            newV.push(variantForm);
+        }
+        return { ...prev, variants: newV, varients: newV };
+    });
+    setIsVariantModalOpen(false);
+  };
+const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [viewingMenuItem, setViewingMenuItem] = useState(null);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
  const [categorySearchText, setCategorySearchText] = useState("");
  const categoryDropdownRef = useRef(null);
 
@@ -306,7 +337,96 @@ function RestaurantsDetails() {
  <ArrowLeft size={16} className="mr-2" /> Back to Restaurants
  </Button>
  </div>
- </section>
+ 
+      {/* Add/Edit Variant Modal */}
+      <Modal
+        isOpen={isVariantModalOpen}
+        onClose={() => setIsVariantModalOpen(false)}
+        title={editingVariantIndex >= 0 ? "Edit Variant" : "Add Variant"}
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleSaveVariant} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-medium text-muted mb-1 block">Variant Name</label>
+              <Input
+                value={variantForm.name}
+                onChange={(e) => setVariantForm({ ...variantForm, name: e.target.value })}
+                placeholder="e.g. Half, Full"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted mb-1 block">Price (₹)</label>
+              <Input
+                type="number"
+                value={variantForm.price}
+                onChange={(e) => setVariantForm({ ...variantForm, price: e.target.value })}
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted mb-2 block">Variant Image (Optional)</label>
+            <div className="flex items-center gap-4">
+              <input
+                type="file"
+                className="hidden"
+                ref={variantFileInputRef}
+                accept="image/*"
+                onChange={handleVariantImageChange}
+              />
+              {variantForm.image ? (
+                <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-border shadow-sm group">
+                  <img
+                    src={variantForm.image}
+                    alt="Variant preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <div 
+                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                    onClick={() => variantFileInputRef.current?.click()}
+                  >
+                    <Pencil size={16} className="text-white" />
+                  </div>
+                  <button
+                    type="button"
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-danger text-white rounded-full flex items-center justify-center"
+                    onClick={() => setVariantForm({ ...variantForm, image: null })}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ) : (
+                <div 
+                  className="w-20 h-20 rounded-lg border border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-surface-hover hover:border-primary/40 transition-colors"
+                  onClick={() => variantFileInputRef.current?.click()}
+                >
+                  <Plus size={20} className="text-muted mb-1" />
+                  <span className="text-[10px] text-muted">Upload</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-border mt-6">
+            <button
+              type="button"
+              className="px-4 py-2 rounded-lg border border-border hover:bg-surface-hover text-sm font-medium transition-colors"
+              onClick={() => setIsVariantModalOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 text-sm font-medium transition-colors"
+            >
+              Save Variant
+            </button>
+          </div>
+        </form>
+      </Modal>
+    </section>
  );
  }
 
@@ -570,7 +690,24 @@ function RestaurantsDetails() {
  ) : (
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
  {filteredMenuItems.map(item => (
- <Card key={item.id} className="p-4 flex gap-4 items-center group relative border-border/60 hover:border-primary/30 transition-colors">
+ <Card 
+                                key={item.id} 
+                                className="p-4 flex gap-4 items-center group relative border-border/60 hover:border-primary/30 transition-colors cursor-pointer"
+                                onClick={async () => {
+                                  if (item.menuItemId) {
+                                    try {
+                                      const fullProduct = await getProductById(item.menuItemId);
+                                      setViewingMenuItem({ ...item, ...fullProduct });
+                                    } catch(err) {
+                                      console.error(err);
+                                      setViewingMenuItem(item);
+                                    }
+                                  } else {
+                                    setViewingMenuItem(item);
+                                  }
+                                  setIsViewModalOpen(true);
+                                }}
+                              >
  <div className="text-muted/40 cursor-grab hover:text-muted hidden sm:block shrink-0">
  <GripVertical size={20} />
  </div>
@@ -679,6 +816,103 @@ function RestaurantsDetails() {
  </Button>
  </div>
  </Modal>
+
+       {/* View Item Modal */}
+      {viewingMenuItem && (
+        <Modal
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setViewingMenuItem(null);
+          }}
+          title="Item Details"
+          maxWidth="max-w-2xl"
+        >
+          <div className="flex flex-col md:flex-row gap-8">
+            {/* Left Col: Image */}
+            <div className="w-full md:w-5/12 shrink-0">
+               {(viewingMenuItem.image || (viewingMenuItem.images && viewingMenuItem.images[0])) ? (
+                 <div className="w-full aspect-square rounded-2xl overflow-hidden border border-border shadow-sm">
+                   <img src={viewingMenuItem.image || viewingMenuItem.images[0]} alt={viewingMenuItem.name} className="w-full h-full object-cover" />
+                 </div>
+               ) : (
+                 <div className="w-full aspect-square rounded-2xl overflow-hidden border border-border bg-background flex items-center justify-center shadow-sm">
+                   <Utensils size={48} className="text-muted/50" />
+                 </div>
+               )}
+            </div>
+
+            {/* Right Col: Details */}
+            <div className="flex-1 space-y-6">
+              <div>
+                <h3 className="text-2xl font-bold text-foreground mb-2">{viewingMenuItem.name}</h3>
+                <div className="flex items-center gap-2">
+                   <span className="text-lg font-bold text-primary">₹{viewingMenuItem.price}</span>
+                   <span className="w-1.5 h-1.5 rounded-full bg-border mx-1"></span>
+                   <span className={viewingMenuItem.foodType === "Non-Veg" ? "text-danger font-medium" : "text-success font-medium"}>
+                     {viewingMenuItem.foodType || "Veg"}
+                   </span>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-background rounded-xl p-4 border border-border shadow-sm">
+                  <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">Status</p>
+                  <Badge variant={viewingMenuItem.status !== false && viewingMenuItem.status !== "Inactive" && viewingMenuItem.status !== "inactive" ? "success" : "danger"}>
+                    {viewingMenuItem.status !== false && viewingMenuItem.status !== "Inactive" && viewingMenuItem.status !== "inactive" ? 'Active' : 'Inactive'}
+                  </Badge>
+                </div>
+                <div className="bg-background rounded-xl p-4 border border-border shadow-sm">
+                  <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">Category</p>
+                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                    {viewingMenuItem.category || "Uncategorized"}
+                  </Badge>
+                </div>
+              </div>
+
+              {(viewingMenuItem.varients || viewingMenuItem.variants) && (viewingMenuItem.varients || viewingMenuItem.variants).length > 0 && (
+                <div>
+                  <h4 className="text-sm font-bold text-foreground mb-3 uppercase tracking-wider flex items-center gap-2">
+                    <Lightbulb size={16} className="text-primary"/> 
+                    Available Variants
+                  </h4>
+                  <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-thin pr-2">
+                    {(viewingMenuItem.varients || viewingMenuItem.variants).map((v, idx) => (
+                      <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background">
+                        {v.image ? (
+                            <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-border">
+                                <img src={v.image} className="w-full h-full object-cover" />
+                            </div>
+                        ) : (
+                            <div className="w-10 h-10 rounded-lg shrink-0 border border-border bg-surface flex items-center justify-center">
+                                <Utensils size={16} className="text-muted/50" />
+                            </div>
+                        )}
+                        <div className="flex-1">
+                            <p className="text-sm font-bold text-foreground">{v.name}</p>
+                            <p className="text-xs font-bold text-primary">₹{v.price}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex justify-end pt-4 mt-auto border-t border-border">
+                <Button onClick={() => {
+                  setIsViewModalOpen(false);
+                  setTimeout(() => {
+                    setEditingMenuItem({ ...viewingMenuItem });
+                  }, 100);
+                }}>
+                  <Pencil size={16} className="mr-2" />
+                  Edit Item
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
 
  {/* Edit/Add Menu Item Modal */}
  <Modal
@@ -964,7 +1198,71 @@ function RestaurantsDetails() {
  </div>
  </div>
 
+ 
  <div className="pt-2">
+    <div className="flex items-center justify-between mb-2">
+        <label className="text-xs font-medium text-muted block">Item Variants (e.g. Types, Sizes)</label>
+        <button
+            type="button"
+            onClick={() => {
+                setVariantForm({ name: "", price: "", image: editingMenuItem.image || "" });
+                setEditingVariantIndex(-1);
+                setIsVariantModalOpen(true);
+            }}
+            className="text-[10px] font-bold text-primary flex items-center bg-primary/10 px-2 py-1 rounded-md hover:bg-primary/20 transition-colors"
+        >
+            <Plus size={12} className="mr-1" /> Add Variant
+        </button>
+    </div>
+    
+    <div className="space-y-2">
+        {(editingMenuItem.variants || editingMenuItem.varients || []).length > 0 ? (
+            <div className="space-y-2 max-h-40 overflow-y-auto pr-2 scrollbar-thin">
+            {(editingMenuItem.variants || editingMenuItem.varients).map((variant, index) => (
+                <div key={index} className="flex items-center justify-between p-2 rounded-lg border border-border bg-background group hover:border-primary/30 transition-colors">
+                    <div className="flex items-center gap-3 cursor-pointer flex-1" onClick={() => {
+                        setVariantForm(variant);
+                        setEditingVariantIndex(index);
+                        setIsVariantModalOpen(true);
+                    }}>
+                        {variant.image ? (
+                            <div className="w-8 h-8 rounded-md overflow-hidden shrink-0 border border-border">
+                                <img src={variant.image} className="w-full h-full object-cover" />
+                            </div>
+                        ) : (
+                            <div className="w-8 h-8 rounded-md shrink-0 border border-border bg-surface flex items-center justify-center">
+                                <Utensils size={12} className="text-muted/50" />
+                            </div>
+                        )}
+                        <div>
+                            <p className="text-sm font-bold text-foreground">{variant.name}</p>
+                            <p className="text-xs font-semibold text-primary">₹{variant.price}</p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingMenuItem(prev => {
+                                const newV = [...(prev.variants || prev.varients || [])];
+                                newV.splice(index, 1);
+                                return { ...prev, variants: newV, varients: newV };
+                            });
+                        }}
+                        className="w-7 h-7 rounded-md bg-danger/10 text-danger flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                        <Trash2 size={12} />
+                    </button>
+                </div>
+            ))}
+            </div>
+        ) : (
+            <p className="text-xs text-muted italic mb-2">No variants added. Base price will be used.</p>
+        )}
+    </div>
+ </div>
+
+<div className="pt-2">
  <label className="text-xs font-medium text-muted mb-2 block">Food Type</label>
  <div className="flex items-center gap-3">
  <button
