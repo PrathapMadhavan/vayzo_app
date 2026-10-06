@@ -448,19 +448,33 @@ server.get("/api/v1/admin/customers/:id", (req, res, next) => {
   else next();
 });
 
-server.patch("/api/v1/admin/customers/:id", (req, res, next) => {
-  if (req.path.endsWith("/status")) return next();
-  const db = router.db.getState();
-  const id = req.params.id;
-  const user = db.users.find(
-    (u) => u.role === "Customer" && (u.public_id === id || u.id === id),
-  );
-  if (user) {
-    Object.assign(user, req.body);
-    router.db.write();
-    res.json(user);
-  } else next();
-});
+server.patch(
+  "/api/v1/admin/customers/:id",
+  upload.single("profileImage"),
+  (req, res, next) => {
+    if (req.path.endsWith("/status")) return next();
+    const db = router.db.getState();
+    const id = req.params.id;
+    const user = db.users.find(
+      (u) => u.role === "Customer" && (u.public_id === id || u.id === id),
+    );
+    if (user) {
+      if (req.body.name !== undefined) user.name = req.body.name;
+      if (req.body.email !== undefined) user.email = req.body.email;
+      if (req.body.mobileNumber !== undefined) user.mobileNumber = req.body.mobileNumber;
+      if (req.body.address !== undefined) user.address = req.body.address;
+      if (req.body.status !== undefined) user.status = req.body.status;
+      if (req.body.isVerified !== undefined) user.isVerified = req.body.isVerified === "true" || req.body.isVerified === true;
+      
+      if (req.file) {
+        user.profileImage = "/uploads/" + req.file.filename;
+      }
+      
+      router.db.write();
+      res.json(user);
+    } else next();
+  }
+);
 
 server.patch("/api/v1/admin/customers/:id/status", (req, res, next) => {
   const db = router.db.getState();
@@ -508,10 +522,9 @@ server.get("/api/v1/admin/customers/:id/wallet", (req, res, next) => {
   );
   if (user) {
     const wallet = db.wallets.find((w) => w.user_id === user.id);
-    if (!wallet)
-      return res
-        .status(404)
-        .json({ success: false, message: "Wallet not found" });
+    if (!wallet) {
+      return res.json({ balance: 0, status: "Inactive" });
+    }
     res.json(wallet);
   } else next();
 });
@@ -611,6 +624,7 @@ server.post(
   (req, res) => {
     const db = router.db.getState();
     const b = req.body;
+    console.log('PATCH payload:', req.body);
     const files = req.files || {};
 
     // 1. Create canonical user record
@@ -653,7 +667,7 @@ server.post(
     db.partner_profiles.push(newProfile);
 
     // 3. Create partner_vehicles if vehicle data was supplied
-    const hasVehicle = b.vehicleType && b.vehicleType !== "Select vehicle type";
+    const hasVehicle = (b.vehicleType && b.vehicleType !== "Select vehicle type") || b.insuranceProvider || b.validTill || b.insuranceValidTill;
     if (hasVehicle) {
       const vehicleId = ulid();
       const newVehicle = {
@@ -663,6 +677,8 @@ server.post(
         make: "",
         model: b.vehicleName || "",
         registration_number: b.vehicleNumber || null,
+        insuranceProvider: b.insuranceProvider || null,
+        validTill: b.validTill || b.insuranceValidTill || null,
       };
       db.partner_vehicles = db.partner_vehicles || [];
       db.partner_vehicles.push(newVehicle);
@@ -745,7 +761,9 @@ server.patch(
     const b = req.body;
     const files = req.files || {};
 
-    const user = db.users.find(u => u.id === userId);
+    let profile = db.partner_profiles ? db.partner_profiles.find(p => p.id === userId || p.partner_code === userId || p.user_id === userId) : null;
+    const resolvedUserId = profile ? profile.user_id : userId;
+    const user = db.users.find(u => u.id === resolvedUserId);
     if (!user) return res.status(404).json({ error: "Partner not found" });
 
     // Update User
@@ -758,7 +776,7 @@ server.patch(
     }
 
     // Update Profile
-    let profile = db.partner_profiles.find(p => p.user_id === userId);
+    if (!profile) profile = db.partner_profiles.find(p => p.user_id === resolvedUserId);
     if (profile) {
       if (b.status) profile.verification_status = b.status;
       if (b.onlineStatus) profile.online_status = b.onlineStatus;
@@ -814,15 +832,18 @@ server.patch(
     }
 
     // Update Vehicle
-    if (b.vehicleType || b.vehicleNumber) {
+    if (b.vehicleType || b.vehicleNumber || b.insuranceProvider || b.validTill || b.insuranceValidTill) {
       let vehicle = db.partner_vehicles.find(v => v.partner_id === profileId);
       if (vehicle) {
         if (b.vehicleType !== undefined) vehicle.vehicle_type = b.vehicleType;
         if (b.vehicleName !== undefined) vehicle.model = b.vehicleName;
         if (b.vehicleNumber !== undefined) vehicle.registration_number = b.vehicleNumber;
+        if (b.insuranceProvider !== undefined) vehicle.insuranceProvider = b.insuranceProvider;
+        if (b.validTill !== undefined || b.insuranceValidTill !== undefined) vehicle.validTill = b.validTill || b.insuranceValidTill;
       } else {
         db.partner_vehicles.push({
-          id: ulid(), partner_id: profileId, vehicle_type: b.vehicleType || null, make: "", model: b.vehicleName || "", registration_number: b.vehicleNumber || null
+          id: ulid(), partner_id: profileId, vehicle_type: b.vehicleType || null, make: "", model: b.vehicleName || "", registration_number: b.vehicleNumber || null,
+          insuranceProvider: b.insuranceProvider || null, validTill: b.validTill || b.insuranceValidTill || null
         });
       }
     }
@@ -866,6 +887,12 @@ server.delete("/api/v1/admin/partners/:id", (req, res) => {
     }
   }
 
+  // Also check and delete from legacy partners collection
+  if (db.partners) {
+    const partnerIndex = db.partners.findIndex(p => p.id === userId);
+    if (partnerIndex !== -1) db.partners.splice(partnerIndex, 1);
+  }
+
   router.db.write();
   res.json({ success: true });
 });
@@ -887,6 +914,7 @@ server.post(
       name: req.body.name || "",
       email: req.body.email || "",
       mobileNumber: req.body.mobileNumber || "",
+      address: req.body.address || "",
       role: "Customer",
       status: req.body.status || "Active",
       isVerified:

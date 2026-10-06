@@ -115,7 +115,7 @@ function DeliveryPartners() {
  partner.vehicleType === vehicleType;
  const matchesOnline =
  onlineStatus === "All Online Status" ||
- partner.onlineStatus === onlineStatus;
+ (partner.onlineStatus || partner.online_status || 'Offline').toLowerCase() === onlineStatus.toLowerCase();
 
  // Date filtering
 
@@ -150,8 +150,9 @@ function DeliveryPartners() {
 
  const maxOnline = useMemo(() => {
  return paginatedPartners.reduce((max, p) => {
- const val = p.onlineStatus;
- return val.length > max.length ? val : max;
+ let val = p.onlineStatus || p.online_status || 'Offline';
+      val = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+      return val.length > max.length ? val : max;
  }, "");
  }, [paginatedPartners]);
 
@@ -193,8 +194,7 @@ function DeliveryPartners() {
 
  return (
  <section className="min-h-full bg-background p-4 sm:p-6 flex flex-col gap-6">
- <Card noPadding className="flex flex-col group hover:border-primary/50 transition-colors relative overflow-hidden">
- <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
+ <Card noPadding className="flex flex-col relative overflow-hidden">
  {/* Filter Section */}
  <FilterPanel
  search={
@@ -297,8 +297,7 @@ function DeliveryPartners() {
  />
  </Card>
 
- <Card noPadding className="flex flex-col group hover:border-primary/50 transition-colors relative overflow-hidden">
- <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
+ <Card noPadding className="flex flex-col relative overflow-hidden">
  {error ? (
  <div className="m-6 rounded-xl border border-danger/30 bg-danger/5 p-8 text-center text-sm font-medium text-danger">
  {error}
@@ -328,7 +327,7 @@ function DeliveryPartners() {
  <tr
  key={partner.id}
  onClick={() => navigate(`/delivery/${partner.id}`)}
- className="border-b border-border last:border-0 transition-colors group cursor-pointer"
+ className="border-b border-border last:border-0 transition-colors group cursor-pointer hover:bg-primary/5 hover:border-primary/30"
  >
  <td className="whitespace-nowrap px-3 py-3 font-medium text-foreground">
  {String(
@@ -418,14 +417,20 @@ function DeliveryPartners() {
  </td>
 
  <td className="px-3 py-3">
- <BadgeCell
- maxContent={maxOnline}
- content={partner.onlineStatus}
- variant={
- partner.onlineStatus === "Online" ? "success" : "danger"
- }
- className="px-3"
- />
+ {(() => {
+                          let currentOnlineStatus = partner.onlineStatus || partner.online_status || 'Offline';
+                          let normalizedStatus = currentOnlineStatus.charAt(0).toUpperCase() + currentOnlineStatus.slice(1).toLowerCase();
+                          return (
+                            <BadgeCell
+                              maxContent={maxOnline}
+                              content={normalizedStatus}
+                              variant={
+                                normalizedStatus === "Online" ? "success" : "danger"
+                              }
+                              className="px-3"
+                            />
+                          );
+                        })()}
  </td>
 
  <td className="px-3 py-3">

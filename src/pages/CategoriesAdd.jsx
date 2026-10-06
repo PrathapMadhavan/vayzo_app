@@ -124,6 +124,7 @@ function CategoriesAdd() {
  description: data.description || "",
  parentId: data.parentId || "Food Delivery",
  scope: data.scope || "Global",
+    image: data.image || null,
  });
 
  // Load related data
@@ -189,7 +190,8 @@ function CategoriesAdd() {
  status: form.status,
  description: form.description,
  scope: form.scope,
- parentId: form.parentId === "null" ? "" : form.parentId
+ parentId: form.parentId === "null" ? "" : form.parentId,
+      image: form.image
  };
 
  if (isEditing) {
@@ -300,6 +302,15 @@ function CategoriesAdd() {
  </div>
  
  <StatusSelect
+ id="category-type"
+ label={<RequiredLabel text="Type" />}
+ value={form.type}
+ options={["Product", "Service", "Food"]}
+ onChange={update("type")}
+ required
+ />
+ 
+ <StatusSelect
  id="category-scope"
  label={<RequiredLabel text="Scope" />}
  value={form.scope}
@@ -385,7 +396,7 @@ function CategoriesAdd() {
  placeholder="Briefly describe this category..."
  value={form.description}
  onChange={update("description")}
- className="w-full min-h-25 p-3 bg-surface border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-y"
+ className="w-full min-h-25 p-3 bg-surface border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary-500 transition-all resize-y"
  />
  </div>
  </div>
@@ -398,48 +409,12 @@ function CategoriesAdd() {
  </div>
  )}
 
- {/* Action Buttons */}
- <div className="flex items-center justify-end gap-3 pt-2 pb-4">
- <Button
- type="button"
- variant="outline"
- onClick={() => navigate("/categories")}
- className="px-8 h-11"
- disabled={loading}
- >
- Cancel
- </Button>
- <Button type="submit" variant="primary" className="gap-2 shadow-sm px-8 h-11" disabled={loading}>
- {loading ? "Saving..." : isEditing ? "Save Changes" : "Save Category"}
- </Button>
- </div>
-
- </form>
-
  {/* Read-Only Related Data (only shown on Edit) */}
  {isEditing && (
- <div className="grid gap-6 md:grid-cols-2">
- <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
- <h3 className="mb-4 text-base font-semibold text-foreground">Related Child Categories</h3>
- {childCategories.length > 0 ? (
- <ul className="space-y-2">
- {childCategories.map(child => (
- <li key={child.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-background">
- <div className="h-2 w-2 rounded-full bg-primary shrink-0"></div>
- <span className="text-sm font-medium text-foreground">{child.name}</span>
- <Badge variant={child.status === 'Active' ? 'success' : 'danger'} className="ml-auto text-[10px] px-1.5 py-0 h-4">
- {child.status}
- </Badge>
- </li>
- ))}
- </ul>
- ) : (
- <p className="text-sm text-muted italic">No child categories found.</p>
- )}
- </div>
+ <div className="grid gap-6">
 
  <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
- <h3 className="mb-4 text-base font-semibold text-foreground">Related Menu Items</h3>
+ <h3 className="mb-4 text-base font-semibold text-foreground">Category Items</h3>
  {menuItems.length > 0 ? (
  <ul className="space-y-2">
  {menuItems.map(item => (
@@ -463,7 +438,26 @@ function CategoriesAdd() {
  </div>
  </div>
  )}
+{/* Action Buttons */}
+ <div className="flex items-center justify-end gap-3 pt-2 pb-4">
+ <Button
+ type="button"
+ variant="ghost"
+ onClick={() => navigate("/categories")}
+ className="px-8 h-11"
+ disabled={loading}
+ >
+ Cancel
+ </Button>
+ <Button type="submit" variant="primary" className="gap-2 shadow-sm px-8 h-11" disabled={loading}>
+ {loading ? "Saving..." : isEditing ? "Save Changes" : "Save Category"}
+ </Button>
  </div>
+
+ </form>
+
+  </div>
+
  </section>
  );
 }

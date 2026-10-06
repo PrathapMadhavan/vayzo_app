@@ -1,4 +1,4 @@
-function Modal({ isOpen, onClose, title, children }) {
+function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md" }) {
  if (!isOpen) return null;
 
  return (
@@ -7,7 +7,7 @@ function Modal({ isOpen, onClose, title, children }) {
  onClick={onClose}
  >
  <div 
- className="w-full max-w-md rounded-xl bg-surface p-6 max-h-[90vh] flex flex-col"
+ className={`w-full ${maxWidth} rounded-xl bg-surface p-6 max-h-[90vh] flex flex-col`}
  onClick={(e) => e.stopPropagation()}
  >
  <div className="mb-4 flex items-center justify-between shrink-0">

@@ -22,6 +22,7 @@ import Select from "../components/ui/Select";
 import Table from "../components/ui/Table";
 import { getOrderById, updateOrder, updateOrderStatus } from "../api/ordersApi";
 import { getRestaurantById } from "../api/restaurantsApi";
+import { getCustomerById } from "../api/usersApi";
 import {
  getDeliveryPartners,
 } from "../api/deliveryPartnersApi";
@@ -67,6 +68,7 @@ export default function OrderDetails() {
  const [selectedPartner, setSelectedPartner] = useState("");
  const [assignLoading, setAssignLoading] = useState(false);
  const [restaurantDetails, setRestaurantDetails] = useState(null);
+ const [customerDetails, setCustomerDetails] = useState(null);
 
  const fetchOrder = useCallback(async () => {
  try {
@@ -84,6 +86,16 @@ export default function OrderDetails() {
  const partnerId = orderData.assignment?.partner_id;
  setSelectedPartner(partnerId || "");
 
+ 
+ if (orderData.customer_id) {
+ try {
+ const cust = await getCustomerById(orderData.customer_id);
+ setCustomerDetails(cust);
+ } catch (e) {
+ console.error('Failed to load customer details', e);
+ }
+ }
+ 
  if (orderData.restaurant_id) {
  try {
  const rest = await getRestaurantById(orderData.restaurant_id);
@@ -290,9 +302,9 @@ export default function OrderDetails() {
  <h3 className="font-bold text-foreground text-base">Customer Details</h3>
  </div>
  <div className="flex flex-col gap-3 relative z-10">
- <p className="font-bold text-foreground text-base">{order.customer?.name || "Unavailable"}</p>
+ <p className="font-bold text-foreground text-base">{(customerDetails || order.customer)?.name || "Unavailable"}</p>
  <div className="flex items-center gap-2 text-sm text-muted font-medium">
- <Phone size={16} className="text-muted/70" /> {order.customer?.phone || order.customer?.mobileNumber || order.customer?.mobile || "Unavailable"}
+ <Phone size={16} className="text-muted/70" /> {(customerDetails || order.customer)?.phone || (customerDetails || order.customer)?.mobileNumber || (customerDetails || order.customer)?.mobile || "Unavailable"}
  </div>
  <div className="flex items-start gap-2 text-sm text-muted font-medium mt-1">
  <MapPin size={16} className="text-muted/70 shrink-0 mt-0.5" /> 
@@ -562,8 +574,8 @@ export default function OrderDetails() {
  <div className="grid grid-cols-2 gap-12 mb-8">
  <div>
  <h3 className="font-bold border-b border-gray-300 pb-2 mb-3 uppercase text-xs text-gray-500 tracking-wider">Bill To</h3>
- <p className="font-bold text-lg">{order.customer?.name}</p>
- <p className="text-sm mt-1">{order.customer?.phone || order.customer?.mobileNumber}</p>
+ <p className="font-bold text-lg">{(customerDetails || order.customer)?.name}</p>
+ <p className="text-sm mt-1">{(customerDetails || order.customer)?.phone || (customerDetails || order.customer)?.mobileNumber}</p>
  <p className="text-sm mt-1 leading-relaxed">{order.dropoff_address_snapshot}</p>
  </div>
  <div>

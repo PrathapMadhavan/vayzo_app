@@ -2,8 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { 
  ArrowLeft, MapPin, Phone, Mail, Clock, Store, Star, ShoppingBag, 
  Pencil, Plus, Trash2, CloudUpload, Search, GripVertical,
- Check, ChevronDown, Utensils
-} from "lucide-react";
+ Check, ChevronDown, Utensils, Camera , ShieldBan, MessageSquare} from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import Badge from "../components/ui/Badge";
@@ -11,6 +10,7 @@ import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Modal from "../components/ui/Modal";
 import Input from "../components/ui/Input";
+import Avatar from "../components/ui/Avatar";
 
 import { getRestaurantById, updateRestaurant, deleteRestaurant, updateRestaurantStatus } from "../api/restaurantsApi";
 import { getCategories } from "../api/categoriesApi";
@@ -33,9 +33,37 @@ function CustomToggle({ checked, onChange }) {
  );
 }
 
+
+const getValue = (value) => value || "--";
+const StatBox = ({ label, value, sub, color = 'default', className = "" }) => {
+  const colorMap = {
+    primary: 'text-primary',
+    success: 'text-success',
+    warning: 'text-warning',
+    danger: 'text-danger',
+    muted: 'text-muted',
+    white: 'text-white',
+    default: 'text-foreground'
+  };
+  return (
+    <div className={`flex flex-col gap-1 px-3 sm:px-4 ${className} min-w-0`}>
+      <p className={`text-[11px] sm:text-xs whitespace-nowrap ${color === 'white' ? 'text-white/70' : 'text-muted'}`}>{label}</p>
+      <div className={`text-sm sm:text-base font-bold truncate ${colorMap[color] || colorMap.default}`}>{getValue(value)}</div>
+      {sub && <p className={`text-xs ${color === 'white' ? 'text-white/50' : (colorMap[color] || colorMap.muted)}`}>{sub}</p>}
+    </div>
+  );
+};
+
 const TABS = ["Menu Items", "Orders", "Offers & Coupons", "Reviews"];
 
 function RestaurantsDetails() {
+
+  const getImageUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    return 'http://localhost:3000' + (url.startsWith('/') ? url : '/' + url);
+  };
+
  const { restaurantId } = useParams();
  const navigate = useNavigate();
 
@@ -45,7 +73,76 @@ function RestaurantsDetails() {
  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
  const [deleteLoading, setDeleteLoading] = useState(false);
  const [statusError, setStatusError] = useState("");
- const [activeTab, setActiveTab] = useState("Menu Items");
+  const [imagePreviewModal, setImagePreviewModal] = useState(false);
+  const [previewImageSrc, setPreviewImageSrc] = useState(null);
+  const [pendingImageFile, setPendingImageFile] = useState(null);
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPendingImageFile(file);
+      try {
+        const base64 = await fileToBase64(file);
+        setPreviewImageSrc(base64);
+      } catch (err) {
+        console.error("Error reading file:", err);
+      }
+    }
+  };
+
+  const handleCancelImage = () => {
+    setPendingImageFile(null);
+    setPreviewImageSrc(restaurant.logo);
+  };
+
+  const handleSaveImage = async () => {
+    if (!pendingImageFile) return;
+    try {
+      const updatedRestaurant = { ...restaurant, logo: previewImageSrc };
+      await updateRestaurantStatus(restaurant.id, newStatus);
+      setRestaurant(updatedRestaurant);
+      setImagePreviewModal(false);
+      setPendingImageFile(null);
+    } catch (err) {
+      alert("Failed to update image");
+    }
+  };
+
+ 
+  const [messagingModalOpen, setMessagingModalOpen] = useState(false);
+  const [messageText, setMessageText] = useState("");
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const [isBlockModalOpen, setBlockModalOpen] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
+
+  const handleSendMessage = () => {
+    if (!messageText.trim()) return;
+    setIsSendingMessage(true);
+    setTimeout(() => {
+      alert("Message Sent (Simulated)");
+      setIsSendingMessage(false);
+      setMessagingModalOpen(false);
+      setMessageText("");
+    }, 800);
+  };
+
+  const handleBlockToggle = async () => {
+    if (!restaurant) return;
+    const currentStatus = restaurant?.status || "Active";
+    const newStatus = currentStatus === "Blocked" ? "Active" : "Blocked";
+    setIsBlocking(true);
+    try {
+      await updateRestaurantStatus(restaurantId, newStatus);
+      setRestaurant(prev => ({ ...prev, status: newStatus }));
+      setBlockModalOpen(false);
+    } catch (err) {
+      alert("Failed to update block status: " + (err.message || err));
+    } finally {
+      setIsBlocking(false);
+    }
+  };
+
+  const [activeTab, setActiveTab] = useState("Menu Items");
  const [categoryMenuItems, setCategoryMenuItems] = useState([]);
 
  const [categories, setCategories] = useState([]);
@@ -227,126 +324,205 @@ function RestaurantsDetails() {
  return matchesSearch && matchesCategory;
  });
 
- return (
- <section className="min-h-full bg-background relative">
- {/* Sticky Header Section */}
- <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm p-4 sm:p-6 pb-0 mb-6">
- <div className="max-w-7xl mx-auto space-y-4">
- 
- {/* Header Profile Card */}
- <div className="flex flex-col lg:flex-row gap-6 items-start justify-between bg-surface p-5 rounded-xl border border-border">
- <div className="flex flex-col sm:flex-row gap-6 items-start w-full">
- <div className="h-28 w-28 shrink-0 rounded-2xl bg-primary/10 text-primary flex items-center justify-center overflow-hidden border border-border/50 shadow-sm">
- {restaurant.logo ? (
- <img src={restaurant.logo} alt={restaurant.name} className="w-full h-full object-cover" />
- ) : (
- <Store size={40} strokeWidth={1.5} />
- )}
- </div>
- 
- <div className="flex-1 min-w-0">
- <div className="flex items-center gap-3 mb-1">
- <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">{restaurant.name}</h1>
- <div className="flex flex-col items-center gap-1.5 shrink-0 ml-2 relative">
- <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${restaurant.status === "Active" ? 'text-success bg-success/10' : 'text-muted bg-surface-hover'}`}>
- {restaurant.status === "Active" ? 'Active' : 'Inactive'}
- </span>
- <CustomToggle 
- checked={restaurant.status === "Active"} 
- onChange={async (val) => {
- const newStatus = val ? "Active" : "Inactive";
- setRestaurant(prev => ({ ...prev, status: newStatus }));
- setStatusError("");
- try {
- const updatedRestaurant = { ...restaurant, status: newStatus };
- await updateRestaurant(restaurant.id, updatedRestaurant);
- } catch (err) {
- setRestaurant(prev => ({ ...prev, status: val ? "Inactive" : "Active" }));
- setStatusError("Unable to update restaurant status. Please try again.");
- }
- }}
- />
- {statusError && (
- <span className="absolute top-full mt-1 left-1/2 -translate-x-1/2 text-danger text-[10px] whitespace-nowrap bg-surface px-2 py-1 rounded shadow-sm border border-danger/20 z-10">
- {statusError}
- </span>
- )}
- </div>
- </div>
- <p className="text-sm text-muted mb-2 truncate">{restaurant.cuisineType}</p>
- <div className="flex items-center gap-1.5 font-semibold text-sm">
- <Star size={14} className="text-warning fill-warning" /> 
- {restaurant.rating?.toFixed(1) || "New"} <span className="text-muted font-normal text-xs ml-1">({restaurant.reviewsCount || 0} reviews)</span>
- </div>
- </div>
+   return (
+  <div className="min-h-full bg-background pb-10">
+  {/* Image Preview Modal */}
+  <Modal
+    isOpen={imagePreviewModal}
+    onClose={() => {
+      setImagePreviewModal(false);
+      handleCancelImage();
+    }}
+    title="Restaurant Logo"
+  >
+    <div className="flex justify-center p-4 relative group rounded-xl overflow-hidden min-h-50 bg-muted/10">
+      {previewImageSrc ? (
+        <img src={getImageUrl(previewImageSrc)} alt="Preview" className="max-w-full max-h-[40vh] rounded-xl object-contain" />
+      ) : (
+        <div className="flex flex-col items-center justify-center w-full min-h-50 gap-2">
+          <Camera size={40} className="text-muted/50" />
+          <span className="text-muted/80 text-sm">No Logo</span>
+        </div>
+      )}
+      <label className="absolute inset-4 sm:inset-auto sm:w-full sm:h-full max-w-full max-h-[40vh] rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white">
+        <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+        <Camera size={32} className="mb-2" />
+        <span className="font-medium text-sm">Change Image</span>
+      </label>
+    </div>
+    {pendingImageFile && (
+      <div className="flex justify-end gap-3 mt-4">
+        <Button variant="secondary" onClick={handleCancelImage}>Cancel</Button>
+        <Button onClick={handleSaveImage}>Save Changes</Button>
+      </div>
+    )}
+  </Modal>
 
- <div className="flex flex-col sm:flex-row gap-6 lg:ml-auto w-full lg:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-border">
- <div className="flex items-start gap-3">
- <MapPin size={16} className="text-muted shrink-0 mt-0.5" />
- <div>
- <p className="text-[11px] font-medium text-muted uppercase mb-0.5">Address</p>
- <p className="text-sm text-foreground max-w-50 leading-snug">{restaurant.address || "-"}</p>
- <p className="text-sm text-foreground">{restaurant.city || ""}</p>
- </div>
- </div>
- 
- <div className="w-px bg-border hidden sm:block h-10 self-center"></div>
+  {/* ── Top breadcrumb & actions ── */}
+  <div className="px-6 pt-5 pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    {/* Breadcrumb */}
+    <div className="flex items-center justify-between w-full sm:w-auto">
+      <button onClick={() => navigate('/restaurants')} className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors font-medium">
+        <ArrowLeft size={16} /> Back to List
+      </button>
+    </div>
 
- <div className="flex items-start gap-3">
- <Phone size={16} className="text-muted shrink-0 mt-0.5" />
- <div>
- <p className="text-[11px] font-medium text-muted uppercase mb-0.5">Phone</p>
- <p className="text-sm text-foreground">{restaurant.phone || "-"}</p>
- </div>
- </div>
+    {/* Action buttons */}
+    <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
+      <Button variant={restaurant?.status === "Blocked" ? "success" : "danger"} size="sm" onClick={() => setBlockModalOpen(true)} className="flex items-center justify-center gap-1.5 text-xs sm:text-sm shadow-sm hover:shadow-md transition-shadow">
+        <ShieldBan size={14} />
+        <span className="hidden sm:inline">{restaurant?.status === "Blocked" ? "Unblock Restaurant" : "Block Restaurant"}</span>
+        <span className="sm:hidden">{restaurant?.status === "Blocked" ? "Unblock" : "Block"}</span>
+      </Button>
+      <Button variant="secondary" size="sm" onClick={() => setMessagingModalOpen(true)} className="flex items-center justify-center gap-1.5 text-xs sm:text-sm border-border bg-surface hover:bg-surface-hover text-foreground shadow-sm">
+        <MessageSquare size={14} /> 
+        <span className="hidden sm:inline">Send Message</span>
+        <span className="sm:hidden">Message</span>
+      </Button>
+      <Button variant="primary" size="sm" onClick={() => navigate(`/restaurants/edit/${restaurant.id}`)} className="flex items-center justify-center gap-1.5 text-xs sm:text-sm shadow-sm">
+        <Pencil size={14} /> 
+        <span className="hidden sm:inline">Edit Restaurant</span>
+        <span className="sm:hidden">Edit</span>
+      </Button>
+    </div>
+  </div>
 
- <div className="w-px bg-border hidden sm:block h-10 self-center"></div>
+  {/* ── Profile Header Card ── */}
+  <div className="relative mx-4 sm:mx-6 mt-4 rounded-2xl overflow-hidden shadow-lg flex flex-col bg-linear-to-r from-primary to-primary-hover">
+    {/* Background Pattern or Cover Image */}
+    {restaurant.coverImage ? (
+      <>
+        <img src={getImageUrl(restaurant.coverImage)} className="absolute inset-0 w-full h-full object-cover blur-sm opacity-60 pointer-events-none scale-105" alt="Cover" />
+        <div className="absolute inset-0 bg-black/40 pointer-events-none"></div>
+      </>
+    ) : (
+      <>
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 rounded-full bg-white opacity-5 blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-10 -mb-10 h-48 w-48 rounded-full bg-white opacity-5 blur-3xl pointer-events-none"></div>
+      </>
+    )}
 
- <div className="flex items-start gap-3">
- <Mail size={16} className="text-muted shrink-0 mt-0.5" />
- <div>
- <p className="text-[11px] font-medium text-muted uppercase mb-0.5">Email</p>
- <p className="text-sm text-foreground">{restaurant.email || "-"}</p>
- </div>
- </div>
- </div>
- </div>
+    {/* Top row: avatar + identity + stats */}
+    <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 p-6 sm:p-8 relative z-10">
+      {/* Avatar + name */}
+      <div className="flex items-center gap-4 shrink-0 lg:w-87.5">
+        <div className="relative shrink-0">
+          <div 
+            className="relative z-10 cursor-pointer hover:opacity-80 transition-opacity shrink-0 group/avatar"
+            onClick={() => {
+              setPreviewImageSrc(restaurant.logo);
+              setImagePreviewModal(true);
+            }}
+          >
+            <Avatar
+              src={getImageUrl(restaurant.logo)}
+              identifier={restaurant?.name}
+              alt={restaurant?.name}
+              className="h-24 w-24 sm:h-20 sm:w-20 text-3xl sm:text-2xl rounded-full ring-4 ring-white/20 shadow-lg bg-white"
+            />
+          </div>
+          <div 
+            onClick={() => {
+              if (restaurant.status === "Blocked") return;
+              const newStatus = restaurant.status === "Active" ? "Inactive" : "Active";
+              const updatedRestaurant = { ...restaurant, status: newStatus };
+              setRestaurant(updatedRestaurant);
+              updateRestaurant(restaurant.id, updatedRestaurant).catch(() => {
+                setRestaurant({ ...restaurant });
+                alert("Failed to update status");
+              });
+            }}
+            className={`absolute -bottom-2 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-white/20 bg-black/20 backdrop-blur-md shadow-sm whitespace-nowrap z-20 ${restaurant.status === "Blocked" ? "cursor-not-allowed opacity-80" : "cursor-pointer hover:bg-black/40 transition-colors"}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${restaurant.status === "Active" ? 'bg-success' : restaurant.status === "Blocked" ? 'bg-danger' : 'bg-warning'}`}></span>
+            <span className={`text-[10px] font-medium ${restaurant.status === "Active" ? 'text-success' : restaurant.status === "Blocked" ? 'text-danger' : 'text-warning'}`}>{restaurant.status || 'Inactive'}</span>
+          </div>
+        </div>
 
- <div className="shrink-0 w-full lg:w-auto mt-4 lg:mt-0 flex justify-end">
- <Button
- variant="outline"
- size="sm"
- onClick={() => navigate(`/restaurants/edit/${restaurant.id}`)}
- className="gap-2 border border-primary text-primary hover:bg-primary/5 rounded-full px-5 py-2 w-full sm:w-auto font-semibold"
- >
- <Pencil size={14} strokeWidth={2.5} />
- Edit Restaurant
- </Button>
- </div>
- </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate">{restaurant?.name}</h1>
+            
+          </div>
 
- {/* Tabs */}
- <div className="flex overflow-x-auto gap-2 px-1">
- {TABS.map(tab => (
- <button
- key={tab}
- onClick={() => setActiveTab(tab)}
- className={`px-5 py-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-all flex items-center gap-2 ${
- activeTab === tab 
- ? "border-primary text-primary" 
- : "border-transparent text-muted hover:text-foreground hover:border-border/50"
- }`}
- >
- {tab === "Menu Items" && <Store size={16} />}
- {tab === "Orders" && <ShoppingBag size={16} />}
- {tab}
- </button>
- ))}
- </div>
- </div>
- </div>
+          <div className="flex flex-col sm:flex-row flex-wrap items-center sm:items-start gap-2 sm:gap-4 mt-1">
+            {restaurant?.phone && (
+              <div className="flex items-center gap-1.5 text-[13px] text-white/90 truncate">
+                <Phone size={13} className="shrink-0 text-white/70" /> <span className="truncate">{restaurant.phone}</span>
+              </div>
+            )}
+            {restaurant?.email && (
+              <div className="flex items-center gap-1.5 text-[13px] text-white/90 truncate">
+                <Mail size={13} className="shrink-0 text-white/70" /> <span className="truncate">{restaurant.email}</span>
+              </div>
+            )}
+            {restaurant?.cuisineType && (
+              <div className="flex items-center gap-1.5 text-[13px] text-white/90 truncate">
+                <Utensils size={13} className="shrink-0 text-white/70" /> <span className="truncate">{restaurant.cuisineType}</span>
+              </div>
+            )}
+          </div>
 
- <div className="max-w-7xl mx-auto p-4 sm:p-6 pt-0 space-y-6">
+          {restaurant?.description && (
+            <div className="mt-4 text-white/80 text-sm max-w-2xl leading-relaxed">
+              {restaurant.description}
+            </div>
+          )}
+
+        </div>
+      </div>
+
+      {/* Vertical divider */}
+      <div className="hidden lg:block h-24 w-px bg-white/20 mx-2 shrink-0 relative z-10" />
+
+      {/* Stats row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-6 lg:gap-y-8 w-full flex-1 pb-2 lg:pb-0 relative z-10">
+        <StatBox label="Restaurant ID" value={restaurant?.id} color="white" />
+        <div className="flex flex-col gap-1 px-3 sm:px-4 min-w-0">
+          <p className="text-[11px] sm:text-xs whitespace-nowrap text-white/70">Rating</p>
+          <div className="flex items-center gap-0.5 mt-1">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                size={14}
+                className={star <= (restaurant?.rating || 0) ? "fill-warning text-warning" : "fill-white/20 text-white/20"}
+              />
+            ))}
+            <span className="text-white text-sm font-bold ml-1.5">{restaurant?.rating ? restaurant.rating.toFixed(1) : "0.0"}</span>
+          </div>
+          <p className="text-xs text-white/50">{restaurant?.reviewsCount || 0} reviews</p>
+        </div>
+        <StatBox label="Owner" value={restaurant?.ownerName || restaurant?.owner || "--"} color="white" />
+        <StatBox label="Location" value={[restaurant?.address, restaurant?.city].filter(Boolean).join(', ') || '--'} color="white" />
+        <StatBox label="Menu Items" value={(restaurant?.menuItems || []).length} color="white" />
+        <StatBox label="Total Orders" value={restaurant?.totalOrders || '--'} color="white" />
+      </div>
+    </div>
+
+    {/* Tabs navigation */}
+    <div className="flex bg-surface overflow-x-auto [-ms-overflow-style:none] scrollbar-none relative z-10 border-t border-border/10 px-3">
+      {TABS.map(tab => (
+        <button
+          key={tab}
+          onClick={() => setActiveTab(tab)}
+          className={`px-4 py-3.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors flex items-center gap-2 ${
+            activeTab === tab
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted hover:text-foreground hover:bg-muted/10'
+          }`}
+        >
+          {tab === "Menu Items" && <Store size={15} />}
+          {tab === "Orders" && <ShoppingBag size={15} />}
+          {tab === "Offers & Coupons" && <Star size={15} />}
+          {tab === "Reviews" && <Check size={15} />}
+          {tab}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  {/* ── Tab Content Area ── */}
+  <div className="p-4 sm:p-6 pt-5">
 
  {activeTab === "Menu Items" && (
  <div className="space-y-6">
@@ -393,7 +569,7 @@ function RestaurantsDetails() {
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
  {filteredMenuItems.map(item => (
  <Card key={item.id} className="p-4 flex gap-4 items-center group relative border-border/60 hover:border-primary/30 transition-colors">
- <div className="text-muted/40 cursor-grab active:cursor-grabbing hover:text-muted hidden sm:block shrink-0">
+ <div className="text-muted/40 cursor-grab hover:text-muted hidden sm:block shrink-0">
  <GripVertical size={20} />
  </div>
  
@@ -509,7 +685,7 @@ function RestaurantsDetails() {
  title={editingMenuItem?.isNew ? "Add Menu Item" : "Edit Menu Item"}
  >
  {editingMenuItem && (
- <div className="space-y-4">
+ <div className={`space-y-4 ${editingMenuItem?.isViewOnly ? 'pointer-events-none opacity-90' : ''}`}>
  <div>
  <label className="text-xs font-medium text-muted mb-1 block">Item Name</label>
  <Input
@@ -547,15 +723,15 @@ function RestaurantsDetails() {
  onKeyDown={(e) => {
  if (e.key === "Escape") setIsCategoryDropdownOpen(false);
  }}
- className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors placeholder:text-muted/50"
+ className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors"
  autoFocus
  />
  </div>
  </div>
  <div className="max-h-60 overflow-y-auto scrollbar-thin p-1">
  {categories
- .filter(c => c.name.toLowerCase().includes(categorySearchText.toLowerCase()))
- .map(cat => {
+  .filter(c => c.name.toLowerCase().includes(categorySearchText.toLowerCase()) && (restaurant.cuisineType || "").split(",").map(s=>s.trim()).includes(c.name))
+  .map(cat => {
  const isSelected = editingMenuItem.categoryId === cat.id || editingMenuItem.category === cat.name;
  return (
  <button
@@ -650,7 +826,7 @@ function RestaurantsDetails() {
  onKeyDown={(e) => {
  if (e.key === "Escape") setIsMenuDropdownOpen(false);
  }}
- className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors placeholder:text-muted/50"
+ className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors"
  autoFocus
  />
  </div>
@@ -816,24 +992,74 @@ function RestaurantsDetails() {
  />
  </div>
 
- <div className="flex items-center gap-3 mt-6 pt-4 border-t border-border">
- <Button type="button" variant="outline" className="flex-1" onClick={() => setEditingMenuItem(null)}>
- Cancel
- </Button>
- <Button 
- type="button" 
- variant="primary" 
- className="flex-1"
- onClick={handleSaveMenuItem}
- >
- {editingMenuItem.isNew ? "Add Item" : "Update Item"}
- </Button>
- </div>
+ <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border">
+    <button type="button" className="px-5 py-2 rounded-lg border border-border text-foreground hover:bg-surface transition-colors font-medium text-sm" onClick={() => setEditingMenuItem(null)}>
+      Cancel
+    </button>
+    {!editingMenuItem?.isViewOnly && (
+      <button type="button" className="px-5 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors font-medium text-sm" onClick={handleSaveMenuItem}>
+        {editingMenuItem.isNew ? "Add Item" : "Update Item"}
+      </button>
+    )}
+  </div>
  </div>
  )}
  </Modal>
- </section>
- );
+ 
+  {/* Modals */}
+  <Modal isOpen={messagingModalOpen} onClose={() => setMessagingModalOpen(false)} title="Send Message">
+    <div className={`space-y-4 ${editingMenuItem?.isViewOnly ? 'pointer-events-none opacity-90' : ''}`}>
+      <div className="flex items-center gap-3 p-3 bg-surface-hover rounded-lg border border-border">
+        <Avatar src={getImageUrl(restaurant?.logo)} identifier={restaurant?.name} className="h-10 w-10 rounded-full shrink-0" />
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground truncate">{restaurant?.name}</p>
+          <p className="text-xs text-muted truncate">Owner: {restaurant?.ownerName || restaurant?.owner || '--'}</p>
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-1.5">Message</label>
+        <textarea
+          className="w-full rounded-md border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary min-h-25"
+          placeholder="Type your message here..."
+          value={messageText}
+          onChange={(e) => setMessageText(e.target.value)}
+        />
+      </div>
+      <div className="flex justify-end gap-3 mt-4">
+        <Button variant="secondary" onClick={() => setMessagingModalOpen(false)}>Cancel</Button>
+        <Button onClick={handleSendMessage} disabled={isSendingMessage || !messageText.trim()}>
+          {isSendingMessage ? "Sending..." : "Send Message"}
+        </Button>
+      </div>
+    </div>
+  </Modal>
+
+  <Modal
+    isOpen={isBlockModalOpen}
+    onClose={() => setBlockModalOpen(false)}
+    title={restaurant?.status === "Blocked" ? "Unblock Restaurant" : "Block Restaurant"}
+  >
+    <p className="text-sm text-muted">
+      {restaurant?.status === "Blocked" 
+        ? `Are you sure you want to unblock ${restaurant?.name}? They will regain access to the platform.`
+        : `Are you sure you want to block ${restaurant?.name}? They will no longer be able to log in or receive orders.`}
+    </p>
+    <div className="mt-6 flex justify-end gap-3">
+      <Button variant="secondary" onClick={() => setBlockModalOpen(false)}>
+        Cancel
+      </Button>
+      <Button
+        variant={restaurant?.status === "Blocked" ? "success" : "danger"}
+        onClick={handleBlockToggle}
+        disabled={isBlocking}
+      >
+        {restaurant?.status === "Blocked" ? "Yes, Unblock" : "Yes, Block"}
+      </Button>
+    </div>
+  </Modal>
+
+</div>
+);
 }
 
 export default RestaurantsDetails;

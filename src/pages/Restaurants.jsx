@@ -20,7 +20,7 @@ import { exportToCSV } from "../utils/exportUtils";
 
 const statusOptions = ["All Status", "Active", "Inactive"];
 
-const tableHeaders = ["No.", "Restaurant", "Owner", "City", "Cuisine", "Rating", "Orders", "Status", "Actions"];
+const tableHeaders = ["No.", "Restaurant", "Owner", "Address", "City", "Cuisine", "Rating", "Orders", "Status", "Actions"];
 
 function RatingStars({ rating }) {
  return (
@@ -219,9 +219,13 @@ function Restaurants() {
  className="flex items-center gap-3 cursor-pointer group"
  onClick={() => navigate(`/restaurants/${r.id}`)}
  >
- <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
- <Store size={18} strokeWidth={2} />
- </div>
+ <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden ${r.logo ? 'border border-border' : 'bg-primary/10 text-primary'}`}>
+                            {r.logo ? (
+                               <img src={r.logo} alt={r.name} className="h-full w-full object-cover" />
+                            ) : (
+                               <Store size={18} strokeWidth={2} />
+                            )}
+                          </div>
  <div className="flex flex-col min-w-0">
  <span className="font-bold text-foreground text-sm group-hover:text-primary transition-colors truncate">
  {r.name}
@@ -230,8 +234,9 @@ function Restaurants() {
  </div>
  </div>
  </td>
- <td className="px-5 py-4 text-sm text-foreground whitespace-nowrap">{r.ownerName}</td>
- <td className="px-5 py-4 text-sm text-muted whitespace-nowrap">{r.city}</td>
+ <td className="px-5 py-4 text-sm text-foreground whitespace-nowrap">{r.ownerName || '--'}</td>
+ <td className="px-5 py-4 text-sm text-muted max-w-[200px] truncate">{r.address || '--'}</td>
+                <td className="px-5 py-4 text-sm text-muted whitespace-nowrap">{r.city || '--'}</td>
  <td className="px-5 py-4 text-sm text-muted max-w-[150px] truncate">{r.cuisineType}</td>
  <td className="px-5 py-4"><RatingStars rating={r.rating} /></td>
  <td className="px-5 py-4 text-sm font-semibold text-foreground whitespace-nowrap">

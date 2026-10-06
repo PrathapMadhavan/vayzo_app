@@ -21,6 +21,7 @@ import FilterPanel from "../components/ui/FilterPanel";
 import Toggle from "../components/ui/Toggle";
 
 import { getCategories, deleteCategory, updateCategory } from "../api/categoriesApi";
+import { getProducts } from "../api/productsApi";
 import { exportToCSV } from "../utils/exportUtils";
 
 const statusOptions = [
@@ -79,11 +80,17 @@ export default function Categories() {
  const itemsPerPage = 20;
 
  const loadCategories = async () => {
- try {
- setLoading(true);
- setError("");
- const data = await getCategories();
- setCategories(data);
+    try {
+      setLoading(true);
+      setError("");
+      const [data, productsData] = await Promise.all([getCategories(), getProducts()]);
+      
+      const updatedData = data.map(cat => {
+          const count = productsData.filter(p => p.categoryId === cat.id).length;
+          return { ...cat, itemCount: count };
+      });
+      
+      setCategories(updatedData);
  } catch (err) {
  setError("Unable to load categories.");
  } finally {
@@ -110,18 +117,22 @@ export default function Categories() {
  statusFilter === "All Status" || category.status === statusFilter;
  
  let matchTab = true;
- if (activeTab === "Food Delivery") {
- matchTab = category.name?.toLowerCase().match(/food|biryani|pizza|burger|chinese/);
- } else if (activeTab === "Buy & Get It") {
- matchTab = category.name?.toLowerCase().match(/grocer|retail|fruit|veg|pharmacy|medicine/);
- } else if (activeTab === "Bike Ride") {
- matchTab = category.name?.toLowerCase().match(/bike|ride/);
- } else if (activeTab === "Car Booking") {
- matchTab = category.name?.toLowerCase().match(/car|cab|taxi/);
- }
- 
- // Fallback: if there's no matching category in the DB for other tabs, just return matchTab
- // Actually since all mock data is food, the other tabs will be empty, which is correct.
+    if (category.parentId) {
+      matchTab = category.parentId === activeTab;
+    } else {
+      if (activeTab === "Food Delivery") {
+        matchTab = category.name?.toLowerCase().match(/food|biryani|pizza|burger|chinese/);
+      } else if (activeTab === "Buy & Get It") {
+        matchTab = category.name?.toLowerCase().match(/grocer|retail|fruit|veg|pharmacy|medicine/);
+      } else if (activeTab === "Bike Ride") {
+        matchTab = category.name?.toLowerCase().match(/bike|ride/);
+      } else if (activeTab === "Car Booking") {
+        matchTab = category.name?.toLowerCase().match(/car|cab|taxi/);
+      }
+    }
+    
+    // Fallback: if there's no matching category in the DB for other tabs, just return matchTab
+    // Actually since all mock data is food, the other tabs will be empty, which is correct.
 
  return matchSearch && matchStatus && matchTab;
  });
@@ -155,12 +166,8 @@ export default function Categories() {
  const handleDeleteCategory = async () => {
  if (!deleteModalId) return;
  try {
- const categoryToDelete = categories.find(c => c.id === deleteModalId);
- if (categoryToDelete) {
- const updatedCategory = { ...categoryToDelete, status: "Deleted" };
- await updateCategory(deleteModalId, updatedCategory);
- setCategories(categories.map((c) => c.id === deleteModalId ? updatedCategory : c));
- }
+ await deleteCategory(deleteModalId);
+      setCategories(categories.filter((c) => c.id !== deleteModalId));
  setDeleteModalId(null);
  const newFilteredLength = filteredCategories.length - 1;
  const newTotalPages = Math.ceil(newFilteredLength / itemsPerPage) || 1;
@@ -192,7 +199,7 @@ export default function Categories() {
  <StatCard
  variant="horizontal"
  title="Total Categories"
- value={categories.length}
+ value={categories.filter((c) => c.status !== "Deleted").length}
  trend="9.1%"
  icon={LayoutGrid}
  colorClass="text-primary"
@@ -340,8 +347,12 @@ export default function Categories() {
  
  <td className="px-5 py-4">
  <div className="flex items-center gap-3 group">
- <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${getCategoryIconBg(category.name)}`}>
- {getCategoryIcon(category.name)}
+ <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden ${category.image ? 'border border-border' : getCategoryIconBg(category.name)}`}>
+ {category.image ? (
+ <img src={category.image} alt={category.name} className="h-full w-full object-cover" />
+ ) : (
+ getCategoryIcon(category.name)
+ )}
  </div>
  <span className="font-semibold text-foreground text-sm">
  {category.name}
@@ -370,7 +381,7 @@ export default function Categories() {
  ? 'bg-success/10 text-success border-success/30 hover:bg-success/20'
  : category.status === 'Deleted'
  ? 'bg-danger/10 text-danger border-danger/30 cursor-not-allowed'
- : 'bg-warning/10 text-warning-dark border-warning/30 hover:bg-warning/20'
+ : 'bg-danger/10 text-danger border-danger/30 hover:bg-danger/20'
  }`}
  >
  {category.status || "Active"}

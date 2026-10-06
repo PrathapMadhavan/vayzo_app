@@ -21,7 +21,9 @@ import {
  Package,
  Trash2,
  Camera,
- ShieldBan
+  ShieldBan,
+  CreditCard,
+  Calendar,
 } from "lucide-react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -37,10 +39,10 @@ import Avatar from "../components/ui/Avatar";
 const getValue = (value) => value || "--";
 
 const InfoRow = ({ label, value }) => (
- <div className="flex flex-col sm:flex-row sm:items-start py-3 border-b border-border/40 last:border-0 gap-1 sm:gap-4">
- <span className="text-sm sm:text-[15px] text-foreground font-medium sm:min-w-37.5 shrink-0">{label}</span>
- <span className="text-[13px] sm:text-sm text-muted wrap-break-word flex-1">{getValue(value)}</span>
- </div>
+  <div className="flex flex-col sm:flex-row sm:items-start py-2 border-b border-border/40 last:border-0 gap-1 sm:gap-4">
+    <span className="text-xs sm:text-sm text-muted sm:min-w-37.5 shrink-0">{label}</span>
+    <span className="text-sm sm:text-[14px] text-foreground font-medium wrap-break-word flex-1">{getValue(value)}</span>
+  </div>
 );
 
 const StatBox = ({ label, value, sub, color = 'default', className = "" }) => {
@@ -91,14 +93,47 @@ export default function DeliveryPartner() {
  const [selectedDocumentUrl, setSelectedDocumentUrl] = useState(null);
  const [selectedDocumentName, setSelectedDocumentName] = useState("");
  const [imagePreviewModal, setImagePreviewModal] = useState(false);
+  const [pendingImageFile, setPendingImageFile] = useState(null);
+  const [pendingImagePreview, setPendingImagePreview] = useState(null);
 
- const handleImageChange = (e) => {
- const file = e.target.files?.[0];
- if (file) {
- const url = URL.createObjectURL(file);
- setPartnerData((prev) => ({ ...prev, profileImage: url, image: url }));
- }
- };
+   const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Image size must be less than 2 MB");
+        return;
+      }
+      const url = URL.createObjectURL(file);
+      setPendingImageFile(file);
+      setPendingImagePreview(url);
+    }
+  };
+
+  const handleSaveImage = async () => {
+    if (!pendingImageFile) return;
+    try {
+      const formData = new FormData();
+      formData.append("profileImage", pendingImageFile);
+      await updateDeliveryPartner(id, formData);
+      setPartnerData((prev) => ({ 
+        ...prev, 
+        profileImage: pendingImagePreview, 
+        image: pendingImagePreview,
+        partner: { ...(prev?.partner || {}), profileImage: pendingImagePreview }
+      }));
+      setPendingImageFile(null);
+      setPendingImagePreview(null);
+      setImagePreviewModal(false);
+    } catch (err) {
+      console.error("Failed to update image", err);
+      alert("Failed to update image");
+    }
+  };
+
+  const handleCancelImage = () => {
+    setPendingImageFile(null);
+    setPendingImagePreview(null);
+  };
 
  const handleSendMessage = async () => {
  setIsSendingMessage(true);
@@ -121,27 +156,31 @@ export default function DeliveryPartner() {
  }
  };
 
- const handleStatusToggle = async () => {
- if (!partnerData) return;
- const newStatus = partnerData.status === "Active" ? "Inactive" : "Active";
- try {
- await updateDeliveryPartner(id, { status: newStatus });
- setPartnerData({ ...partnerData, status: newStatus });
- } catch (err) {
+  const handleStatusToggle = async () => {
+    if (!partnerData || partner?.status === "Blocked") return;
+    const currentStatus = partner?.status || "Active";
+    const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+    try {
+      await updateDeliveryPartner(id, { status: newStatus });
+      setPartnerData({ ...partnerData, status: newStatus, partner: { ...(partnerData.partner || {}), status: newStatus } });
+    } catch (err) {
  console.error("Failed to update status", err);
+      alert("Failed to update status: " + (err.message || err));
  }
  };
 
  const handleBlockToggle = async () => {
  if (!partnerData) return;
- const newStatus = partnerData.status === "Blocked" ? "Active" : "Blocked";
+ const currentStatus = partner?.status || "Active";
+ const newStatus = currentStatus === "Blocked" ? "Active" : "Blocked";
  setIsBlocking(true);
  try {
- await updateDeliveryPartner(id, { status: newStatus });
- setPartnerData({ ...partnerData, status: newStatus });
+      await updateDeliveryPartner(id, { status: newStatus });
+ setPartnerData({ ...partnerData, status: newStatus, partner: { ...(partnerData.partner || {}), status: newStatus } });
  setBlockModalOpen(false);
  } catch (err) {
  console.error("Failed to update block status", err);
+      alert("Failed to update block status: " + (err.message || err));
  } finally {
  setIsBlocking(false);
  }
@@ -149,18 +188,26 @@ export default function DeliveryPartner() {
 
  const handleOnlineStatusToggle = async () => {
  if (!partnerData) return;
- const newOnlineStatus = partner?.onlineStatus?.toLowerCase() === 'online' ? "Offline" : "Online";
+ const isCurrentlyOnline = (partner?.onlineStatus || partner?.online_status || partnerData?.onlineStatus || partnerData?.online_status || 'Offline').trim().toLowerCase() === 'online';
+ const newOnlineStatus = isCurrentlyOnline ? "Offline" : "Online";
  try {
- await updateDeliveryPartner(id, { onlineStatus: newOnlineStatus });
+      await updateDeliveryPartner(id, {
+        onlineStatus: newOnlineStatus,
+        online_status: newOnlineStatus
+      });
  setPartnerData({
- ...partnerData,
- partner: {
- ...partnerData.partner,
- onlineStatus: newOnlineStatus
- }
- });
+        ...partnerData,
+        onlineStatus: newOnlineStatus,
+        online_status: newOnlineStatus,
+        partner: {
+          ...(partnerData.partner || {}),
+          onlineStatus: newOnlineStatus,
+          online_status: newOnlineStatus
+        }
+      });
  } catch (err) {
  console.error("Failed to update online status", err);
+      alert("Failed to update online status: " + (err.message || err));
  }
  };
 
@@ -223,26 +270,22 @@ export default function DeliveryPartner() {
  );
  }
 
- const partner = {
+  const partner = {
  ...partnerData?.partner,
- id: id, // use route param as partner ID for display
- // Flatten personalDetails
- panNumber: partnerData?.personalDetails?.panNumber,
- aadhaarNumber: partnerData?.personalDetails?.aadhaarNumber,
- // Flatten vehicle
- vehicleType: partnerData?.vehicle?.vehicleType,
- vehicleName: partnerData?.vehicle?.vehicleName,
- vehicleNumber: partnerData?.vehicle?.vehicleNumber,
- rcNumber: partnerData?.vehicle?.rcNumber,
- insuranceProvider: partnerData?.vehicle?.insuranceProvider,
- insuranceNumber: partnerData?.vehicle?.insuranceNumber,
- insuranceValidTill: partnerData?.vehicle?.validTill,
- // Flatten bankAccount
- bankName: partnerData?.bankAccount?.bankName,
- accountNumber: partnerData?.bankAccount?.accountNumberMasked,
- ifscCode: partnerData?.bankAccount?.ifscCode,
- accountHolderName: partnerData?.bankAccount?.accountHolderName,
- // Flatten documents (for document URLs)
+ ...partnerData?.personalDetails,
+ ...partnerData?.vehicle,
+ ...partnerData?.bankAccount,
+ ...partnerData,
+ id: id,
+ // Handle legacy nested keys manually where the UI prop name doesn't match the nested object key
+ accountNumber: partnerData?.accountNumber || partnerData?.bankAccount?.accountNumberMasked || partnerData?.bankAccount?.accountNumber,
+ insuranceValidTill: partnerData?.insuranceValidTill || partnerData?.vehicle?.validTill || partnerData?.vehicle?.insuranceValidTill || "--",
+ alternateMobile: partnerData?.alternateMobile || partnerData?.personalDetails?.alternateMobile || partnerData?.personalDetails?.alternativeMobile || partnerData?.partner?.alternateMobile,
+ insuranceProvider: partnerData?.insuranceProvider || partnerData?.vehicle?.insuranceProvider || "--",
+ online_status: partnerData?.partner?.onlineStatus || partnerData?.partner?.online_status || partnerData?.onlineStatus || partnerData?.online_status || "Offline",
+    onlineStatus: partnerData?.partner?.onlineStatus || partnerData?.partner?.online_status || partnerData?.onlineStatus || partnerData?.online_status || "Offline",
+    profileImage: (partnerData?.partner?.profileImage || partnerData?.profileImage) ? ((partnerData?.partner?.profileImage || partnerData?.profileImage).startsWith("http") ? (partnerData?.partner?.profileImage || partnerData?.profileImage) : "http://localhost:3000" + (partnerData?.partner?.profileImage || partnerData?.profileImage)) : null,
+ 
  ...(Array.isArray(partnerData?.documents) ? partnerData.documents.reduce((acc, doc) => {
  if (doc.type === 'AADHAAR') acc.aadhaarDocumentUrl = doc.url;
  if (doc.type === 'PAN') acc.panDocumentUrl = doc.url;
@@ -254,7 +297,7 @@ export default function DeliveryPartner() {
  const { activity } = partnerData;
 
 
- const isOnline = partner?.onlineStatus?.toLowerCase() === 'online';
+ const isOnline = (partner?.onlineStatus || partner?.online_status || partnerData?.onlineStatus || partnerData?.online_status || 'Offline').trim().toLowerCase() === 'online';
 
  const tabs = [
  { id: 'overview', label: 'Overview' },
@@ -319,8 +362,8 @@ export default function DeliveryPartner() {
  onClick={() => setImagePreviewModal(true)}
  >
  <Avatar
- src={partner?.profileImage}
- identifier={partner?.name}
+ src={pendingImagePreview ? pendingImagePreview : ((partner?.profileImage || partner?.image) ? ((partner?.profileImage || partner?.image).startsWith("http") ? (partner?.profileImage || partner?.image) : "http://localhost:3000" + (partner?.profileImage || partner?.image)) : null)}
+                identifier={partner?.name}
  alt={partner?.name}
  className="h-24 w-24 sm:h-20 sm:w-20 text-3xl sm:text-2xl rounded-full ring-4 ring-white/20 shadow-lg"
  />
@@ -335,47 +378,54 @@ export default function DeliveryPartner() {
  </div>
  <div className="min-w-0">
  <div className="flex items-center gap-2 flex-wrap mb-1">
- <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate">{partner?.name}</h1>
- <Badge
- onClick={handleStatusToggle}
- className={`h-5 px-1.5 text-[10px] text-white border-0 shadow-none backdrop-blur-sm cursor-pointer hover:opacity-80 transition-opacity ${
- partner?.status === "Active" ? "bg-success" : "bg-muted/40"
- }`}
- >
- {partner?.status || '--'}
- </Badge>
- </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight truncate">{partner?.name}</h1>
+              <Badge
+                onClick={partner?.status === "Blocked" ? undefined : handleStatusToggle}
+                className={`h-5 px-1.5 text-[10px] text-white border-0 shadow-none backdrop-blur-sm ${
+                  partner?.status === "Blocked" ? "cursor-not-allowed opacity-80" : "cursor-pointer hover:opacity-80 transition-opacity"
+                } ${
+                  partner?.status?.toLowerCase() === "active"
+                    ? "!bg-success"
+                    : partner?.status?.toLowerCase() === "blocked"
+                    ? "!bg-danger"
+                    : "!bg-warning"
+                }`}
+              >
+                {partner?.status || '--'}
+              </Badge>
+            </div>
 
- <div className="flex flex-col gap-1 mt-1">
-
-
-
-
-
- {partner?.mobileNumber && (
- <div className="flex items-center gap-1.5 text-[13px] text-white/70 truncate">
- <Phone size={13} className="shrink-0" /> <span className="truncate">{partner.mobileNumber}</span>
- </div>
- )}
- {partner?.email && (
- <div className="flex items-center gap-1.5 text-[13px] text-white/70 truncate">
- <Mail size={13} className="shrink-0" /> <span className="truncate">{partner.email}</span>
- </div>
- )}
- 
- 
- </div>
+            <div className="flex flex-col sm:flex-row flex-wrap items-center sm:items-start gap-2 sm:gap-4 mt-1">
+              {partner?.mobileNumber && (
+                <div className="flex items-center gap-1.5 text-[13px] text-white/80 truncate">
+                  <Phone size={13} className="shrink-0 text-white/60" /> <span className="truncate">{partner.mobileNumber}</span>
+                </div>
+              )}
+              {partner?.email && (
+                <div className="flex items-center gap-1.5 text-[13px] text-white/80 truncate">
+                  <Mail size={13} className="shrink-0 text-white/60" /> <span className="truncate">{partner.email}</span>
+                </div>
+              )}
+              {partner?.joinedAt && (
+                <div className="flex items-center gap-1.5 text-[13px] text-white/80 truncate">
+                  <Calendar size={13} className="shrink-0 text-white/60" /> <span className="truncate">Joined {new Date(partner.joinedAt).toLocaleDateString()}</span>
+                </div>
+              )}
+            </div>
  </div>
  </div>
 
  {/* Vertical divider */}
  <div className="hidden lg:block h-24 w-px bg-white/20 mx-2 shrink-0 relative z-10" />
 
- {/* Stats row */}
- <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-4 gap-x-4 gap-y-6 lg:gap-y-8 w-full flex-1 pb-2 lg:pb-0 relative z-10">
- <StatBox label="Partner ID" value={partner?.id} color="white" />
- <StatBox label="Vehicle" value={partner?.vehicleType || '--'} color="white" />
- </div>
+  {/* Stats row */}
+  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-6 lg:gap-y-8 w-full flex-1 pb-2 lg:pb-0 relative z-10">
+    <StatBox label="Partner ID" value={partner?.id} color="white" />
+    <StatBox label="Vehicle" value={partner?.vehicleType || '--'} color="white" />
+    <StatBox label="Total Earnings" value={partner?.totalEarnings ? `₹${partner.totalEarnings}` : '--'} color="white" />
+    <StatBox label="Today Earnings" value={partner?.todayEarnings ? `₹${partner.todayEarnings}` : '--'} color="white" />
+    <StatBox label="Total Orders" value={partner?.totalOrders || '--'} color="white" />
+  </div>
  </div>
 
  {/* Tabs navigation */}
@@ -417,43 +467,127 @@ export default function DeliveryPartner() {
  <InfoRow label="Emergency Contact" value={partner?.emergencyContact} />
 
  <InfoRow label="Emergency Contact Number" value={partner?.emergencyMobile} />
- <InfoRow label="Aadhaar Number" value={partner?.aadhaarNumber} />
- <InfoRow label="PAN Number" value={partner?.panNumber} />
+ <InfoRow label="Aadhaar Number" value={partner?.aadhaarNumber ? partner.aadhaarNumber.slice(-4).padStart(partner.aadhaarNumber.length, "*") : "--"} />
+ <InfoRow label="PAN Number" value={partner?.panNumber ? partner.panNumber.slice(-4).padStart(partner.panNumber.length, "*") : "--"} />
  </div>
  </div>
 
- {/* Vehicle Info */}
- <div className="bg-surface border border-border rounded-2xl overflow-hidden group hover:border-primary/50 transition-colors relative">
- <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
- <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50 bg-background/50">
- <Bike size={17} className="text-primary" />
- <h3 className="font-semibold text-foreground">Vehicle Information</h3>
- </div>
- <div className="p-5">
- <InfoRow label="Vehicle Type" value={partner?.vehicleType} />
- <InfoRow label="Vehicle Name" value={partner?.vehicleName} />
- <InfoRow label="Vehicle Number" value={partner?.vehicleNumber} />
- <InfoRow label="RC Number" value={partner?.rcNumber} />
- <InfoRow label="Insurance Provider" value={partner?.insuranceProvider} />
- <InfoRow label="Insurance Number" value={partner?.insuranceNumber} />
- <InfoRow label="Insurance Valid Till" value={partner?.insuranceValidTill} />
- </div>
- </div>
+          {/* Vehicle Info */}
+          <div className="bg-surface border border-border rounded-2xl overflow-hidden group hover:border-primary/50 transition-colors relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
+            <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50 bg-background/50">
+              <Bike size={17} className="text-primary" />
+              <h3 className="font-semibold text-foreground">Vehicle Information</h3>
+            </div>
+            <div className="p-5">
+              <InfoRow label="Type" value={partner?.vehicleType} />
+              <InfoRow label="Model" value={partner?.vehicleName} />
+              <InfoRow label="Number" value={partner?.vehicleNumber} />
+              <InfoRow label="RC" value={partner?.rcNumber} />
+              <InfoRow label="Ins. Provider" value={partner?.insuranceProvider} />
+              <InfoRow label="Ins. Number" value={partner?.insuranceNumber} />
+              <InfoRow label="Ins. Valid Till" value={partner?.insuranceValidTill} />
+            </div>
+          </div>
+          
+          {/* Documents Summary */}
+          <div onClick={() => setActiveTab("documents")} className="bg-surface border border-border rounded-2xl overflow-hidden group hover:border-primary/50 transition-colors relative cursor-pointer">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
+            <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50 bg-background/50">
+              <FileText size={17} className="text-primary" />
+              <h3 className="font-semibold text-foreground">Documents Summary</h3>
+            </div>
+            <div className="p-5">
+              <InfoRow label="Aadhaar" value={partner?.aadhaarDocumentUrl ? 'Uploaded' : 'Missing'} />
+              <InfoRow label="PAN Card" value={partner?.panDocumentUrl ? 'Uploaded' : 'Missing'} />
+              <InfoRow label="RC Document" value={partner?.rcDocumentUrl ? 'Uploaded' : 'Missing'} />
+              <InfoRow label="Insurance Doc" value={partner?.insuranceDocumentUrl ? 'Uploaded' : 'Missing'} />
+            </div>
+          </div>
 
- {/* Bank Info */}
- <div className="bg-surface border border-border rounded-2xl overflow-hidden group hover:border-primary/50 transition-colors relative lg:col-span-2 xl:col-span-1">
- <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
- <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50 bg-background/50">
- <Building size={17} className="text-primary" />
- <h3 className="font-semibold text-foreground">Bank Information</h3>
- </div>
- <div className="p-5">
- <InfoRow label="Bank Name" value={partner?.bankName} />
- <InfoRow label="Account Number" value={partner?.accountNumber} />
- <InfoRow label="IFSC Code" value={partner?.ifscCode} />
- <InfoRow label="Account Holder Name" value={partner?.accountHolderName} />
- </div>
- </div>
+          {/* Bank Info */}
+          <div className="bg-surface border border-border rounded-2xl overflow-hidden group hover:border-primary/50 transition-colors relative">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110 pointer-events-none"></div>
+            <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50 bg-background/50">
+              <Building size={17} className="text-primary" />
+              <h3 className="font-semibold text-foreground">Bank Information</h3>
+            </div>
+            <div className="p-5">
+              <InfoRow label="Bank Name" value={partnerData?.bankAccount?.bankName || partnerData?.bankAccount?.bank_name || partner?.bankName} />
+              <InfoRow label="Account Number" value={partner?.accountNumber} />
+              <InfoRow label="IFSC Code" value={partnerData?.bankAccount?.ifscCode || partnerData?.bankAccount?.ifsc_code || partner?.ifscCode} />
+              <InfoRow label="Holder Name" value={partner?.accountHolderName} />
+            </div>
+          </div>
+
+          {/* Recent Activity Logs */}
+          <div onClick={() => setActiveTab("activity")} className="bg-surface border border-border rounded-2xl overflow-hidden group hover:border-primary/50 transition-colors relative cursor-pointer lg:col-span-2 xl:col-span-2">
+            <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50 bg-background/50">
+              <CalendarDays size={17} className="text-primary" />
+              <h3 className="font-semibold text-foreground">Recent Activity Logs</h3>
+            </div>
+            <div className="w-full overflow-x-auto">
+              {activity && activity.length > 0 ? (
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-border/50 text-xs text-muted uppercase tracking-wider bg-muted/5">
+                      <th className="px-5 py-3 font-medium whitespace-nowrap w-[60px]">Event</th>
+                      <th className="px-5 py-3 font-medium whitespace-nowrap">Description</th>
+                      <th className="px-5 py-3 font-medium whitespace-nowrap text-right">Date & Time</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {activity.slice(0, 4).map((act, idx) => (
+                      <tr key={idx} className="hover:bg-muted/5 transition-colors">
+                        <td className="px-5 py-3">
+                          <div className={`inline-flex shrink-0 h-8 w-8 rounded-full items-center justify-center ${act.type === 'EARNING' ? 'bg-success/10 text-success' : 'bg-primary/10 text-primary'}`}>
+                            {act.type === 'EARNING' ? <Wallet size={14} /> : <FileText size={14} />}
+                          </div>
+                        </td>
+                        <td className="px-5 py-3">
+                          <span className="text-[13px] text-foreground font-medium">{act.description}</span>
+                        </td>
+                        <td className="px-5 py-3 text-right">
+                          <span className="text-[13px] text-muted whitespace-nowrap">{new Date(act.timestamp).toLocaleString()}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="p-8">
+                  <EmptyState message="No recent activity." />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Recent Payouts */}
+          <div onClick={() => setActiveTab("payouts")} className="bg-surface border border-border rounded-2xl overflow-hidden group hover:border-primary/50 transition-colors relative cursor-pointer lg:col-span-2 xl:col-span-3">
+            <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50 bg-background/50">
+              <Wallet size={17} className="text-primary" />
+              <h3 className="font-semibold text-foreground">Recent Payouts</h3>
+            </div>
+            <div className="w-full overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-border/50 text-xs text-muted uppercase tracking-wider bg-muted/5">
+                    <th className="px-5 py-3 font-medium whitespace-nowrap">Payout ID</th>
+                    <th className="px-5 py-3 font-medium whitespace-nowrap">Date</th>
+                    <th className="px-5 py-3 font-medium whitespace-nowrap">Amount</th>
+                    <th className="px-5 py-3 font-medium whitespace-nowrap text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colSpan="4" className="p-8">
+                      <EmptyState message="No recent payouts." />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
  </div>
  )}
 
@@ -660,7 +794,8 @@ export default function DeliveryPartner() {
  <Modal isOpen={messagingModalOpen} onClose={() => setMessagingModalOpen(false)} title="Send Message">
  <div className="space-y-4">
  <div className="flex items-center gap-3 p-3 bg-surface-hover rounded-lg border border-border">
- <Avatar src={partner?.profileImage} identifier={partner?.name} className="h-10 w-10 rounded-full shrink-0" />
+ <Avatar src={pendingImagePreview ? pendingImagePreview : partner?.profileImage}
+                identifier={partner?.name} className="h-10 w-10 rounded-full shrink-0" />
  <div className="min-w-0">
  <p className="font-medium text-foreground text-sm truncate">{partner?.name}</p>
  <p className="text-xs text-muted break-all">{partner?.id} • {partner?.mobileNumber || partner?.email}</p>
@@ -730,32 +865,43 @@ export default function DeliveryPartner() {
  </div>
  </Modal>
 
- {/* ─ Image Preview Modal ─ */}
- <Modal
- isOpen={imagePreviewModal}
- onClose={() => setImagePreviewModal(false)}
- title="Profile Image"
- >
- <div className="flex justify-center p-4 relative group rounded-xl overflow-hidden min-h-50 bg-muted/10">
- {partnerData?.profileImage || partnerData?.image ? (
- <img
- src={partnerData?.profileImage || partnerData?.image}
- alt={partnerData?.name}
- className="max-w-full max-h-[70vh] rounded-xl object-contain"
- />
- ) : (
- <div className="flex flex-col items-center justify-center w-full min-h-50 gap-2">
- <Camera size={40} className="text-muted/50" />
- <span className="text-muted/80 text-sm">No Profile Image</span>
- </div>
- )}
- <label className="absolute inset-4 sm:inset-auto sm:w-full sm:h-full max-w-full max-h-[70vh] rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white">
- <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
- <Camera size={32} className="mb-2" />
- <span className="font-medium text-sm">Change Image</span>
- </label>
- </div>
- </Modal>
+      {/* ─ Image Preview Modal ─ */}
+      <Modal
+        isOpen={imagePreviewModal}
+        onClose={() => {
+          handleCancelImage();
+          setImagePreviewModal(false);
+        }}
+        title="Profile Image"
+      >
+        <div className="flex justify-center p-4 relative group rounded-xl overflow-hidden min-h-[40vh] bg-muted/10">
+          {pendingImagePreview ? (
+            <img src={pendingImagePreview} alt="Preview" className="max-w-full max-h-[40vh] rounded-xl object-contain" />
+          ) : partner?.profileImage || partner?.image ? (
+            <img
+              src={((partner?.profileImage || partner?.image) ? ((partner?.profileImage || partner?.image).startsWith("http") ? (partner?.profileImage || partner?.image) : "http://localhost:3000" + (partner?.profileImage || partner?.image)) : null)}
+              alt={partner?.name}
+              className="max-w-full max-h-[40vh] rounded-xl object-contain"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center w-full min-h-[40vh] gap-2">
+              <Camera size={40} className="text-muted/50" />
+              <span className="text-muted/80 text-sm">No Profile Image</span>
+            </div>
+          )}
+          <label className="absolute inset-0 m-4 rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white">
+            <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
+            <Camera size={32} className="mb-2" />
+            <span className="font-medium text-sm">Change Image</span>
+          </label>
+        </div>
+        {pendingImageFile && (
+          <div className="mt-6 flex justify-end gap-3 border-t border-border/50 pt-4">
+            <Button variant="secondary" onClick={handleCancelImage}>Cancel</Button>
+            <Button variant="primary" onClick={handleSaveImage}>Save Image</Button>
+          </div>
+        )}
+      </Modal>
  </div>
  );
 }

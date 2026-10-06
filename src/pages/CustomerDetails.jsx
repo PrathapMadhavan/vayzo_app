@@ -32,6 +32,7 @@ import {
  getCustomerRequests,
  getCustomerComplaints,
  deleteCustomer,
+ updateCustomer,
 } from "../api/usersApi";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
@@ -107,6 +108,8 @@ export default function CustomerDetails() {
  const [msgModal, setMsgModal] = useState(false);
  const [msgForm, setMsgForm] = useState({ title: "", message: "" });
  const [imagePreviewModal, setImagePreviewModal] = useState(false);
+ const [pendingImageFile, setPendingImageFile] = useState(null);
+ const [pendingImagePreview, setPendingImagePreview] = useState(null);
 
  useEffect(() => {
  if (!publicId) return;
@@ -135,9 +138,21 @@ export default function CustomerDetails() {
  fetchData();
  }, [publicId]);
 
- const handleStatusToggle = async () => {
+ const handleBadgeToggle = async () => {
  if (!customer) return;
  const newStatus = customer.status === "Active" ? "Inactive" : "Active";
+ try {
+ await updateCustomerStatus(publicId, newStatus);
+ setCustomer((prev) => ({ ...prev, status: newStatus }));
+ } catch {
+ alert("Failed to update customer status.");
+ }
+ };
+
+ const handleStatusToggle = async () => {
+ if (!customer) return;
+ const isCurrentlyBlocked = customer.status?.toLowerCase() === "blocked";
+  const newStatus = isCurrentlyBlocked ? "Active" : "Blocked";
  try {
  await updateCustomerStatus(publicId, newStatus);
  setCustomer((prev) => ({ ...prev, status: newStatus }));
@@ -189,9 +204,34 @@ export default function CustomerDetails() {
  const handleImageChange = (e) => {
  const file = e.target.files?.[0];
  if (file) {
- const url = URL.createObjectURL(file);
- setCustomer((prev) => ({ ...prev, profileImage: url, image: url }));
+ if (file.size > 2 * 1024 * 1024) {
+ alert("Image size must be less than 2 MB");
+ return;
  }
+ const url = URL.createObjectURL(file);
+ setPendingImageFile(file);
+ setPendingImagePreview(url);
+ }
+ };
+
+ const handleSaveImage = async () => {
+ if (!pendingImageFile) return;
+ try {
+ const formData = new FormData();
+ formData.append("profileImage", pendingImageFile);
+ const updatedCustomer = await updateCustomer(publicId, formData);
+ setCustomer((prev) => ({ ...prev, profileImage: updatedCustomer.profileImage || updatedCustomer.image }));
+ setPendingImageFile(null);
+ setPendingImagePreview(null);
+ setImagePreviewModal(false);
+ } catch (err) {
+ alert("Failed to update image");
+ }
+ };
+
+ const handleCancelImage = () => {
+ setPendingImageFile(null);
+ setPendingImagePreview(null);
  };
 
  return (
@@ -267,7 +307,7 @@ export default function CustomerDetails() {
  title="View Profile Image"
  >
  <Avatar
- src={customer.profileImage || customer.image}
+ src={pendingImagePreview ? pendingImagePreview : ((customer.profileImage || customer.image) ? ((customer.profileImage || customer.image).startsWith("http") ? (customer.profileImage || customer.image) : "http://localhost:3000" + (customer.profileImage || customer.image)) : null)}
  identifier={customer.public_id}
  alt={customer.name}
  className="h-24 w-24 sm:h-20 sm:w-20 text-3xl sm:text-2xl rounded-full ring-4 ring-white/20 shadow-lg"
@@ -279,13 +319,15 @@ export default function CustomerDetails() {
  {customer.name}
  </h1>
  <Badge
- onClick={handleStatusToggle}
- className={`text-xs text-white border-0 shadow-none backdrop-blur-sm cursor-pointer hover:opacity-80 transition-opacity ${
- customer.status === "Active"
- ? "bg-success"
- : customer.status === "Blocked"
- ? "bg-danger"
- : "bg-warning"
+ onClick={isBlocked ? undefined : handleBadgeToggle}
+ className={`text-xs text-white border-0 shadow-none backdrop-blur-sm ${
+ isBlocked ? "cursor-not-allowed opacity-80" : "cursor-pointer hover:opacity-80 transition-opacity"
+ } ${
+ customer.status?.toLowerCase() === "active"
+ ? "!bg-success"
+ : isBlocked
+ ? "!bg-danger"
+ : "!bg-warning"
  }`}
  >
  {customer.status || "Active"}
@@ -814,15 +856,18 @@ export default function CustomerDetails() {
  {/* ─ Image Preview Modal ─ */}
  <Modal
  isOpen={imagePreviewModal}
- onClose={() => setImagePreviewModal(false)}
+ onClose={() => {
+ setImagePreviewModal(false);
+ handleCancelImage();
+ }}
  title="Profile Image"
  >
  <div className="flex justify-center p-4 relative group rounded-xl overflow-hidden min-h-50 bg-muted/10">
- {customer.profileImage || customer.image ? (
+ {pendingImagePreview || customer.profileImage || customer.image ? (
  <img
- src={customer.profileImage || customer.image}
+ src={pendingImagePreview ? pendingImagePreview : ((customer.profileImage || customer.image) ? ((customer.profileImage || customer.image).startsWith("http") ? (customer.profileImage || customer.image) : "http://localhost:3000" + (customer.profileImage || customer.image)) : null)}
  alt={customer.name}
- className="max-w-full max-h-[70vh] rounded-xl object-contain"
+ className="max-w-full max-h-[40vh] rounded-xl object-contain"
  />
  ) : (
  <div className="flex flex-col items-center justify-center w-full min-h-50 gap-2">
@@ -830,12 +875,18 @@ export default function CustomerDetails() {
  <span className="text-muted/80 text-sm">No Profile Image</span>
  </div>
  )}
- <label className="absolute inset-4 sm:inset-auto sm:w-full sm:h-full max-w-full max-h-[70vh] rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white">
+ <label className="absolute inset-4 sm:inset-auto sm:w-full sm:h-full max-w-full max-h-[40vh] rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer text-white">
  <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
  <Camera size={32} className="mb-2" />
  <span className="font-medium text-sm">Change Image</span>
  </label>
  </div>
+ {pendingImageFile && (
+ <div className="flex justify-end gap-3 mt-4">
+ <Button variant="secondary" onClick={handleCancelImage}>Cancel</Button>
+ <Button variant="primary" onClick={handleSaveImage}>Save</Button>
+ </div>
+ )}
  </Modal>
  </div>
  );

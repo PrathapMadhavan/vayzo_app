@@ -331,7 +331,7 @@ function Customers() {
  <td className="px-3 py-3">
  <div className="flex min-w-0 items-center gap-2">
  <Avatar
- src={customer.profileImage || customer.image}
+ src={(customer.profileImage || customer.image) ? ((customer.profileImage || customer.image).startsWith("http") ? (customer.profileImage || customer.image) : "http://localhost:3000" + (customer.profileImage || customer.image)) : null}
  alt={customer.name}
  identifier={customer.public_id}
  className="h-8 w-8 rounded-full shadow-sm"

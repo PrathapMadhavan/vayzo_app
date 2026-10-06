@@ -88,7 +88,8 @@ function AddCustomers() {
  status: data.status ? toTitleCase(data.status) : statusOptions[0],
  });
  setEmailVerified(data.isVerified || false);
- setImagePreview(data.profileImage || data.image || null);
+ const pImg = data.profileImage || data.image || null;
+      setImagePreview(pImg ? (pImg.startsWith('http') ? pImg : 'http://localhost:3000' + pImg) : null);
  } catch (err) {
  setError("Unable to load customer details.");
  } finally {
@@ -173,6 +174,7 @@ function AddCustomers() {
  formData.append("name", `${form.firstName.trim()} ${form.lastName.trim()}`.trim());
  formData.append("email", form.email);
  formData.append("mobileNumber", form.mobile);
+ formData.append("address", form.address);
  formData.append("status", form.status);
  formData.append("isVerified", emailVerified);
  

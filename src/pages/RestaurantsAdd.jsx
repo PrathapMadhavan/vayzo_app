@@ -28,6 +28,7 @@ import {
  createRestaurant,
  getRestaurantById,
  updateRestaurant,
+  deleteRestaurant,
 } from "../api/restaurantsApi";
 import { validateImage } from "../utils/fileUtils";
 import { getCategories } from "../api/categoriesApi";
@@ -90,6 +91,7 @@ function RestaurantsAdd() {
  const [categoriesError, setCategoriesError] = useState(false);
 
  const [loading, setLoading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
  const [fetchLoading, setFetchLoading] = useState(isEditing);
  const [error, setError] = useState("");
  const [menuSearch, setMenuSearch] = useState("");
@@ -300,7 +302,19 @@ function RestaurantsAdd() {
  return "";
  };
 
- const handleSubmit = async (e) => {
+ 
+  const handleDelete = async () => {
+    try {
+      setLoading(true);
+      await deleteRestaurant(restaurantId);
+      navigate("/restaurants");
+    } catch (err) {
+      setError("Unable to delete restaurant.");
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
  e.preventDefault();
  const validationError = validate();
  if (validationError) {
@@ -387,7 +401,17 @@ function RestaurantsAdd() {
  </p>
  </div>
  </div>
- <div className="hidden sm:flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md text-white shadow-inner shadow-white/20">
+ {isEditing && (
+                <button
+                  type="button"
+                  onClick={() => setDeleteModal(true)}
+                  className="hidden sm:flex h-10 px-4 items-center justify-center gap-2 rounded-xl bg-danger/90 text-white backdrop-blur-md transition-colors hover:bg-danger shadow-sm border border-white/10"
+                >
+                  <Trash2 size={16} />
+                  <span className="text-sm font-medium">Delete Restaurant</span>
+                </button>
+              )}
+              <div className="hidden sm:flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md text-white shadow-inner shadow-white/20">
  <Store size={32} />
  </div>
  </div>
@@ -405,7 +429,7 @@ function RestaurantsAdd() {
  </h2>
 
  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
- <div className="space-y-4">
+ <div className={`space-y-4 ${editingMenuItem?.isViewOnly ? 'pointer-events-none opacity-90' : ''}`}>
  <Input
  id="rst-name"
  label={<RequiredLabel text="Restaurant Name" />}
@@ -517,32 +541,28 @@ function RestaurantsAdd() {
  </div>
  <div 
  onClick={() => logoInputRef.current?.click()}
- className="border border-dashed border-border rounded-lg h-30 flex-1 bg-background flex flex-col items-center justify-center p-4 text-center cursor-pointer hover:bg-surface transition-colors relative overflow-hidden group">
- <input
- type="file"
- className="hidden"
- accept="image/png, image/jpeg, image/webp"
- ref={logoInputRef}
- onChange={async (e) => {
- const file = e.target.files?.[0];
- if (file) {
- try {
- await validateImage(file);
- const objectUrl = URL.createObjectURL(file);
- // Note: we need a real upload endpoint to persist this properly.
- setLogoPreview(objectUrl);
- setForm((prev) => ({ ...prev, logo: objectUrl }));
- setError("");
- } catch (err) {
- setError(err.message);
- console.error(err);
- }
- }
- }}
- />
- <p className="text-sm font-medium text-primary">
- Click to upload
- </p>
+    className="border border-dashed border-border rounded-lg h-30 flex-1 bg-background flex flex-col items-center justify-center p-4 text-center cursor-pointer hover:bg-surface transition-colors relative overflow-hidden group">
+    <input
+      type="file"
+      className="hidden"
+      accept="image/png, image/jpeg, image/webp"
+      ref={logoInputRef}
+      onChange={async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          try {
+            await validateImage(file);
+            const reader = new FileReader(); reader.onloadend = () => { const base64String = reader.result; setLogoPreview(base64String); setForm((prev) => ({ ...prev, logo: base64String })); }; reader.readAsDataURL(file);
+            setError("");
+          } catch (err) {
+            setError(err.message);
+          }
+        }
+      }}
+    />
+    <p className="text-sm font-medium text-primary">
+      {logoPreview ? "Change Logo" : "Click to upload"}
+    </p>
  <p className="text-xs text-muted mt-1">
  or drag and drop
  </p>
@@ -559,7 +579,7 @@ function RestaurantsAdd() {
  </label>
  <div 
  onClick={() => coverInputRef.current?.click()}
- className="border border-dashed border-border rounded-lg h-40 bg-background flex items-center justify-center relative overflow-hidden group cursor-pointer block w-full">
+ className="border border-dashed border-border rounded-lg h-40 bg-background flex items-center justify-center relative overflow-hidden group cursor-pointer w-full">
  <input
  type="file"
  className="hidden"
@@ -570,10 +590,7 @@ function RestaurantsAdd() {
  if (file) {
  try {
  await validateImage(file);
- const objectUrl = URL.createObjectURL(file);
- // Note: we need a real upload endpoint to persist this properly.
- setCoverPreview(objectUrl);
- setForm((prev) => ({ ...prev, coverImage: objectUrl }));
+ const reader = new FileReader(); reader.onloadend = () => { const base64String = reader.result; setCoverPreview(base64String); setForm((prev) => ({ ...prev, coverImage: base64String })); }; reader.readAsDataURL(file);
  setError("");
  } catch (err) {
  setError(err.message);
@@ -609,6 +626,13 @@ function RestaurantsAdd() {
  Restaurant Details
  </h2>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              <Input
+                id="rst-ownerName"
+                label={<RequiredLabel text="Owner Name" />}
+                value={form.ownerName}
+                onChange={handleChange("ownerName")}
+                placeholder="Owner's Name"
+              />
  <Input
  id="rst-phone"
  label={<RequiredLabel text="Phone Number" />}
@@ -624,12 +648,26 @@ function RestaurantsAdd() {
  value={form.address}
  onChange={handleChange("address")}
  placeholder="123, Anna Salai..."
- />
- <MapPin
- size={14}
- className="absolute right-3 bottom-3.25 text-muted"
- />
- </div>
+              />
+              <MapPin
+                size={14}
+                className="absolute right-3 bottom-3.25 text-muted"
+              />
+            </div>
+            
+            <div className="relative">
+              <Input
+                id="rst-city"
+                label={<RequiredLabel text="City" />}
+                value={form.city}
+                onChange={handleChange("city")}
+                placeholder="Chennai"
+              />
+              <MapPin
+                size={14}
+                className="absolute right-3 bottom-3.25 text-muted"
+              />
+            </div>
 
  <Input
  id="rst-email"
@@ -756,7 +794,7 @@ function RestaurantsAdd() {
  </div>
 
  {/* Right Column: Menu Items */}
- <div className="space-y-4">
+ <div className={`space-y-4 ${editingMenuItem?.isViewOnly ? 'pointer-events-none opacity-90' : ''}`}>
  {/* Header Card */}
  <div className="p-4 flex items-center justify-between rounded-xl bg-primary/10 border border-primary/20">
  <div className="flex items-center gap-3">
@@ -895,15 +933,15 @@ function RestaurantsAdd() {
  title={editingMenuItem?.isNew ? "Add Menu Item" : "Edit Menu Item"}
  >
  {editingMenuItem && (
- <div className="space-y-4">
+ <div className={`space-y-4 ${editingMenuItem?.isViewOnly ? 'pointer-events-none opacity-90' : ''}`}>
  <div>
- <label className="text-sm font-medium text-foreground mb-1.5 block">Item Name</label>
- <Input
- value={editingMenuItem.name}
- onChange={(e) => setEditingMenuItem(prev => ({ ...prev, name: e.target.value }))}
- placeholder="Enter item name"
- />
- </div>
+      <label className="text-sm font-medium text-foreground mb-1.5 block">Item Name</label>
+      <Input
+        value={editingMenuItem.name || ''}
+        onChange={(e) => setEditingMenuItem(prev => ({ ...prev, name: e.target.value }))}
+        placeholder="e.g. Chicken Biryani"
+      />
+    </div>
  
  <div className="flex gap-4">
  <div className="flex-1" ref={categoryDropdownRef}>
@@ -934,7 +972,7 @@ function RestaurantsAdd() {
  onKeyDown={(e) => {
  if (e.key === "Escape") setIsCategoryDropdownOpen(false);
  }}
- className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors placeholder:text-muted/50"
+ className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors"
  autoFocus
  />
  </div>
@@ -1044,7 +1082,7 @@ function RestaurantsAdd() {
  onKeyDown={(e) => {
  if (e.key === "Escape") setIsMenuDropdownOpen(false);
  }}
- className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors placeholder:text-muted/50"
+ className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors"
  autoFocus
  />
  </div>
@@ -1225,8 +1263,27 @@ function RestaurantsAdd() {
  </div>
  </div>
  </Modal>
- </section>
- );
-}
+ 
+      <Modal
+        isOpen={deleteModal}
+        onClose={() => setDeleteModal(false)}
+        title="Delete Restaurant"
+      >
+        <p className="text-sm text-muted">
+          Are you sure you want to delete this restaurant? This action
+          cannot be undone.
+        </p>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button type="button" variant="secondary" onClick={() => setDeleteModal(false)}>
+            Cancel
+          </Button>
+          <Button type="button" variant="danger" onClick={handleDelete}>
+            Yes, Delete
+          </Button>
+        </div>
+      </Modal>
+    </section>
+  );
+};
 
 export default RestaurantsAdd;

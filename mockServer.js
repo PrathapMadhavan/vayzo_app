@@ -962,14 +962,11 @@ app.patch('/api/v1/admin/requests/:id/status', (req, res) => {
 // --- START DELIVERY PARTNERS API IMPLEMENTATION ---
 function mapCanonicalPartner(user, db) {
   const pProfile = db.get('partner_profiles').find({ user_id: user.id }).value() || {};
-  const pVehicle = db.get('partner_vehicles').find({ partner_id: user.id }).value() || {};
-  const pBank = db.get('partner_bank_accounts').find({ partner_id: user.id }).value() || {};
-  const pDocs = db.get('partner_documents').filter({ partner_id: user.id }).value() || [];
+  const pVehicle = db.get('partner_vehicles').find({ partner_id: user.id }).value() || (pProfile.id ? db.get('partner_vehicles').find({ partner_id: pProfile.id }).value() : null) || {};
+  const pBank = db.get('partner_bank_accounts').find({ partner_id: user.id }).value() || (pProfile.id ? db.get('partner_bank_accounts').find({ partner_id: pProfile.id }).value() : null) || {};
+  let pDocs = db.get('partner_documents').filter({ partner_id: user.id }).value(); if (!pDocs || pDocs.length === 0) { pDocs = pProfile.id ? db.get('partner_documents').filter({ partner_id: pProfile.id }).value() : []; } if (!pDocs) pDocs = [];
 
-  const getDoc = (type) => {
-    const doc = pDocs.find(d => d.document_type === type);
-    return doc ? doc.file_url : null;
-  };
+  const getDoc = (type) => { const doc = pDocs.find(d => d.document_type === type || d.type === type || d.document_type === type.toLowerCase()); return doc ? (doc.file_url || doc.url) : null; };
 
   return {
     id: user.id,
@@ -988,19 +985,19 @@ function mapCanonicalPartner(user, db) {
     emergencyMobile: pProfile.emergencyMobile || "",
     address: pProfile.address || "",
     city: pProfile.city || "",
-    aadhaarNumber: pProfile.aadhaarNumber || "",
-    panNumber: pProfile.panNumber || "",
-    vehicleType: pVehicle.vehicleType || "",
-    vehicleName: pVehicle.vehicleName || "",
-    vehicleNumber: pVehicle.vehicleNumber || "",
-    rcNumber: pVehicle.rcNumber || "",
-    insuranceProvider: pVehicle.insuranceProvider || "",
-    insuranceNumber: pVehicle.insuranceNumber || "",
-    insuranceValidTill: pVehicle.insuranceValidTill || "",
-    bankName: pBank.bankName || "",
-    accountNumber: pBank.accountNumber || "",
-    ifscCode: pBank.ifscCode || "",
-    accountHolderName: pBank.accountHolderName || "",
+    aadhaarNumber: pProfile.aadhaarNumber || (pDocs.find(d => d.document_type === 'aadhaar' || d.type === 'AADHAAR') || {}).document_number || "",
+    panNumber: pProfile.panNumber || (pDocs.find(d => d.document_type === 'pan' || d.type === 'PAN') || {}).document_number || "",
+    vehicleType: pVehicle.vehicleType || pVehicle.vehicle_type || "",
+    vehicleName: pVehicle.vehicleName || pVehicle.model || "",
+    vehicleNumber: pVehicle.vehicleNumber || pVehicle.registration_number || "",
+    rcNumber: pVehicle.rcNumber || pVehicle.registration_number || "",
+    insuranceProvider: pVehicle.insuranceProvider || pVehicle.insurance_provider || "",
+    insuranceNumber: pVehicle.insuranceNumber || pVehicle.insurance_number || "",
+    insuranceValidTill: pVehicle.insuranceValidTill || pVehicle.validTill || pVehicle.valid_till || "",
+    bankName: pBank.bankName || pBank.bank_name || "",
+    accountNumber: pBank.accountNumber || pBank.account_number || "",
+    ifscCode: pBank.ifscCode || pBank.ifsc_code || "",
+    accountHolderName: pBank.accountHolderName || pBank.account_holder_name || "",
     aadhaarDocumentUrl: getDoc('AADHAAR'),
     panDocumentUrl: getDoc('PAN'),
     rcDocumentUrl: getDoc('RC'),
@@ -1326,3 +1323,8 @@ if (!IS_VERCEL) {
 }
 
 export default app;
+
+
+
+
+
