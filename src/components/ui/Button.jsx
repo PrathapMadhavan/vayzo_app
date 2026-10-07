@@ -22,6 +22,7 @@ function Button({
  
  success: "border border-transparent bg-success text-white hover:bg-success/90",
 
+ "outline-soft": "border border-border text-primary bg-transparent hover:bg-primary/5 hover:border-primary/30",
  ghost:
  "border border-transparent bg-transparent text-muted hover:bg-primary-light hover:text-primary",
 

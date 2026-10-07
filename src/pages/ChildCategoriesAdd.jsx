@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ArrowLeft, ShieldCheck, Search, Check, ChevronDown, FolderTree } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Search, Check, ChevronDown, FolderTree, ImageIcon, Tags } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
@@ -26,7 +26,7 @@ function RequiredLabel({ text }) {
  );
 }
 
-function CategoriesAdd() {
+function ChildCategoriesAdd() {
  const navigate = useNavigate();
  const { categoryId } = useParams();
  const [searchParams] = useSearchParams();
@@ -113,6 +113,10 @@ function CategoriesAdd() {
  const data = await getCategoryById(categoryId);
  if (data) {
  setDbId(data.id);
+
+        const items = await getProductsByCategory(categoryId);
+        setMenuItems(items);
+
  const toTitleCase = (str) => {
  if (!str) return "";
  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -124,7 +128,7 @@ function CategoriesAdd() {
  type: data.type || "Product",
  status: data.status ? toTitleCase(data.status) : statusOptions[0],
  description: data.description || "",
- parentId: data.parentId || "Food Delivery",
+ parentId: queryParentId,
  scope: data.scope || "Global",
     image: data.image || null,
  });
@@ -163,9 +167,7 @@ function CategoriesAdd() {
  />
  );
 
- const childCategories = allCategories.filter(c => c.parentId === categoryId || (dbId && c.parentId === dbId));
-
-  const handleSubmit = async (event) => {
+ const handleSubmit = async (event) => {
  event.preventDefault();
 
  if (!form.name.trim()) {
@@ -200,7 +202,7 @@ function CategoriesAdd() {
 
  if (isEditing) {
  await updateCategory(dbId, payload);
-      setTimeout(() => navigate(`/categories/${categoryId}`), 100);
+      setTimeout(() => navigate(`/categories/${form.parentId}/${categoryId}`), 100);
  } else {
  payload.id = finalId;
  payload.itemCount = 0;
@@ -239,10 +241,10 @@ function CategoriesAdd() {
  </button>
  <div>
  <h2 className="text-2xl font-bold text-white">
- {isEditing ? "Edit Category" : "Create New Category"}
+ {isEditing ? "Edit Child Category" : "Create New Child Category"}
  </h2>
  <p className="mt-1 text-sm text-primary-50 text-white/80">
- {isEditing ? "Update your category details" : "Add a fresh category to your Vayzo catalogue"}
+ {isEditing ? "Update your child category details" : "Add a fresh child category"}
  </p>
  </div>
  </div>
@@ -268,7 +270,7 @@ function CategoriesAdd() {
  onClick={() => setIsParentDropdownOpen(!isParentDropdownOpen)}
  className="w-full flex items-center justify-between bg-surface border border-border rounded-xl px-3 h-11 text-sm text-foreground hover:border-primary/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
  >
- <span className={form.parentId ? "text-foreground truncate" : "text-muted truncate"}>
+ <span className="text-foreground truncate opacity-70">
  {form.parentId 
  ? parents.find(p => p.id === form.parentId)?.name || form.parentId
  : "Select Parent Module"}
@@ -463,44 +465,11 @@ function CategoriesAdd() {
  Cancel
  </Button>
  <Button type="submit" variant="primary" className="gap-2 shadow-sm px-8 h-11" disabled={loading}>
- {loading ? "Saving..." : isEditing ? "Save Changes" : "Save Category"}
+ {loading ? "Saving..." : isEditing ? "Save Changes" : "Save Child Category"}
  </Button>
  </div>
 
  </form>
-
-        {isEditing && (
-          <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm hover:border-primary/50 transition-colors group relative overflow-hidden mt-6">
-            <h3 className="mb-6 text-lg font-semibold text-foreground">Child Categories</h3>
-            {childCategories.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-background p-8 text-center">
-                <div className="rounded-full bg-primary/10 p-3 text-primary mb-3">
-                  <FolderTree size={24} />
-                </div>
-                <p className="text-sm text-muted">No child categories found.</p>
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
-                {childCategories.map((childCat) => (
-                  <div key={childCat.id} className="flex items-center gap-4 rounded-xl border border-border bg-background p-4 shadow-sm">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-surface border border-border overflow-hidden">
-                      {childCat.image ? (
-                        <img src={childCat.image} alt={childCat.name} className="h-full w-full object-cover" />
-                      ) : (
-                        <FolderTree size={20} className="text-muted/50" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-foreground text-sm">{childCat.name}</h4>
-                      <p className="text-xs text-muted font-medium mb-1">{childCat.itemCount || 0} items</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
 
   </div>
 
@@ -508,4 +477,4 @@ function CategoriesAdd() {
  );
 }
 
-export default CategoriesAdd;
+export default ChildCategoriesAdd;

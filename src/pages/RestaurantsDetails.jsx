@@ -165,9 +165,7 @@ function RestaurantsDetails() {
     }
   };
 
-  const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
-  const [editingVariantIndex, setEditingVariantIndex] = useState(-1);
-  const [variantForm, setVariantForm] = useState({ name: "", price: "", image: null });
+
 
   const handleSaveVariant = (e) => {
     e.preventDefault();

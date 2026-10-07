@@ -1667,7 +1667,7 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
  </div>
 
  <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border">
-    <button type="button" className="px-5 py-2 rounded-lg border border-border text-foreground hover:bg-surface transition-colors font-medium text-sm" onClick={() => setEditingMenuItem(null)}>
+    <button type="button" className="px-5 py-2 rounded-lg border border-border text-primary hover:bg-primary/5 transition-colors font-medium text-sm" onClick={() => setEditingMenuItem(null)}>
       Cancel
     </button>
     {!editingMenuItem?.isViewOnly && (

@@ -29,6 +29,7 @@ import DeliveryPartnersAdd from "./pages/DeliveryPartnersAdd";
 import Categories from "./pages/Categories";
 import CategoriesAdd from "./pages/CategoriesAdd";
 import CategoriesDetails from "./pages/CategoriesDetails";
+import ChildCategoriesAdd from "./pages/ChildCategoriesAdd";
 
 import Offers from "./pages/Offers";
 import OffersAdd from "./pages/OffersAdd";
@@ -137,12 +138,14 @@ function App() {
  <Route path=":id" element={<DeliveryPartner />} />
  </Route>
 
- {/* Categories */}
  <Route path="/categories" element={<Outlet />}>
  <Route index element={<Categories />} />
  <Route path="add" element={<CategoriesAdd />} />
- <Route path="edit/:categoryId" element={<CategoriesAdd />} />
+ <Route path="child/add" element={<ChildCategoriesAdd />} />
+ <Route path="child/edit/:categoryId" element={<ChildCategoriesAdd />} />
+          <Route path="edit/:categoryId" element={<CategoriesAdd />} />
  <Route path=":categoryId" element={<CategoriesDetails />} />
+ <Route path=":parentId/:categoryId" element={<CategoriesDetails />} />
  </Route>
 
  {/* Offers */}

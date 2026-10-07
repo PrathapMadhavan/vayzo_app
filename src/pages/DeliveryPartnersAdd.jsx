@@ -781,13 +781,17 @@ function DeliveryPartnersAdd() {
                         }}
                       />
                       {documentPreviews[doc.key] ? (
-                        <div className="w-full h-full flex flex-col relative">
-                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-primary/5 p-2 pointer-events-none">
-                            <FileText
-                              size={28}
-                              className="text-primary mb-2 opacity-80"
-                            />
-                            <span className="text-[11px] font-medium text-primary truncate w-full px-2 text-center opacity-90">
+                        <div className="w-full h-full flex flex-col rounded-md overflow-hidden bg-background">
+                          <a
+                            href={documentPreviews[doc.key]}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex-1 h-[70%] w-full flex flex-col items-center justify-center bg-primary/5 hover:bg-primary/10 text-primary transition-colors p-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <FileText size={22} className="mb-1 opacity-80" />
+                            <span className="text-[10px] font-bold tracking-wider uppercase">View</span>
+                            <span className="text-[9px] truncate w-full px-2 text-center opacity-70 mt-1">
                               {documents[doc.key]
                                 ? documents[doc.key].name
                                 : documentPreviews[doc.key]
@@ -795,30 +799,17 @@ function DeliveryPartnersAdd() {
                                     .pop()
                                     .split("?")[0] || doc.label + ".pdf"}
                             </span>
-                          </div>
+                          </a>
                           <div
-                            className="relative z-10 w-full h-[70%] flex flex-col items-center justify-center opacity-0 group-hover/doc:opacity-100 hover:bg-primary/95 bg-primary/90 text-primary-foreground transition-all cursor-pointer backdrop-blur-sm"
+                            className="h-[30%] w-full flex items-center justify-center bg-primary/10 text-primary hover:bg-primary/20 border-t border-primary/10 transition-colors cursor-pointer"
                             onClick={(e) => {
                               e.stopPropagation();
                               document.getElementById(doc.fileKey).click();
                             }}
                           >
-                            <RefreshCw size={16} className="mb-1" />
-                            <span className="text-[10px] font-semibold tracking-wider uppercase">
-                              Change
-                            </span>
+                            <RefreshCw size={12} className="mr-1.5" />
+                            <span className="text-[10px] font-bold tracking-wider uppercase">Change</span>
                           </div>
-                          <a
-                            href={documentPreviews[doc.key]}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="relative z-10 w-full h-[30%] flex flex-col items-center justify-center opacity-0 group-hover/doc:opacity-100 hover:bg-background/95 bg-background/90 text-foreground border-t border-border/50 transition-all cursor-pointer backdrop-blur-sm"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <span className="text-[10px] font-semibold tracking-wider uppercase flex items-center gap-1.5">
-                              <Eye size={12} /> View PDF
-                            </span>
-                          </a>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center justify-center">

@@ -44,7 +44,7 @@
  integrations: "Third Party Integrations"
  };
 
- const getRouteInfo = (pathname) => {
+ const getRouteInfo = (pathname, search = "") => {
  const segments = pathname.split("/").filter(Boolean);
 
  if (segments.length === 0 || pathname === "/dashboard") {
@@ -101,6 +101,25 @@
  return { title: `Edit ${singularLabel}`, parent: mainRoute.label, parentPath: mainRoute.path };
  }
 
+ if (action === "child" && segments[2] === "add") {
+    const params = new URLSearchParams(search);
+    const parentId = params.get("parentId");
+    return {
+      title: `Add Child ${singularLabel}`,
+      parent: `${singularLabel} Details`,
+      parentPath: parentId ? `${mainRoute.path}/${parentId}` : mainRoute.path
+    };
+ }
+
+ // Nested details page (e.g., /categories/parent_id/child_id)
+ if (segments.length === 3 && action !== "add" && action !== "edit") {
+ return {
+ title: `Item Details`,
+ parent: `${singularLabel} Details`,
+ parentPath: `${mainRoute.path}/${segments[1]}`
+ };
+ }
+
  // Details page
  return { title: `${singularLabel} Details`, parent: mainRoute.label, parentPath: mainRoute.path };
  };
@@ -113,7 +132,7 @@
  title: pageTitle,
  parent: parentPage,
  parentPath,
- } = getRouteInfo(location.pathname);
+ } = getRouteInfo(location.pathname, location.search);
 
  const [isProfileOpen, setIsProfileOpen] = useState(false);
  const { unreadCount } = useNotifications();

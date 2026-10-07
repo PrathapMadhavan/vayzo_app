@@ -226,6 +226,8 @@ function CategoriesDetails() {
  }
  };
 
+
+
  if (loading) {
  return (
  <section className="min-h-full bg-background p-4 sm:p-6 flex items-center justify-center">
@@ -252,21 +254,23 @@ function CategoriesDetails() {
 
  const currentStatus = category.status ? category.status.charAt(0).toUpperCase() + category.status.slice(1).toLowerCase() : "Active";
 
+ const topLevelIds = ["Food Delivery", "Buy & Get It", "Bike Ride", "Car Booking"];
+ const is2ndLevel = topLevelIds.includes(category.parentId);
+
  return (
  <section className="min-h-full bg-background p-4 sm:p-6 pb-20">
  <div className="mx-auto max-w-6xl space-y-6">
- 
- {/* Navigation */}
- <div>
- <button 
- onClick={() => navigate("/categories")}
- className="flex items-center gap-2 text-sm font-medium text-muted hover:text-primary transition-colors"
- >
- <ArrowLeft size={16} /> Back to Categories
- </button>
- </div>
 
- {/* Premium Banner */}
+        {/* ── Top breadcrumb & actions ── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center justify-between w-full sm:w-auto">
+            <button onClick={() => navigate(category?.parentId && !["Food Delivery", "Buy & Get It", "Bike Ride", "Car Booking", "null"].includes(category.parentId) ? `/categories/${category.parentId}` : '/categories')} className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors font-medium">
+              <ArrowLeft size={16} /> Back to List
+            </button>
+          </div>
+        </div>
+
+        {/* Premium Banner */}
  <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-primary to-primary-hover p-8 shadow-xl">
  <div className="absolute top-0 right-0 -mt-20 -mr-20 h-64 w-64 rounded-full bg-white opacity-10 blur-3xl"></div>
  <div className="absolute bottom-0 left-20 -mb-10 h-32 w-32 rounded-full bg-white opacity-10 blur-2xl"></div>
@@ -301,7 +305,7 @@ function CategoriesDetails() {
  
  <Button
  variant="default"
- onClick={() => navigate(`/categories/edit/${category.id}`)}
+ onClick={() => navigate(is2ndLevel ? `/categories/edit/${category.id}` : `/categories/child/edit/${category.id}?parentId=${category.parentId}`)}
  className="bg-white text-primary hover:bg-white/90 shadow-lg"
  >
  <Edit2 size={16} className="mr-2" /> Edit Category
@@ -309,64 +313,114 @@ function CategoriesDetails() {
  </div>
  </div>
 
- <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
- {/* Main Content (Menus) */}
- <div className="flex flex-col gap-6">
- <div className="flex items-center justify-between">
- <h2 className="text-xl font-bold text-foreground">Category Items</h2>
- <Button size="sm" className="shadow-sm shadow-primary/20" onClick={() => {
- setMenuForm({ name: "", status: "Available", image: null, categoryId: categoryId });
- setEditingMenuId(null);
- setIsMenuModalOpen(true);
- }}>
- + Add Item
- </Button>
- </div>
- 
- {/* Real Items Grid */}
- {menuItems.length === 0 ? (
- <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
- <div className="rounded-full bg-primary/10 p-4 text-primary mb-4">
- <Tags size={32} />
- </div>
- <h3 className="text-lg font-bold text-foreground mb-1">No items added yet</h3>
- <p className="text-sm text-muted mb-6 max-w-xs">There are currently no Items associated with this category. Add your first item!</p>
- <Button onClick={() => {
- setMenuForm({ name: "", status: "Available", image: null, categoryId: categoryId });
- setEditingMenuId(null);
- setIsMenuModalOpen(true);
- }}>+ Add Item</Button>
- </div>
- ) : (
- <div className="grid gap-4 sm:grid-cols-2">
- {menuItems.map((item) => (
- <div key={item.id} className="group flex items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm transition-all hover:shadow-md hover:border-primary/50 cursor-pointer"
-                    onClick={() => handleViewMenuClick(item)}>
- <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-background border border-border overflow-hidden">
- {item.image ? (
- <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
- ) : (
- <ImageIcon size={24} className="text-muted/50" />
- )}
- </div>
- <div className="flex-1">
- <h4 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">{item.name}</h4>
- <p className="text-xs text-muted font-medium mb-1">{(item.varients || item.variants)?.length || 0} variants</p>
- <Badge variant={item.status === 'Available' ? 'success' : 'danger'} className="text-[10px] px-1.5 py-0 h-4">
- {item.status}
- </Badge>
- </div>
- <ActionMenu 
- actions={[
- { label: "Edit", icon: Edit2, onClick: () => handleEditMenuClick(item) },
- { label: "Delete", icon: Trash2, onClick: (e) => { e.stopPropagation(); handleDeleteMenuClick(item.id); }, danger: true }
- ]} 
- />
- </div>
- ))}
- </div>
- )}
- </div>
+  <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
+  {/* Main Content (Menus) */}
+  <div className="flex flex-col gap-6">
+  {is2ndLevel ? (
+    <>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-foreground">Child Categories</h2>
+        <Button size="sm" className="shadow-sm shadow-primary/20" onClick={() => navigate(`/categories/child/add?parentId=${category.id}`)}>
+          + Add Category
+        </Button>
+      </div>
+
+      {childCategories.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
+          <div className="rounded-full bg-primary/10 p-4 text-primary mb-4">
+            <FolderTree size={32} />
+          </div>
+          <h3 className="text-lg font-bold text-foreground mb-1">No child categories yet</h3>
+          <p className="text-sm text-muted mb-6 max-w-xs">There are no subcategories here. Add your first child category!</p>
+          <Button onClick={() => navigate(`/categories/child/add?parentId=${category.id}`)}>+ Add Category</Button>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {childCategories.map((childCat) => (
+            <div key={childCat.id} className="group flex items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm transition-all hover:shadow-md hover:border-primary/50 cursor-pointer"
+                 onClick={() => navigate(`/categories/${category.id}/${childCat.id}`)}>
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-background border border-border overflow-hidden">
+                {childCat.image ? (
+                  <img src={childCat.image} alt={childCat.name} className="h-full w-full object-cover" />
+                ) : (
+                  <FolderTree size={24} className="text-muted/50" />
+                )}
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">{childCat.name}</h4>
+                <p className="text-xs text-muted font-medium mb-1">{childCat.itemCount || 0} items</p>
+                <Badge variant={childCat.status === 'Active' || childCat.status === 'Available' ? 'success' : 'danger'} className="text-[10px] px-1.5 py-0 h-4">
+                  {childCat.status}
+                </Badge>
+              </div>
+              <ActionMenu 
+                actions={[
+                  { label: "Edit", icon: Edit2, onClick: (e) => { e.stopPropagation(); navigate(`/categories/edit/${childCat.id}`); } }
+                ]} 
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  ) : (
+    <>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-foreground">Items</h2>
+        <Button size="sm" className="shadow-sm shadow-primary/20" onClick={() => {
+          setMenuForm({ name: "", status: "Available", image: null, categoryId: categoryId, variants: [] });
+          setEditingMenuId(null);
+          setIsMenuModalOpen(true);
+        }}>
+          + Add Item
+        </Button>
+      </div>
+
+      {menuItems.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
+          <div className="rounded-full bg-primary/10 p-4 text-primary mb-4">
+            <Tags size={32} />
+          </div>
+          <h3 className="text-lg font-bold text-foreground mb-1">No items added yet</h3>
+          <p className="text-sm text-muted mb-6 max-w-xs">There are currently no Items associated with this category. Add your first item!</p>
+          <Button onClick={() => {
+            setMenuForm({ name: "", status: "Available", image: null, categoryId: categoryId, variants: [] });
+            setEditingMenuId(null);
+            setIsMenuModalOpen(true);
+          }}>+ Add Item</Button>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {menuItems.map((item) => (
+            <div key={item.id} className="group flex items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm transition-all hover:shadow-md hover:border-primary/50 cursor-pointer"
+                 onClick={() => handleViewMenuClick(item)}>
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-background border border-border overflow-hidden">
+                {item.image ? (
+                  <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                ) : (
+                  <ImageIcon size={24} className="text-muted/50" />
+                )}
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">{item.name}</h4>
+                <p className="text-xs text-muted font-medium mb-1">{(item.varients || item.variants)?.length || 0} variants</p>
+                <Badge variant={item.status === 'Available' ? 'success' : 'danger'} className="text-[10px] px-1.5 py-0 h-4">
+                  {item.status}
+                </Badge>
+              </div>
+              <ActionMenu 
+                actions={[
+                  { label: "Edit", icon: Edit2, onClick: (e) => { e.stopPropagation(); handleEditMenuClick(item); } },
+                  { label: "Delete", icon: Trash2, onClick: (e) => { e.stopPropagation(); handleDeleteMenuClick(item.id); }, danger: true }
+                ]} 
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  )}
+  </div>
 
  {/* Sidebar Info */}
  <div className="flex flex-col gap-6">
@@ -391,9 +445,11 @@ function CategoriesDetails() {
  <Tags size={16} />
  </div>
  <div>
- <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-1">Items Count</p>
+ <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-1">
+   {is2ndLevel ? "Child Categories Count" : "Items Count"}
+ </p>
  <p className="text-sm font-bold text-foreground">
- {category.itemCount || 0} Items linked
+   {is2ndLevel ? `${childCategories.length} Child Categories linked` : `${category.itemCount || 0} Items linked`}
  </p>
  </div>
  </div>
