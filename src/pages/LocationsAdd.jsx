@@ -311,7 +311,7 @@ export default function LocationsAdd() {
 
  {/* Form Actions at the bottom */}
  <div className="flex items-center justify-end gap-3 pt-4 pb-2">
- <Button type="button" variant="outline" onClick={handleCancel} className="px-6">
+ <Button type="button" variant="secondary" onClick={handleCancel} className="px-6">
  Cancel
  </Button>
  <Button type="submit" variant="primary" className="gap-2 shadow-sm px-6" disabled={loading}>

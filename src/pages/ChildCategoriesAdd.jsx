@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, ShieldCheck, Search, Check, ChevronDown, FolderTree, ImageIcon, Tags } from "lucide-react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -18,7 +18,16 @@ const types = [
 const statusOptions = ["Active", "Inactive"];
 
 function RequiredLabel({ text }) {
- return (
+ 
+  const handleCancel = () => {
+    if (location.state?.from === "table") {
+      navigate("/categories");
+    } else {
+      navigate(`/categories/${form.parentId}`);
+    }
+  };
+
+  return (
  <span className="flex items-center gap-1">
  {text}
  <span className="text-danger text-sm">*</span>
@@ -28,6 +37,7 @@ function RequiredLabel({ text }) {
 
 function ChildCategoriesAdd() {
  const navigate = useNavigate();
+  const location = useLocation();
  const { categoryId } = useParams();
  const [searchParams] = useSearchParams();
  const queryParentId = searchParams.get("parent") || searchParams.get("parentId") || "Food Delivery";
@@ -37,11 +47,8 @@ function ChildCategoriesAdd() {
  const [form, setForm] = useState({
  name: "",
  categoryId: "",
- type: "Product",
  status: statusOptions[0],
- description: "",
  parentId: queryParentId,
- scope: "Global",
  image: null,
  });
  
@@ -192,10 +199,7 @@ function ChildCategoriesAdd() {
  const payload = {
  name: form.name.trim(),
  categoryId: finalId,
- type: form.type,
- status: form.status,
- description: form.description,
- scope: form.scope,
+    status: form.status,
  parentId: form.parentId === "null" ? "" : form.parentId,
       image: form.image
  };
@@ -222,12 +226,21 @@ function ChildCategoriesAdd() {
  }
  };
 
- return (
- <section className="min-h-full bg-background p-4 sm:p-6 pb-20">
+ 
+  const handleCancel = () => {
+    if (location.state?.from === "table") {
+      navigate("/categories");
+    } else {
+      navigate(`/categories/${form.parentId}`);
+    }
+  };
+
+  return (
+    <section className="min-h-full bg-background p-4 sm:p-6 pb-20">
  <div className="mx-auto max-w-5xl space-y-6">
  
  {/* Premium Page Header */}
- <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-primary to-primary-hover p-8 shadow-lg">
+ <div className="relative overflow-visible rounded-2xl bg-linear-to-r from-primary to-primary-hover p-8 shadow-lg">
  <div className="absolute top-0 right-0 -mt-10 -mr-10 h-40 w-40 rounded-full bg-white opacity-10 blur-2xl"></div>
  <div className="absolute bottom-0 left-10 -mb-10 h-32 w-32 rounded-full bg-white opacity-10 blur-2xl"></div>
  <div className="relative z-10 flex items-center justify-between">
@@ -259,71 +272,17 @@ function ChildCategoriesAdd() {
 
  {/* Classification & Image */}
  <div className="grid gap-6 md:grid-cols-2">
- <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm flex flex-col h-full hover:border-primary/50 transition-colors group relative overflow-hidden">
+ <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm flex flex-col h-full hover:border-primary/50 transition-colors group relative overflow-visible">
  <h3 className="mb-6 text-lg font-semibold text-foreground">Classification</h3>
  <div className="flex flex-col gap-6 flex-1">
  <div className="w-full flex flex-col gap-1.5">
  <label className="text-sm font-medium text-foreground">Parent Category</label>
- <div className="relative" ref={parentDropdownRef}>
- <button
- type="button"
- onClick={() => setIsParentDropdownOpen(!isParentDropdownOpen)}
- className="w-full flex items-center justify-between bg-surface border border-border rounded-xl px-3 h-11 text-sm text-foreground hover:border-primary/50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
- >
+ <div className="w-full flex items-center justify-between bg-surface border border-border rounded-xl px-3 h-11 text-sm text-foreground opacity-70 cursor-not-allowed bg-muted/10">
  <span className="text-foreground truncate opacity-70">
- {form.parentId 
- ? parents.find(p => p.id === form.parentId)?.name || form.parentId
- : "Select Parent Module"}
+ {form.parentId ? allCategories.find(c => c.categoryId === form.parentId)?.name || parents.find(p => p.id === form.parentId)?.name || form.parentId : "Select Parent Module"}
  </span>
- <ChevronDown size={16} className={`text-muted transition-transform duration-200 ${isParentDropdownOpen ? "rotate-180" : ""}`} />
- </button>
-
- {isParentDropdownOpen && (
- <div className="absolute z-100 top-full mt-2 w-full bg-surface border border-border rounded-xl shadow-lg overflow-hidden flex flex-col max-h-72">
- 
- <div className="overflow-y-auto scrollbar-thin p-1">
- 
- {parents
- .map(p => {
- const isSelected = form.parentId === p.id;
- return (
- <button
- key={p.id}
- type="button"
- onClick={() => {
- update("parentId")({ target: { value: p.id } });
- setIsParentDropdownOpen(false);
- }}
- className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition-colors ${isSelected ? "bg-primary/10 text-primary font-medium" : "hover:bg-surface-hover text-foreground"}`}
- >
- <span className="text-sm truncate">{p.name}</span>
- {isSelected && <Check size={16} className="shrink-0" />}
- </button>
- );
- })}
  </div>
  </div>
- )}
- </div>
- </div>
- 
- <StatusSelect
- id="category-type"
- label={<RequiredLabel text="Type" />}
- value={form.type}
- options={["Product", "Service", "Food"]}
- onChange={update("type")}
- required
- />
- 
- <StatusSelect
- id="category-scope"
- label={<RequiredLabel text="Scope" />}
- value={form.scope}
- options={["Global", "Restaurant Specific"]}
- onChange={update("scope")}
- required
- />
  
  <StatusSelect
  id="category-status"
@@ -337,7 +296,7 @@ function ChildCategoriesAdd() {
  </div>
 
  {/* Image Upload UI */}
- <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm flex flex-col h-full hover:border-primary/50 transition-colors group relative overflow-hidden">
+ <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm flex flex-col h-full hover:border-primary/50 transition-colors group relative overflow-visible">
  <h3 className="mb-6 text-lg font-semibold text-foreground">Category Image</h3>
  
  <input 
@@ -350,7 +309,7 @@ function ChildCategoriesAdd() {
  
  <div className="flex-1 flex flex-col items-center justify-center">
  {form.image ? (
- <div className="relative flex h-full w-full min-h-50 flex-col items-center justify-center rounded-xl border border-border bg-background overflow-hidden group">
+ <div className="relative flex h-full w-full min-h-50 flex-col items-center justify-center rounded-xl border border-border bg-background overflow-visible group">
  <img src={form.image} alt="Preview" className="h-full w-full object-cover" />
  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
  <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -388,7 +347,7 @@ function ChildCategoriesAdd() {
  </div>
 
  {/* General Info Card */}
- <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm hover:border-primary/50 transition-colors group relative overflow-hidden">
+ <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm hover:border-primary/50 transition-colors group relative overflow-visible">
  <h3 className="mb-6 text-lg font-semibold text-foreground">General Information</h3>
  <div className="grid gap-6">
  
@@ -456,9 +415,9 @@ function ChildCategoriesAdd() {
 {/* Action Buttons */}
  <div className="flex items-center justify-end gap-3 pt-2 pb-4">
  <Button
- type="button"
- variant="ghost"
- onClick={() => navigate("/categories")}
+              type="button"
+              variant="secondary"
+ onClick={handleCancel}
  className="px-8 h-11"
  disabled={loading}
  >

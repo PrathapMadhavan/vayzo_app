@@ -1667,9 +1667,9 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
  </div>
 
  <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border">
-    <button type="button" className="px-5 py-2 rounded-lg border border-border text-primary hover:bg-primary/5 transition-colors font-medium text-sm" onClick={() => setEditingMenuItem(null)}>
+    <Button type="button" variant="secondary" onClick={() => setEditingMenuItem(null)}>
       Cancel
-    </button>
+            </Button>
     {!editingMenuItem?.isViewOnly && (
       <button type="button" className="px-5 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors font-medium text-sm" onClick={handleSaveMenuItem}>
         {editingMenuItem.isNew ? "Add Item" : "Update Item"}
@@ -1695,13 +1695,11 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
             ?
           </p>
           <div className="mt-8 flex justify-end gap-3">
-            <button
-              type="button"
-              className="px-5 py-2.5 rounded-lg border border-border bg-surface text-foreground font-medium hover:bg-background transition-colors"
+            <Button type="button" variant="secondary"
               onClick={() => setItemToDelete(null)}
             >
               Cancel
-            </button>
+            </Button>
             <button
               type="button"
               className="px-5 py-2.5 rounded-lg bg-danger text-white font-medium hover:bg-danger/90 transition-colors"
@@ -1808,13 +1806,11 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-border mt-6">
-            <button
-              type="button"
-              className="px-4 py-2 rounded-lg border border-border hover:bg-surface-hover text-sm font-medium transition-colors"
+            <Button type="button" variant="secondary"
               onClick={() => setIsVariantModalOpen(false)}
             >
               Cancel
-            </button>
+            </Button>
             <button
               type="submit"
               className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 text-sm font-medium transition-colors"

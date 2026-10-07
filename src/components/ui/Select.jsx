@@ -107,8 +107,8 @@ function Select({
  error
  ? "border-danger focus:ring-1 focus:ring-danger"
  : isOpen
- ? "border-primary ring-1 ring-primary"
- : "border-border focus:border-primary focus:ring-1 focus:ring-primary",
+ ? "border-primary border-primary"
+ : "border-border focus:border-primary ",
  className,
  ].join(" ")}
  {...props}

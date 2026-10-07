@@ -1,4 +1,4 @@
-function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md" }) {
+function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md", overflow = "auto" }) {
  if (!isOpen) return null;
 
  return (
@@ -23,7 +23,8 @@ function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md" }) {
  </button>
  </div>
 
- <div className="overflow-y-auto overflow-x-hidden scrollbar-thin pr-1">
+ <div className="overflow-y-auto overflow-x-hidden scrollbar-none p-5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }} >
+        <style>{`.scrollbar-none::-webkit-scrollbar { display: none; }`}</style>
  {children}
  </div>
  </div>

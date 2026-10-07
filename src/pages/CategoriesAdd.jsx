@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, ShieldCheck, Search, Check, ChevronDown, FolderTree } from "lucide-react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams, useLocation } from "react-router-dom";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -18,7 +18,18 @@ const types = [
 const statusOptions = ["Active", "Inactive"];
 
 function RequiredLabel({ text }) {
- return (
+ 
+  const handleCancel = () => {
+    if (location.state?.from === "table") {
+      navigate("/categories");
+    } else if (location.state?.from === "details") {
+      navigate(`/categories/${categoryId}`);
+    } else {
+      navigate("/categories");
+    }
+  };
+
+  return (
  <span className="flex items-center gap-1">
  {text}
  <span className="text-danger text-sm">*</span>
@@ -28,6 +39,7 @@ function RequiredLabel({ text }) {
 
 function CategoriesAdd() {
  const navigate = useNavigate();
+  const location = useLocation();
  const { categoryId } = useParams();
  const [searchParams] = useSearchParams();
  const queryParentId = searchParams.get("parent") || searchParams.get("parentId") || "Food Delivery";
@@ -163,7 +175,7 @@ function CategoriesAdd() {
  />
  );
 
- const childCategories = allCategories.filter(c => c.parentId === categoryId || (dbId && c.parentId === dbId));
+ const computedChildCategories = allCategories.filter(c => c.parentId === categoryId || (dbId && c.parentId === dbId));
 
   const handleSubmit = async (event) => {
  event.preventDefault();
@@ -200,7 +212,15 @@ function CategoriesAdd() {
 
  if (isEditing) {
  await updateCategory(dbId, payload);
-      setTimeout(() => navigate(`/categories/${categoryId}`), 100);
+      setTimeout(() => {
+        if (location.state?.from === "table") {
+          navigate("/categories");
+        } else if (location.state?.from === "details") {
+          navigate(`/categories/${categoryId}`);
+        } else {
+          navigate(`/categories/${categoryId}`);
+        }
+      }, 100);
  } else {
  payload.id = finalId;
  payload.itemCount = 0;
@@ -220,12 +240,23 @@ function CategoriesAdd() {
  }
  };
 
- return (
- <section className="min-h-full bg-background p-4 sm:p-6 pb-20">
+ 
+  const handleCancel = () => {
+    if (location.state?.from === "table") {
+      navigate("/categories");
+    } else if (location.state?.from === "details") {
+      navigate(`/categories/${categoryId}`);
+    } else {
+      navigate("/categories");
+    }
+  };
+
+  return (
+    <section className="min-h-full bg-background p-4 sm:p-6 pb-20">
  <div className="mx-auto max-w-5xl space-y-6">
  
  {/* Premium Page Header */}
- <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-primary to-primary-hover p-8 shadow-lg">
+ <div className="relative overflow-visible rounded-2xl bg-linear-to-r from-primary to-primary-hover p-8 shadow-lg">
  <div className="absolute top-0 right-0 -mt-10 -mr-10 h-40 w-40 rounded-full bg-white opacity-10 blur-2xl"></div>
  <div className="absolute bottom-0 left-10 -mb-10 h-32 w-32 rounded-full bg-white opacity-10 blur-2xl"></div>
  <div className="relative z-10 flex items-center justify-between">
@@ -257,7 +288,7 @@ function CategoriesAdd() {
 
  {/* Classification & Image */}
  <div className="grid gap-6 md:grid-cols-2">
- <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm flex flex-col h-full hover:border-primary/50 transition-colors group relative overflow-hidden">
+ <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm flex flex-col h-full hover:border-primary/50 transition-colors group relative overflow-visible">
  <h3 className="mb-6 text-lg font-semibold text-foreground">Classification</h3>
  <div className="flex flex-col gap-6 flex-1">
  <div className="w-full flex flex-col gap-1.5">
@@ -277,7 +308,7 @@ function CategoriesAdd() {
  </button>
 
  {isParentDropdownOpen && (
- <div className="absolute z-100 top-full mt-2 w-full bg-surface border border-border rounded-xl shadow-lg overflow-hidden flex flex-col max-h-72">
+ <div className="absolute z-100 top-full mt-2 w-full bg-surface border border-border rounded-xl shadow-lg overflow-visible flex flex-col max-h-72">
  
  <div className="overflow-y-auto scrollbar-thin p-1">
  
@@ -335,7 +366,7 @@ function CategoriesAdd() {
  </div>
 
  {/* Image Upload UI */}
- <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm flex flex-col h-full hover:border-primary/50 transition-colors group relative overflow-hidden">
+ <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm flex flex-col h-full hover:border-primary/50 transition-colors group relative overflow-visible">
  <h3 className="mb-6 text-lg font-semibold text-foreground">Category Image</h3>
  
  <input 
@@ -348,7 +379,7 @@ function CategoriesAdd() {
  
  <div className="flex-1 flex flex-col items-center justify-center">
  {form.image ? (
- <div className="relative flex h-full w-full min-h-50 flex-col items-center justify-center rounded-xl border border-border bg-background overflow-hidden group">
+ <div className="relative flex h-full w-full min-h-50 flex-col items-center justify-center rounded-xl border border-border bg-background overflow-visible group">
  <img src={form.image} alt="Preview" className="h-full w-full object-cover" />
  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
  <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -386,7 +417,7 @@ function CategoriesAdd() {
  </div>
 
  {/* General Info Card */}
- <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm hover:border-primary/50 transition-colors group relative overflow-hidden">
+ <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm hover:border-primary/50 transition-colors group relative overflow-visible">
  <h3 className="mb-6 text-lg font-semibold text-foreground">General Information</h3>
  <div className="grid gap-6">
  
@@ -424,55 +455,10 @@ function CategoriesAdd() {
 
  {/* Read-Only Related Data (only shown on Edit) */}
  {isEditing && (
- <div className="grid gap-6">
-
- <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
- <h3 className="mb-4 text-base font-semibold text-foreground">Category Items</h3>
- {menuItems.length > 0 ? (
- <ul className="space-y-2">
- {menuItems.map(item => (
- <li key={item.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-background">
- <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
- {item.image ? <img src={item.image} alt="" className="h-full w-full object-cover rounded-lg" /> : <ShieldCheck size={14} />}
- </div>
- <div className="flex flex-col">
- <span className="text-sm font-medium text-foreground">{item.name}</span>
- <span className="text-xs text-muted">${Number(item.price).toFixed(2)}</span>
- </div>
- <Badge variant={item.status === 'Available' ? 'success' : 'danger'} className="ml-auto text-[10px] px-1.5 py-0 h-4">
- {item.status}
- </Badge>
- </li>
- ))}
- </ul>
- ) : (
- <p className="text-sm text-muted italic">No menu items linked to this category.</p>
- )}
- </div>
- </div>
- )}
-{/* Action Buttons */}
- <div className="flex items-center justify-end gap-3 pt-2 pb-4">
- <Button
- type="button"
- variant="ghost"
- onClick={() => navigate("/categories")}
- className="px-8 h-11"
- disabled={loading}
- >
- Cancel
- </Button>
- <Button type="submit" variant="primary" className="gap-2 shadow-sm px-8 h-11" disabled={loading}>
- {loading ? "Saving..." : isEditing ? "Save Changes" : "Save Category"}
- </Button>
- </div>
-
- </form>
-
-        {isEditing && (
-          <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm hover:border-primary/50 transition-colors group relative overflow-hidden mt-6">
+        <div className="grid gap-6">
+          <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm hover:border-primary/50 transition-colors group relative overflow-visible">
             <h3 className="mb-6 text-lg font-semibold text-foreground">Child Categories</h3>
-            {childCategories.length === 0 ? (
+            {computedChildCategories.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-background p-8 text-center">
                 <div className="rounded-full bg-primary/10 p-3 text-primary mb-3">
                   <FolderTree size={24} />
@@ -481,9 +467,9 @@ function CategoriesAdd() {
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2">
-                {childCategories.map((childCat) => (
+                {computedChildCategories.map((childCat) => (
                   <div key={childCat.id} className="flex items-center gap-4 rounded-xl border border-border bg-background p-4 shadow-sm">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-surface border border-border overflow-hidden">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-surface border border-border overflow-visible">
                       {childCat.image ? (
                         <img src={childCat.image} alt={childCat.name} className="h-full w-full object-cover" />
                       ) : (
@@ -499,8 +485,25 @@ function CategoriesAdd() {
               </div>
             )}
           </div>
-        )}
+        </div>
+      )}
+{/* Action Buttons */}
+ <div className="flex items-center justify-end gap-3 pt-2 pb-4">
+ <Button
+              type="button"
+              variant="secondary"
+ onClick={handleCancel}
+ className="px-8 h-11"
+ disabled={loading}
+ >
+ Cancel
+ </Button>
+ <Button type="submit" variant="primary" className="gap-2 shadow-sm px-8 h-11" disabled={loading}>
+ {loading ? "Saving..." : isEditing ? "Save Changes" : "Save Category"}
+ </Button>
+ </div>
 
+ </form>
 
   </div>
 

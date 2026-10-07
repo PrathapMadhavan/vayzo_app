@@ -423,7 +423,7 @@ export default function Categories() {
  {
  label: "Edit",
  icon: Pencil,
- onClick: () => navigate(`/categories/edit/${category.id}`),
+ onClick: () => navigate(`/categories/edit/${category.id}`, { state: { from: "table" } }),
  },
  {
  label: "Delete",

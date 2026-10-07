@@ -13,7 +13,7 @@ import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
 import ActionMenu from "../components/ui/ActionMenu";
 import { getCategoryById, updateCategory, getCategories } from "../api/categoriesApi";
-import { getProductsByCategory, addProduct, updateProduct, deleteProduct } from "../api/productsApi";
+import { getCategoryItemsByCategory as getProductsByCategory, addCategoryItem as addProduct, updateCategoryItem as updateProduct, deleteCategoryItem as deleteProduct } from "../api/categoryItemsApi";
 
 function CategoriesDetails() {
  const navigate = useNavigate();
@@ -38,6 +38,10 @@ function CategoriesDetails() {
  });
  const [menuSubmitting, setMenuSubmitting] = useState(false);
    const fileInputRef = useRef(null);
+
+  
+  const [isItemDeleteModalOpen, setIsItemDeleteModalOpen] = useState(false);
+  const [menuItemToDelete, setMenuItemToDelete] = useState(null);
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingMenu, setViewingMenu] = useState(null);
@@ -197,13 +201,13 @@ function CategoriesDetails() {
       status: item.status || "Available",
       image: item.image || null,
       categoryId: item.categoryId || categoryId,
-      variants: item.varients || item.variants || [],
+      
     });
     setIsMenuModalOpen(true);
   };
 
  const handleDeleteMenuClick = async (itemId) => {
- if (!window.confirm("Are you sure you want to delete this Item?")) return;
+ 
  try {
  await deleteProduct(itemId);
  const newCount = Math.max((category.itemCount || 1) - 1, 0);
@@ -297,15 +301,14 @@ function CategoriesDetails() {
  </div>
  <div className="flex items-center gap-4 text-sm font-medium text-white/80">
  <span>ID: {category.categoryId}</span>
- <span className="h-1 w-1 rounded-full bg-white/50"></span>
- <span>Type: {category.type}</span>
+ {category.type && (<><span className="h-1 w-1 rounded-full bg-white/50"></span><span>Type: {category.type}</span></>)}
  </div>
  </div>
  </div>
  
  <Button
  variant="default"
- onClick={() => navigate(is2ndLevel ? `/categories/edit/${category.id}` : `/categories/child/edit/${category.id}?parentId=${category.parentId}`)}
+ onClick={() => navigate(is2ndLevel ? `/categories/edit/${category.id}` : `/categories/child/edit/${category.id}?parentId=${category.parentId}`, { state: { from: "details" } })}
  className="bg-white text-primary hover:bg-white/90 shadow-lg"
  >
  <Edit2 size={16} className="mr-2" /> Edit Category
@@ -321,7 +324,7 @@ function CategoriesDetails() {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-foreground">Child Categories</h2>
         <Button size="sm" className="shadow-sm shadow-primary/20" onClick={() => navigate(`/categories/child/add?parentId=${category.id}`)}>
-          + Add Category
+          + Add Child Category
         </Button>
       </div>
 
@@ -355,7 +358,7 @@ function CategoriesDetails() {
               </div>
               <ActionMenu 
                 actions={[
-                  { label: "Edit", icon: Edit2, onClick: (e) => { e.stopPropagation(); navigate(`/categories/edit/${childCat.id}`); } }
+                  { label: "Edit", icon: Edit2, onClick: (e) => { e.stopPropagation(); navigate(`/categories/child/edit/${childCat.id}?parentId=${category.id}`, { state: { from: "details" } }); } }
                 ]} 
               />
             </div>
@@ -368,7 +371,7 @@ function CategoriesDetails() {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-foreground">Items</h2>
         <Button size="sm" className="shadow-sm shadow-primary/20" onClick={() => {
-          setMenuForm({ name: "", status: "Available", image: null, categoryId: categoryId, variants: [] });
+          setMenuForm({ name: "", status: "Available", image: category?.image || null, categoryId: categoryId });
           setEditingMenuId(null);
           setIsMenuModalOpen(true);
         }}>
@@ -384,7 +387,7 @@ function CategoriesDetails() {
           <h3 className="text-lg font-bold text-foreground mb-1">No items added yet</h3>
           <p className="text-sm text-muted mb-6 max-w-xs">There are currently no Items associated with this category. Add your first item!</p>
           <Button onClick={() => {
-            setMenuForm({ name: "", status: "Available", image: null, categoryId: categoryId, variants: [] });
+            setMenuForm({ name: "", status: "Available", image: category?.image || null, categoryId: categoryId });
             setEditingMenuId(null);
             setIsMenuModalOpen(true);
           }}>+ Add Item</Button>
@@ -403,7 +406,7 @@ function CategoriesDetails() {
               </div>
               <div className="flex-1">
                 <h4 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">{item.name}</h4>
-                <p className="text-xs text-muted font-medium mb-1">{(item.varients || item.variants)?.length || 0} variants</p>
+                
                 <Badge variant={item.status === 'Available' ? 'success' : 'danger'} className="text-[10px] px-1.5 py-0 h-4">
                   {item.status}
                 </Badge>
@@ -411,7 +414,7 @@ function CategoriesDetails() {
               <ActionMenu 
                 actions={[
                   { label: "Edit", icon: Edit2, onClick: (e) => { e.stopPropagation(); handleEditMenuClick(item); } },
-                  { label: "Delete", icon: Trash2, onClick: (e) => { e.stopPropagation(); handleDeleteMenuClick(item.id); }, danger: true }
+                  { label: "Delete", icon: Trash2, onClick: (e) => { e.stopPropagation(); setMenuItemToDelete(item.id); setIsItemDeleteModalOpen(true); }, danger: true }
                 ]} 
               />
             </div>
@@ -449,7 +452,7 @@ function CategoriesDetails() {
    {is2ndLevel ? "Child Categories Count" : "Items Count"}
  </p>
  <p className="text-sm font-bold text-foreground">
-   {is2ndLevel ? `${childCategories.length} Child Categories linked` : `${category.itemCount || 0} Items linked`}
+   {is2ndLevel ? `${childCategories.length} Child Categories linked` : `${menuItems.length} Items linked`}
  </p>
  </div>
  </div>
@@ -492,6 +495,7 @@ function CategoriesDetails() {
 
        {/* Add/Edit Item Modal */}
       <Modal
+        overflow="visible"
         isOpen={isMenuModalOpen}
         onClose={() => {
           setIsMenuModalOpen(false);
@@ -507,14 +511,28 @@ function CategoriesDetails() {
         title={editingMenuId ? "Edit Item" : "Add Item"}
       >
         <form onSubmit={handleAddMenu} className="space-y-4">
-          <Input
-            label="Item Name"
-            placeholder="e.g. Classic Burger"
-            value={menuForm.name}
-            onChange={(e) => setMenuForm({ ...menuForm, name: e.target.value })}
-            required
+
+          {/* Category (Disabled) */}
+          <Select
+            label="Category"
+            options={allCategories.map((c) => ({ label: c.name, value: c.id }))}
+            value={menuForm.categoryId || categoryId}
+            disabled={true}
+            onChange={(e) =>
+              setMenuForm({ ...menuForm, categoryId: e.target.value })
+            }
           />
 
+          {/* Name & Price Grid */}
+          <Input
+                label="Item Name"
+                placeholder="e.g. Classic Burger"
+                value={menuForm.name}
+                onChange={(e) => setMenuForm({ ...menuForm, name: e.target.value })}
+                required
+            />
+
+          {/* Image */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">
               Item Image
@@ -567,6 +585,7 @@ function CategoriesDetails() {
             )}
           </div>
 
+          {/* Status */}
           <div className="grid grid-cols-1 gap-4">
             <Select
                 label="Status"
@@ -577,85 +596,21 @@ function CategoriesDetails() {
                 }
             />
           </div>
-
-          <Select
-            label="Category"
-            options={allCategories.map((c) => ({ label: c.name, value: c.id }))}
-            value={menuForm.categoryId || categoryId}
-            onChange={(e) =>
-              setMenuForm({ ...menuForm, categoryId: e.target.value })
-            }
-          />
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-foreground">
-                Item Variants (e.g. Types, Sizes)
-              </label>
+    
+          <div className="flex justify-end pt-4">
+            {editingMenuId && (
               <Button
                 type="button"
-                size="sm"
-                variant="primary"
+                variant="danger"
+                className="mr-auto"
                 onClick={() => {
-                    setVariantForm({ name: "", price: "", image: menuForm.image });
-                    setEditingVariantIndex(-1);
-                    setIsVariantModalOpen(true);
+                  setMenuItemToDelete(editingMenuId); setIsItemDeleteModalOpen(true);
                 }}
               >
-                <Plus size={12} className="mr-1" /> Add Variant
+                Delete
               </Button>
-            </div>
-            {(menuForm.variants || []).length > 0 ? (
-              <div className="space-y-3 mb-2">
-                {menuForm.variants.map((variant, index) => (
-                  <div 
-                    key={index} 
-                    className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background cursor-pointer hover:border-primary/50 transition-colors"
-                    onClick={() => {
-                        setVariantForm(variant);
-                        setEditingVariantIndex(index);
-                        setIsVariantModalOpen(true);
-                    }}
-                  >
-                    {variant.image ? (
-                        <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-border bg-surface">
-                            <img src={variant.image} className="w-full h-full object-cover" />
-                        </div>
-                    ) : (
-                        <div className="w-10 h-10 rounded-lg shrink-0 border border-border bg-surface flex items-center justify-center">
-                            <ImageIcon size={16} className="text-muted/50" />
-                        </div>
-                    )}
-                    <div className="flex-1">
-                        <p className="text-sm font-bold text-foreground">{variant.name}</p>
-                        <p className="text-xs font-semibold text-primary">₹{variant.price}</p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="danger"
-                      className="px-2 shrink-0 h-8 w-8 p-0 flex items-center justify-center"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const newV = [...menuForm.variants];
-                        newV.splice(index, 1);
-                        setMenuForm({ ...menuForm, variants: newV });
-                      }}
-                    >
-                      <span className="text-white text-sm font-bold">✕</span>
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-muted italic mb-2">No variants added. Base price will be used.</p>
             )}
-          </div>
-
-          <div className="flex justify-end pt-4">
-            <Button
-              variant="ghost"
-              type="button"
-              className="mr-3"
+            <Button variant="secondary" type="button" className="mr-3"
               onClick={() => {
                 setIsMenuModalOpen(false);
                 setEditingMenuId(null);
@@ -753,10 +708,7 @@ function CategoriesDetails() {
           </div>
 
           <div className="flex justify-end pt-4 border-t border-border mt-4">
-             <Button
-              variant="ghost"
-              type="button"
-              className="mr-3"
+             <Button variant="secondary" type="button" className="mr-3"
               onClick={() => setIsVariantModalOpen(false)}
             >
               Cancel
@@ -857,6 +809,34 @@ function CategoriesDetails() {
           </div>
         </Modal>
       )}
+    
+      {/* Delete Item Modal */}
+      <Modal
+        isOpen={isItemDeleteModalOpen}
+        onClose={() => setIsItemDeleteModalOpen(false)}
+        title="Delete Item"
+      >
+        <p className="text-sm text-muted">
+          Are you sure you want to delete this item? This action cannot be undone.
+        </p>
+        <div className="mt-6 flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setIsItemDeleteModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={() => {
+              if (menuItemToDelete) {
+                  handleDeleteMenuClick(menuItemToDelete);
+              }
+              setIsItemDeleteModalOpen(false);
+              setMenuItemToDelete(null);
+              setIsMenuModalOpen(false);
+              setEditingMenuId(null);
+          }}>
+            Yes, Delete
+          </Button>
+        </div>
+      </Modal>
+
     </section>
   );
 }

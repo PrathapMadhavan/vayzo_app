@@ -981,6 +981,8 @@ server.use(
     "/api/v1/admin/reports-summary": "/reportsSummary",
     "/api/v1/admin/reports/*": "/reports/$1",
     "/api/v1/admin/reports": "/reports",
+    "/api/v1/admin/categories/categoryitems/*": "/category_items/$1",
+    "/api/v1/admin/categories/categoryitems": "/category_items",
     "/api/v1/admin/categories/*": "/categories/$1",
     "/api/v1/admin/categories": "/categories",
     "/api/v1/admin/activity-logs/*": "/activityLogs/$1",
