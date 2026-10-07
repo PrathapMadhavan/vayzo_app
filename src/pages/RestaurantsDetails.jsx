@@ -165,6 +165,10 @@ function RestaurantsDetails() {
     }
   };
 
+  const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
+  const [editingVariantIndex, setEditingVariantIndex] = useState(-1);
+  const [variantForm, setVariantForm] = useState({ name: "", price: "", image: null });
+
   const handleSaveVariant = (e) => {
     e.preventDefault();
     if (!variantForm.name || !variantForm.price) return;
@@ -175,11 +179,13 @@ function RestaurantsDetails() {
         } else {
             newV.push(variantForm);
         }
-        return { ...prev, variants: newV, varients: newV };
+        return { ...prev, variants: newV };
     });
     setIsVariantModalOpen(false);
   };
-const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   const [viewingMenuItem, setViewingMenuItem] = useState(null);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
  const [categorySearchText, setCategorySearchText] = useState("");
@@ -286,6 +292,16 @@ const [isViewModalOpen, setIsViewModalOpen] = useState(false);
  };
 
  const handleSaveMenuItem = async () => {
+    const hasVariants = (editingMenuItem.variants || []).length > 0;
+    if (
+      !editingMenuItem.name?.trim() ||
+      (!editingMenuItem.price && !hasVariants) ||
+      !editingMenuItem.category ||
+      !editingMenuItem.foodType
+    ) {
+      alert("Item Name, Category, Food Type, and either a Base Price or at least one Variant are required.");
+      return;
+    }
  try {
  const updatedRestaurant = { ...restaurant };
  updatedRestaurant.menuItems = updatedRestaurant.menuItems || [];
@@ -978,7 +994,7 @@ const [isViewModalOpen, setIsViewModalOpen] = useState(false);
  ...prev, 
  category: cat.name,
  categoryId: cat.id,
- menuItemId: "" // Reset menu item when category changes
+ menuItemId: "", name: "", price: "", variants: []
  }));
  setIsCategoryDropdownOpen(false);
  setCategorySearchText("");
@@ -1011,6 +1027,28 @@ const [isViewModalOpen, setIsViewModalOpen] = useState(false);
  No categories found
  </div>
  )}
+  {categorySearchText.trim() && !categories.some(c => c.name.toLowerCase() === categorySearchText.trim().toLowerCase()) && (
+     <button
+        type="button"
+        onClick={() => {
+            setEditingMenuItem(prev => ({ 
+                ...prev, 
+                category: categorySearchText.trim(),
+                categoryId: null,
+                menuItemId: "",
+                name: "",
+                price: "",
+                variants: []
+            }));
+            setIsCategoryDropdownOpen(false);
+            setCategorySearchText("");
+        }}
+        className="w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors hover:bg-surface-hover border-t border-border/50 mt-1 text-primary"
+     >
+        <Plus size={16} />
+        <span className="text-sm font-medium">Add "{categorySearchText.trim()}"</span>
+     </button>
+  )}
  </div>
  </div>
  )}
@@ -1028,6 +1066,7 @@ const [isViewModalOpen, setIsViewModalOpen] = useState(false);
  </div>
  </div>
 
+ {editingMenuItem.itemMode !== 'custom' && (
  <div>
  <label className="text-xs font-medium text-muted mb-1 block">Menu Items</label>
  <div className="relative" ref={menuDropdownRef}>
@@ -1128,6 +1167,7 @@ const [isViewModalOpen, setIsViewModalOpen] = useState(false);
  </div>
  </div>
 
+ )}
  <div>
  <label className="text-xs font-medium text-muted mb-2 block">Menu Item Image</label>
  <div>
@@ -1246,7 +1286,7 @@ const [isViewModalOpen, setIsViewModalOpen] = useState(false);
                             setEditingMenuItem(prev => {
                                 const newV = [...(prev.variants || prev.varients || [])];
                                 newV.splice(index, 1);
-                                return { ...prev, variants: newV, varients: newV };
+                                return { ...prev, variants: newV };
                             });
                         }}
                         className="w-7 h-7 rounded-md bg-danger/10 text-danger flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1363,3 +1403,4 @@ const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 }
 
 export default RestaurantsDetails;
+

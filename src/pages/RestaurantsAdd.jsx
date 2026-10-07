@@ -125,11 +125,12 @@ function RestaurantsAdd() {
         } else {
             newV.push(variantForm);
         }
-        return { ...prev, variants: newV, varients: newV };
+        return { ...prev, variants: newV };
     });
     setIsVariantModalOpen(false);
   };
 const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   const [viewingMenuItem, setViewingMenuItem] = useState(null);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [categorySearchText, setCategorySearchText] = useState("");
@@ -258,28 +259,18 @@ const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   };
 
   const handleAddNewItem = () => {
-    setEditingMenuItem({
-      isNew: true,
-      id: `temp-${Date.now()}`,
-      name: "",
-      category: "",
-      categoryId: "",
-      price: "",
-      foodType: "Veg",
-      status: true,
-      image: "",
-      images: [null, null, null, null],
-    });
+    setIsPromptModalOpen(true);
   };
 
   const handleSaveMenuItem = () => {
+    const hasVariants = (editingMenuItem.variants || []).length > 0;
     if (
-      !editingMenuItem.name.trim() ||
-      !editingMenuItem.price ||
+      !editingMenuItem.name?.trim() ||
+      (!editingMenuItem.price && !hasVariants) ||
       !editingMenuItem.category ||
       !editingMenuItem.foodType
     ) {
-      alert("Item Name, Price, Category, and Food Type are required.");
+      alert("Item Name, Category, Food Type, and either a Base Price or at least one Variant are required.");
       return;
     }
     setForm((prev) => {
@@ -1234,6 +1225,69 @@ const [isViewModalOpen, setIsViewModalOpen] = useState(false);
         </Modal>
       )}
 
+      {/* Item Source Prompt Modal */}
+      <Modal
+        isOpen={isPromptModalOpen}
+        onClose={() => setIsPromptModalOpen(false)}
+        title="Add Menu Item"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-muted">How would you like to add a new menu item?</p>
+          <div className="flex gap-4">
+            <button
+              onClick={() => {
+                setIsPromptModalOpen(false);
+                setEditingMenuItem({
+                  isNew: true,
+                  itemMode: 'catalog',
+                  id: `temp-${Date.now()}`,
+                  name: "",
+                  category: "",
+                  categoryId: "",
+                  price: "",
+                  foodType: "Veg",
+                  status: true,
+                  image: "",
+                  images: [null, null, null, null],
+                });
+              }}
+              className="flex-1 p-4 border border-border rounded-xl hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center gap-2 text-center"
+            >
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <Search size={20} />
+              </div>
+              <p className="font-semibold text-sm">Select from Catalog</p>
+              <p className="text-xs text-muted">Choose from existing categories and items</p>
+            </button>
+            <button
+              onClick={() => {
+                setIsPromptModalOpen(false);
+                setEditingMenuItem({
+                  isNew: true,
+                  itemMode: 'custom',
+                  id: `temp-${Date.now()}`,
+                  name: "",
+                  category: "",
+                  categoryId: null,
+                  price: "",
+                  foodType: "Veg",
+                  status: true,
+                  image: "",
+                  images: [null, null, null, null],
+                });
+              }}
+              className="flex-1 p-4 border border-border rounded-xl hover:border-primary hover:bg-primary/5 transition-all flex flex-col items-center gap-2 text-center"
+            >
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                <Plus size={20} />
+              </div>
+              <p className="font-semibold text-sm">Create Own Item</p>
+              <p className="text-xs text-muted">Add a completely custom item</p>
+            </button>
+          </div>
+        </div>
+      </Modal>
+
       {/* Edit/Add Menu Item Modal */}
  <Modal
  isOpen={!!editingMenuItem}
@@ -1407,7 +1461,7 @@ const [isViewModalOpen, setIsViewModalOpen] = useState(false);
  ...prev, 
  menuItemId: item.id,
  name: item.name || prev.name,
- price: item.price || prev.price,
+ price: prev.price, variants: (item.varients || item.variants || []).map(v => ({...v})),
  foodType: item.foodType || prev.foodType,
  image: item.image || prev.image,
  images: item.image ? [item.image, ...(prev.images || []).slice(1)] : prev.images
@@ -1566,7 +1620,7 @@ const [isViewModalOpen, setIsViewModalOpen] = useState(false);
                             setEditingMenuItem(prev => {
                                 const newV = [...(prev.variants || prev.varients || [])];
                                 newV.splice(index, 1);
-                                return { ...prev, variants: newV, varients: newV };
+                                return { ...prev, variants: newV };
                             });
                         }}
                         className="w-7 h-7 rounded-md bg-danger/10 text-danger flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
