@@ -1,17 +1,33 @@
 // Partner Aggregation logic for mock server
 function getPartnerAggregatedData(db, partnerId) {
-  // Try to find by id or public partner_code
-  let profile = db.partner_profiles.find(p => p.id === partnerId || p.partner_code === partnerId);
+  let profile = null;
+  
+  if (db.partner_profiles) {
+    profile = db.partner_profiles.find(p => p.id === partnerId || p.partner_code === partnerId);
+    if (!profile && db.users) {
+      const user = db.users.find(u => u.id === partnerId && u.role === 'Delivery Partner');
+      if (user) {
+        profile = db.partner_profiles.find(p => p.user_id === user.id);
+      }
+    }
+  }
+
   // Fallback to legacy partners collection if profile not found
   let legacyPartner = null;
   if (!profile) {
-    legacyPartner = db.partners.find(p => p.id === partnerId);
+    legacyPartner = (db.partners || []).find(p => p.id === partnerId);
     if (!legacyPartner) return null;
   }
   
   const pId = profile ? profile.id : legacyPartner.id;
   const userId = profile ? profile.user_id : null;
-  const user = userId ? db.users.find(u => u.id === userId) : legacyPartner;
+  let user = userId ? (db.users || []).find(u => u.id === userId) : legacyPartner;
+  
+  if (!user && profile) {
+    // If we have a profile but no user, it might be a legacy partner where the profile points to a partner in the legacy partners collection instead of users.
+    legacyPartner = (db.partners || []).find(p => p.id === userId);
+    user = legacyPartner;
+  }
   
   if (!user && !legacyPartner) return null;
 
@@ -67,6 +83,8 @@ function getPartnerAggregatedData(db, partnerId) {
       partnerId: profile ? profile.partner_code : (legacyPartner ? legacyPartner.id : pId),
       name: user.name,
       status: user.status || (profile ? profile.verification_status : legacyPartner.status),
+      onlineStatus: (profile ? profile.online_status : null) || user.onlineStatus || (legacyPartner ? legacyPartner.onlineStatus : 'Offline'),
+      profileImage: user.profileImage || user.profile_image || (legacyPartner ? legacyPartner.profileImage : null),
       mobileNumber: user.mobileNumber,
       email: user.email,
       joinedAt: user.joinedOn || (profile ? profile.joined_at : ''),
@@ -87,17 +105,17 @@ function getPartnerAggregatedData(db, partnerId) {
       emergencyContact: profile ? profile.emergencyContact : (legacyPartner ? legacyPartner.emergencyContact : null),
       emergencyMobile: profile ? profile.emergencyMobile : (legacyPartner ? legacyPartner.emergencyMobile : null),
       address: profile ? profile.address : (legacyPartner ? legacyPartner.address : null),
-      panNumber: panDoc ? panDoc.document_number.slice(-4).padStart(panDoc.document_number.length, '*') : (legacyPartner ? legacyPartner.panNumber : null),
-      aadhaarNumber: aadhaarDoc ? aadhaarDoc.document_number.slice(-4).padStart(aadhaarDoc.document_number.length, '*') : (legacyPartner ? legacyPartner.aadhaarNumber : null)
+      panNumber: panDoc ? panDoc.document_number : (legacyPartner ? legacyPartner.panNumber : null),
+      aadhaarNumber: aadhaarDoc ? aadhaarDoc.document_number : (legacyPartner ? legacyPartner.aadhaarNumber : null)
     },
     vehicle: {
       vehicleType: vehicle ? vehicle.vehicle_type : (legacyPartner ? legacyPartner.vehicleType : null),
       vehicleName: vehicle ? `${vehicle.make} ${vehicle.model}` : (legacyPartner ? legacyPartner.vehicleName : null),
       vehicleNumber: vehicle ? vehicle.registration_number : (legacyPartner ? legacyPartner.vehicleNumber : null),
       rcNumber: rcDoc ? rcDoc.document_number : (legacyPartner ? legacyPartner.rcNumber : null),
-      insuranceProvider: legacyPartner ? legacyPartner.insuranceProvider : null, // Gap
-      insuranceNumber: insDoc ? insDoc.document_number : (legacyPartner ? legacyPartner.insuranceNumber : null),
-      validTill: insDoc ? insDoc.expires_at : (legacyPartner ? legacyPartner.insuranceValidTill : null)
+      insuranceProvider: vehicle?.insuranceProvider || vehicle?.insurance_provider || (legacyPartner ? legacyPartner.insuranceProvider : null),
+      insuranceNumber: (insDoc ? insDoc.document_number : null) || vehicle?.insuranceNumber || vehicle?.insurance_number || (legacyPartner ? legacyPartner.insuranceNumber : null),
+      validTill: (insDoc ? insDoc.expires_at : null) || vehicle?.insuranceValidTill || vehicle?.validTill || vehicle?.valid_till || (legacyPartner ? legacyPartner.insuranceValidTill : null)
     },
     earnings: {
       totalEarnings,
@@ -108,6 +126,7 @@ function getPartnerAggregatedData(db, partnerId) {
     documents: documents,
     bankAccount: {
       bankName: bankAccount ? bankAccount.bank_name : (legacyPartner ? legacyPartner.bankName : null),
+      accountNumber: bankAccount ? bankAccount.account_number : (legacyPartner ? legacyPartner.accountNumber : null),
       accountNumberMasked: maskedAccount || (legacyPartner ? legacyPartner.accountNumber.slice(-4).padStart(legacyPartner.accountNumber.length, '*') : null),
       ifscCode: bankAccount ? bankAccount.ifsc_code : (legacyPartner ? legacyPartner.ifscCode : null),
       accountHolderName: bankAccount ? bankAccount.account_holder_name : (legacyPartner ? legacyPartner.accountHolderName : null)

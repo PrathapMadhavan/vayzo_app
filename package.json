@@ -7,7 +7,7 @@
     "dev": "vite --host",
     "build": "vite build",
     "lint": "oxlint",
-    "mock-api": "node mockServer.js",
+    "mock-api": "node mock-server.cjs",
     "preview": "vite preview",
     "server": "node mockServer.js",
     "test-post": "node testPost.js"
