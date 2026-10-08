@@ -145,6 +145,7 @@ function App() {
  <Route path="child/edit/:categoryId" element={<ChildCategoriesAdd />} />
           <Route path="edit/:categoryId" element={<CategoriesAdd />} />
  <Route path=":categoryId" element={<CategoriesDetails />} />
+ <Route path=":categoryId/parent-item/:parentItemId" element={<CategoriesDetails />} />
  <Route path=":parentId/:categoryId" element={<CategoriesDetails />} />
  </Route>
 

@@ -1020,6 +1020,33 @@ router.render = (req, res) => {
 
 // Use default router
 
+server.get('/api/migrate_items', (req, res) => {
+  const db = router.db;
+  const category_items = db.get('category_items').value();
+  const newItems = [];
+  category_items.forEach(item => {
+    if (item.variants && item.variants.length > 0) {
+      item.variants.forEach(variant => {
+        if (variant.name) {
+          newItems.push({
+            id: variant.id || 'M' + Date.now() + Math.floor(Math.random()*1000),
+            categoryId: item.categoryId,
+            parentItemId: item.id,
+            name: variant.name,
+            status: variant.status || 'Active',
+            image: variant.image || item.image,
+            price: variant.price || 0,
+            createdDate: variant.createdDate || item.createdDate || new Date().toISOString()
+          });
+        }
+      });
+      item.variants = [];
+    }
+  });
+  newItems.forEach(ni => db.get('category_items').push(ni).write());
+  res.json({ success: true, count: newItems.length });
+});
+
 server.use(router);
 
 const PORT = process.env.PORT || 3000;

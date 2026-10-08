@@ -6,7 +6,7 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import { createCategory, getCategoryById, updateCategory, getCategories } from "../api/categoriesApi";
-import { getProductsByCategory } from "../api/productsApi";
+import { getCategoryItemsByCategory as getProductsByCategory } from "../api/categoryItemsApi";
 
 const types = [
  "Select type",
@@ -237,7 +237,7 @@ function ChildCategoriesAdd() {
 
   return (
     <section className="min-h-full bg-background p-4 sm:p-6 pb-20">
- <div className="mx-auto max-w-5xl space-y-6">
+ <div className="w-full space-y-6">
  
  {/* Premium Page Header */}
  <div className="relative overflow-visible rounded-2xl bg-linear-to-r from-primary to-primary-hover p-8 shadow-lg">
@@ -277,7 +277,7 @@ function ChildCategoriesAdd() {
  <div className="flex flex-col gap-6 flex-1">
  <div className="w-full flex flex-col gap-1.5">
  <label className="text-sm font-medium text-foreground">Parent Category</label>
- <div className="w-full flex items-center justify-between bg-surface border border-border rounded-xl px-3 h-11 text-sm text-foreground opacity-70 cursor-not-allowed bg-muted/10">
+ <div className="w-full flex items-center justify-between border border-border rounded-xl px-3 h-11 text-sm text-foreground opacity-70 cursor-not-allowed bg-muted/10">
  <span className="text-foreground truncate opacity-70">
  {form.parentId ? allCategories.find(c => c.categoryId === form.parentId)?.name || parents.find(p => p.id === form.parentId)?.name || form.parentId : "Select Parent Module"}
  </span>

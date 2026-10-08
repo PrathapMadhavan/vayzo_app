@@ -6,7 +6,7 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import { createCategory, getCategoryById, updateCategory, getCategories } from "../api/categoriesApi";
-import { getProductsByCategory } from "../api/productsApi";
+import { getCategoryItemsByCategory as getProductsByCategory } from "../api/categoryItemsApi";
 
 const types = [
  "Select type",
@@ -253,7 +253,7 @@ function CategoriesAdd() {
 
   return (
     <section className="min-h-full bg-background p-4 sm:p-6 pb-20">
- <div className="mx-auto max-w-5xl space-y-6">
+ <div className="w-full space-y-6">
  
  {/* Premium Page Header */}
  <div className="relative overflow-visible rounded-2xl bg-linear-to-r from-primary to-primary-hover p-8 shadow-lg">

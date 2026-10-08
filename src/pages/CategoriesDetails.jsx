@@ -17,7 +17,7 @@ import { getCategoryItemsByCategory as getProductsByCategory, addCategoryItem as
 
 function CategoriesDetails() {
  const navigate = useNavigate();
- const { categoryId } = useParams();
+ const { categoryId, parentItemId } = useParams();
  
  const [category, setCategory] = useState(null);
  const [parentCategory, setParentCategory] = useState(null);
@@ -26,6 +26,7 @@ function CategoriesDetails() {
  const [allCategories, setAllCategories] = useState([]);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState("");
+ const [selectedParentItem, setSelectedParentItem] = useState(null);
 
  // Modal State
  const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
@@ -80,8 +81,12 @@ function CategoriesDetails() {
   };
 
   const handleViewMenuClick = (item) => {
-    setViewingMenu(item);
-    setIsViewModalOpen(true);
+    if (!selectedParentItem) {
+      navigate(`/categories/${categoryId}/parent-item/${item.id}`);
+    } else {
+      setViewingMenu(item);
+      setIsViewModalOpen(true);
+    }
   };
 
 
@@ -102,6 +107,12 @@ function CategoriesDetails() {
  }
  setChildCategories(allCats.filter(c => c.parentId === catData.id));
  setAllCategories(allCats || []);
+ if (parentItemId) {
+ const foundParentItem = (productsData || []).find(p => p.id === parentItemId);
+ setSelectedParentItem(foundParentItem || null);
+ } else {
+ setSelectedParentItem(null);
+ }
  }
  } catch {
  if (isMounted) setError("Unable to load category details.");
@@ -114,7 +125,7 @@ function CategoriesDetails() {
  let isMounted = true;
  loadData(isMounted);
  return () => { isMounted = false; };
- }, [categoryId]);
+ }, [categoryId, parentItemId]);
 
  const handleImageChange = (e) => {
  const file = e.target.files[0];
@@ -143,13 +154,12 @@ function CategoriesDetails() {
  const currentItem = menuItems.find(m => m.id === editingMenuId);
  const oldCategoryId = currentItem ? currentItem.categoryId : null;
 
- const updateData = {
+ const updateData = { ...currentItem,
   name: menuForm.name,
   status: menuForm.status,
   image: menuForm.image,
   categoryId: targetCategoryId,
-  varients: menuForm.variants,
-  variants: menuForm.variants,
+  
   };
  await updateProduct(editingMenuId, updateData);
 
@@ -166,14 +176,13 @@ function CategoriesDetails() {
  }
  } else {
  const newMenu = {
-  id: `M${Date.now()}`,
-  categoryId: targetCategoryId,
-  name: menuForm.name,
-  status: menuForm.status,
-  image: menuForm.image,
-  varients: menuForm.variants,
-  variants: menuForm.variants,
-  createdDate: new Date().toISOString()
+    id: `M${Date.now()}`,
+    categoryId: targetCategoryId,
+    parentItemId: selectedParentItem ? selectedParentItem.id : undefined,
+    name: menuForm.name,
+    status: menuForm.status,
+    image: menuForm.image,
+    createdDate: new Date().toISOString()
   };
  await addProduct(newMenu);
  
@@ -232,7 +241,20 @@ function CategoriesDetails() {
 
 
 
- if (loading) {
+  const handleToggleParentItemStatus = async () => {
+    if (!selectedParentItem || selectedParentItem.status === "Deleted") return;
+    try {
+      const newStatus = selectedParentItem.status === "Active" ? "Inactive" : "Active";
+      const updatedParentItem = { ...selectedParentItem, status: newStatus };
+      await updateProduct(selectedParentItem.id, updatedParentItem);
+      setSelectedParentItem(updatedParentItem);
+      setMenuItems(menuItems.map(item => item.id === selectedParentItem.id ? updatedParentItem : item));
+    } catch (err) {
+      alert("Failed to update parent item status.");
+    }
+  };
+
+  if (loading) {
  return (
  <section className="min-h-full bg-background p-4 sm:p-6 flex items-center justify-center">
  <div className="animate-pulse flex flex-col items-center">
@@ -256,20 +278,27 @@ function CategoriesDetails() {
  );
  }
 
- const currentStatus = category.status ? category.status.charAt(0).toUpperCase() + category.status.slice(1).toLowerCase() : "Active";
+ const activeItem = selectedParentItem || category;
+ const currentStatus = activeItem.status ? activeItem.status.charAt(0).toUpperCase() + activeItem.status.slice(1).toLowerCase() : "Active";
 
  const topLevelIds = ["Food Delivery", "Buy & Get It", "Bike Ride", "Car Booking"];
  const is2ndLevel = topLevelIds.includes(category.parentId);
 
  return (
  <section className="min-h-full bg-background p-4 sm:p-6 pb-20">
- <div className="mx-auto max-w-6xl space-y-6">
+ <div className="w-full space-y-6">
 
         {/* ── Top breadcrumb & actions ── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center justify-between w-full sm:w-auto">
-            <button onClick={() => navigate(category?.parentId && !["Food Delivery", "Buy & Get It", "Bike Ride", "Car Booking", "null"].includes(category.parentId) ? `/categories/${category.parentId}` : '/categories')} className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors font-medium">
-              <ArrowLeft size={16} /> Back to List
+            <button onClick={() => {
+              if (selectedParentItem) {
+                  navigate(`/categories/${categoryId}`);
+              } else {
+                navigate(category?.parentId && !["Food Delivery", "Buy & Get It", "Bike Ride", "Car Booking", "null"].includes(category.parentId) ? `/categories/${category.parentId}` : '/categories');
+              }
+            }} className="flex items-center gap-1.5 text-sm text-muted hover:text-foreground transition-colors font-medium">
+              <ArrowLeft size={16} /> {selectedParentItem ? `Back to ${category.name}` : "Back to List"}
             </button>
           </div>
         </div>
@@ -282,17 +311,17 @@ function CategoriesDetails() {
  <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
  <div className="flex items-center gap-5">
  <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md text-white shadow-inner">
-                  {category.image ? (
-                    <img src={category.image} alt={category.name} className="h-full w-full object-cover rounded-2xl" />
+                  {activeItem.image ? (
+                    <img src={activeItem.image} alt={activeItem.name} className="h-full w-full object-cover rounded-2xl" />
                   ) : (
                     <Tags size={40} />
                   )}
  </div>
  <div className="text-white">
  <div className="flex items-center gap-3 mb-1">
- <h1 className="text-3xl font-extrabold tracking-tight">{category.name}</h1>
+ <h1 className="text-3xl font-extrabold tracking-tight">{activeItem.name}</h1>
  <button 
- onClick={handleToggleCategoryStatus}
+ onClick={selectedParentItem ? handleToggleParentItemStatus : handleToggleCategoryStatus}
  className={`inline-flex items-center justify-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-0 cursor-pointer shadow-sm ${currentStatus === "Active" ? "bg-success text-white hover:bg-success/90" : "bg-danger text-white hover:bg-danger/90"}`}
  title="Click to toggle status"
  >
@@ -300,18 +329,24 @@ function CategoriesDetails() {
  </button>
  </div>
  <div className="flex items-center gap-4 text-sm font-medium text-white/80">
- <span>ID: {category.categoryId}</span>
- {category.type && (<><span className="h-1 w-1 rounded-full bg-white/50"></span><span>Type: {category.type}</span></>)}
+ <span>ID: {selectedParentItem ? selectedParentItem.id : category.categoryId}</span>
+ {!selectedParentItem && category.type && (<><span className="h-1 w-1 rounded-full bg-white/50"></span><span>Type: {category.type}</span></>)}
  </div>
  </div>
  </div>
  
  <Button
  variant="default"
- onClick={() => navigate(is2ndLevel ? `/categories/edit/${category.id}` : `/categories/child/edit/${category.id}?parentId=${category.parentId}`, { state: { from: "details" } })}
+ onClick={() => {
+   if (selectedParentItem) {
+     handleEditMenuClick(selectedParentItem);
+   } else {
+     navigate(is2ndLevel ? `/categories/edit/${category.id}` : `/categories/child/edit/${category.id}?parentId=${category.parentId}`, { state: { from: "details" } });
+   }
+ }}
  className="bg-white text-primary hover:bg-white/90 shadow-lg"
  >
- <Edit2 size={16} className="mr-2" /> Edit Category
+ <Edit2 size={16} className="mr-2" /> {selectedParentItem ? "Edit Parent Item" : "Edit Category"}
  </Button>
  </div>
  </div>
@@ -319,57 +354,16 @@ function CategoriesDetails() {
   <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
   {/* Main Content (Menus) */}
   <div className="flex flex-col gap-6">
-  {is2ndLevel ? (
-    <>
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-foreground">Child Categories</h2>
-        <Button size="sm" className="shadow-sm shadow-primary/20" onClick={() => navigate(`/categories/child/add?parentId=${category.id}`)}>
-          + Add Child Category
-        </Button>
-      </div>
-
-      {childCategories.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
-          <div className="rounded-full bg-primary/10 p-4 text-primary mb-4">
-            <FolderTree size={32} />
-          </div>
-          <h3 className="text-lg font-bold text-foreground mb-1">No child categories yet</h3>
-          <p className="text-sm text-muted mb-6 max-w-xs">There are no subcategories here. Add your first child category!</p>
-          <Button onClick={() => navigate(`/categories/child/add?parentId=${category.id}`)}>+ Add Category</Button>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {childCategories.map((childCat) => (
-            <div key={childCat.id} className="group flex items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm transition-all hover:shadow-md hover:border-primary/50 cursor-pointer"
-                 onClick={() => navigate(`/categories/${category.id}/${childCat.id}`)}>
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-background border border-border overflow-hidden">
-                {childCat.image ? (
-                  <img src={childCat.image} alt={childCat.name} className="h-full w-full object-cover" />
-                ) : (
-                  <FolderTree size={24} className="text-muted/50" />
-                )}
-              </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">{childCat.name}</h4>
-                <p className="text-xs text-muted font-medium mb-1">{childCat.itemCount || 0} items</p>
-                <Badge variant={childCat.status === 'Active' || childCat.status === 'Available' ? 'success' : 'danger'} className="text-[10px] px-1.5 py-0 h-4">
-                  {childCat.status}
-                </Badge>
-              </div>
-              <ActionMenu 
-                actions={[
-                  { label: "Edit", icon: Edit2, onClick: (e) => { e.stopPropagation(); navigate(`/categories/child/edit/${childCat.id}?parentId=${category.id}`, { state: { from: "details" } }); } }
-                ]} 
-              />
-            </div>
-          ))}
-        </div>
-      )}
-    </>
+  {false ? (
+    <></>
   ) : (
     <>
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-foreground">Items</h2>
+      {selectedParentItem && (
+        <div className="flex items-center gap-2 mb-4">
+        </div>
+      )}
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold text-foreground">{selectedParentItem ? "Items" : "Parent Items"}</h2>
         <Button size="sm" className="shadow-sm shadow-primary/20" onClick={() => {
           setMenuForm({ name: "", status: "Available", image: category?.image || null, categoryId: categoryId });
           setEditingMenuId(null);
@@ -394,7 +388,7 @@ function CategoriesDetails() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
-          {menuItems.map((item) => (
+          {(selectedParentItem ? menuItems.filter(i => i.parentItemId === selectedParentItem.id) : menuItems.filter(i => !i.parentItemId)).map((item) => (
             <div key={item.id} className="group flex items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm transition-all hover:shadow-md hover:border-primary/50 cursor-pointer"
                  onClick={() => handleViewMenuClick(item)}>
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-background border border-border overflow-hidden">
@@ -407,13 +401,14 @@ function CategoriesDetails() {
               <div className="flex-1">
                 <h4 className="font-semibold text-foreground text-sm group-hover:text-primary transition-colors">{item.name}</h4>
                 
-                <Badge variant={item.status === 'Available' ? 'success' : 'danger'} className="text-[10px] px-1.5 py-0 h-4">
+                <Badge variant={(item.status === 'Available' || item.status === 'Active') ? 'success' : 'danger'} className="text-[10px] px-1.5 py-0 h-4">
                   {item.status}
                 </Badge>
               </div>
               <ActionMenu 
                 actions={[
-                  { label: "Edit", icon: Edit2, onClick: (e) => { e.stopPropagation(); handleEditMenuClick(item); } },
+                  !selectedParentItem ? { label: "View Items", icon: Plus, onClick: (e) => { e.stopPropagation(); navigate(`/categories/${categoryId}/parent-item/${item.id}`); } } : null,
+                  { label: selectedParentItem ? "Edit Item" : "Edit Parent Item", icon: Edit2, onClick: (e) => { e.stopPropagation(); handleEditMenuClick(item); } },
                   { label: "Delete", icon: Trash2, onClick: (e) => { e.stopPropagation(); setMenuItemToDelete(item.id); setIsItemDeleteModalOpen(true); }, danger: true }
                 ]} 
               />
@@ -431,6 +426,7 @@ function CategoriesDetails() {
  <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
  <h3 className="mb-5 text-base font-bold text-foreground">General Info</h3>
  <div className="space-y-4">
+ {!selectedParentItem && (
  <div className="flex gap-4 items-start">
  <div className="mt-0.5 rounded-full bg-primary/10 p-1.5 text-primary">
  <FileText size={16} />
@@ -438,10 +434,11 @@ function CategoriesDetails() {
  <div>
  <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-1">Description</p>
  <p className="text-sm font-medium text-foreground leading-relaxed">
- {category.description || "No description provided for this category."}
+ {selectedParentItem ? (selectedParentItem.description || "No description provided for this parent item.") : (category.description || "No description provided for this category.")}
  </p>
  </div>
  </div>
+ )}
  
  <div className="flex gap-4 items-start">
  <div className="mt-0.5 rounded-full bg-primary/10 p-1.5 text-primary">
@@ -449,10 +446,10 @@ function CategoriesDetails() {
  </div>
  <div>
  <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-1">
-   {is2ndLevel ? "Child Categories Count" : "Items Count"}
+   {selectedParentItem ? "Items Count" : "Parent Items Count"}
  </p>
  <p className="text-sm font-bold text-foreground">
-   {is2ndLevel ? `${childCategories.length} Child Categories linked` : `${menuItems.length} Items linked`}
+   {selectedParentItem ? `${menuItems.filter(i => i.parentItemId === selectedParentItem.id).length} Items linked` : `${menuItems.filter(i => !i.parentItemId).length} Parent Items linked`}
  </p>
  </div>
  </div>
@@ -470,7 +467,7 @@ function CategoriesDetails() {
  <div>
  <p className="text-xs font-semibold text-muted uppercase tracking-wider">Created Date</p>
  <p className="text-sm font-medium text-foreground">
- {category.createdDate ? new Date(category.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "Not specified"}
+ {selectedParentItem ? (selectedParentItem.createdDate ? new Date(selectedParentItem.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "Not specified") : (category.createdDate ? new Date(category.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "Not specified")}
  </p>
  </div>
  </div>
@@ -479,9 +476,9 @@ function CategoriesDetails() {
  <FolderTree size={16} />
  </div>
  <div>
- <p className="text-xs font-semibold text-muted uppercase tracking-wider">Parent Category</p>
+ <p className="text-xs font-semibold text-muted uppercase tracking-wider">{selectedParentItem ? "Category" : "Parent Category"}</p>
  <p className="text-sm font-medium text-foreground">
- {parentCategory ? parentCategory.name : category.parentId ? category.parentId : "None (Top-Level)"}
+ {selectedParentItem ? category.name : (parentCategory ? parentCategory.name : category.parentId ? category.parentId : "None (Top-Level)")}
  </p>
  </div>
  </div>
@@ -508,24 +505,30 @@ function CategoriesDetails() {
             variants: [],
           });
         }}
-        title={editingMenuId ? "Edit Item" : "Add Item"}
+        title={(!selectedParentItem || (selectedParentItem && editingMenuId === selectedParentItem.id)) ? (editingMenuId ? "Edit Parent Item" : "Add Parent Item") : (editingMenuId ? "Edit Item" : "Add Item")}
       >
         <form onSubmit={handleAddMenu} className="space-y-4">
 
-          {/* Category (Disabled) */}
-          <Select
-            label="Category"
-            options={allCategories.map((c) => ({ label: c.name, value: c.id }))}
-            value={menuForm.categoryId || categoryId}
-            disabled={true}
-            onChange={(e) =>
-              setMenuForm({ ...menuForm, categoryId: e.target.value })
-            }
-          />
+          {/* Readonly Hierarchy Fields */}
+          <div className="flex flex-col gap-3">
+            <Input
+              label="Category"
+              value={allCategories.find(c => c.id === (menuForm.categoryId || categoryId))?.name || ""}
+              disabled={true}
+            />
+
+            {selectedParentItem && editingMenuId !== selectedParentItem.id && (
+              <Input
+                label="Parent Item"
+                value={selectedParentItem.name}
+                disabled={true}
+              />
+            )}
+          </div>
 
           {/* Name & Price Grid */}
           <Input
-                label="Item Name"
+                label={(!selectedParentItem || (selectedParentItem && editingMenuId === selectedParentItem.id)) ? "Parent Item Name" : "Item Name"}
                 placeholder="e.g. Classic Burger"
                 value={menuForm.name}
                 onChange={(e) => setMenuForm({ ...menuForm, name: e.target.value })}
@@ -589,7 +592,7 @@ function CategoriesDetails() {
           <div className="grid grid-cols-1 gap-4">
             <Select
                 label="Status"
-                options={["Available", "Out of Stock"]}
+                options={(!selectedParentItem || (selectedParentItem && editingMenuId === selectedParentItem.id)) ? ["Active", "Inactive"] : ["Available", "Out of Stock"]}
                 value={menuForm.status}
                 onChange={(e) =>
                 setMenuForm({ ...menuForm, status: e.target.value })
@@ -752,7 +755,7 @@ function CategoriesDetails() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-background rounded-xl p-4 border border-border shadow-sm">
                   <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">Status</p>
-                  <Badge variant={viewingMenu.status === "Available" ? "success" : "secondary"}>
+                  <Badge variant={(viewingMenu.status === "Available" || viewingMenu.status === "Active") ? "success" : "danger"}>
                     {viewingMenu.status}
                   </Badge>
                 </div>

@@ -4,15 +4,16 @@ function Input({ label, error, id, className = "", prefix, suffix, ...props }) {
  {label && (
  <label
  htmlFor={id}
- className="mb-1.5 block text-sm font-medium text-foreground"
+ className={["mb-1.5 block text-sm font-medium", props.disabled ? "text-muted" : "text-foreground"].filter(Boolean).join(" ")}
  >
  {label}
  </label>
  )}
 
  <div className={[
- "relative flex items-center w-full rounded-lg border bg-surface transition-colors focus-within:border-primary overflow-hidden",
- error ? "border-danger" : "border-border"
+ "relative flex items-center w-full rounded-lg border transition-colors overflow-hidden",
+ props.disabled ? "bg-background opacity-50 cursor-not-allowed border-border" : "bg-surface focus-within:border-primary",
+ error ? "border-danger" : (!props.disabled ? "border-border" : "")
  ].filter(Boolean).join(" ")}>
  {prefix && (
  <div className="flex h-full items-center">
@@ -25,7 +26,8 @@ function Input({ label, error, id, className = "", prefix, suffix, ...props }) {
  "w-full min-w-0 bg-transparent py-2.5",
  !prefix ? "pl-3.5" : "",
  !suffix ? "pr-3.5" : "",
- "text-sm text-foreground outline-none",
+ "text-sm outline-none",
+ props.disabled ? "text-muted cursor-not-allowed" : "text-foreground",
  "placeholder:text-subtle",
  className,
  ].filter(Boolean).join(" ")}

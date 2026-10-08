@@ -21,7 +21,7 @@ import FilterPanel from "../components/ui/FilterPanel";
 import Toggle from "../components/ui/Toggle";
 
 import { getCategories, deleteCategory, updateCategory } from "../api/categoriesApi";
-import { getProducts } from "../api/productsApi";
+import { getCategoryItems as getProducts } from "../api/categoryItemsApi";
 import { exportToCSV } from "../utils/exportUtils";
 
 const statusOptions = [
