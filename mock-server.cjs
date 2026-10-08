@@ -23,6 +23,41 @@ const upload = multer({ storage: storage });
 server.use(middlewares);
 server.use(jsonServer.bodyParser);
 
+// Auto-inject timestamps and preserve createdDate
+server.use((req, res, next) => {
+  if (req.method === 'POST') {
+    req.body.createdDate = req.body.createdDate || new Date().toISOString();
+    
+    // Auto-inject default counts for categories if missing
+    if (req.path.includes('/categories')) {
+      if (req.body.itemCount === undefined) req.body.itemCount = 0;
+      if (req.body.menusCount === undefined) req.body.menusCount = 0;
+    }
+  }
+  
+  if (req.method === 'PUT' || req.method === 'PATCH') {
+    req.body.updatedDate = new Date().toISOString();
+    
+    // Preserve createdDate from DB if it exists so it's not lost during PUT
+    const parts = req.path.split('/').filter(Boolean);
+    const id = parts[parts.length - 1];
+    
+    if (id) {
+      const db = router.db.getState();
+      for (const key in db) {
+        if (Array.isArray(db[key])) {
+          const existingItem = db[key].find(item => String(item.id) === String(id));
+          if (existingItem && existingItem.createdDate) {
+            req.body.createdDate = existingItem.createdDate;
+            break;
+          }
+        }
+      }
+    }
+  }
+  next();
+});
+
 // Utility to get authenticated user ID based on token
 function getAuthenticatedUserId(req) {
   const auth = req.headers.authorization;
@@ -945,6 +980,110 @@ server.use((req, res, next) => {
   next();
 });
 
+
+server.get('/api/v1/admin/categories/:categoryId/parent-items', (req, res) => {
+  const db = router.db.getState();
+  const category_items = db.category_items || [];
+  const parentItems = category_items.filter(
+    (item) => item.categoryId === req.params.categoryId && !item.parentItemId
+  );
+  res.json(parentItems);
+});
+
+server.get('/api/v1/admin/parent-items/:parentItemId/items', (req, res) => {
+  const db = router.db.getState();
+  const category_items = db.category_items || [];
+  const childItems = category_items.filter(
+    (item) => item.parentItemId === req.params.parentItemId
+  );
+  res.json(childItems);
+});
+
+
+
+server.get('/api/v1/admin/parent-items', (req, res, next) => {
+  if (req.query.id || req.url !== '/api/v1/admin/parent-items') {
+    return next();
+  }
+  const db = router.db.getState();
+  const category_items = db.category_items || [];
+  const parentItems = category_items.filter((item) => !item.parentItemId);
+  res.json(parentItems);
+});
+
+server.get('/api/v1/admin/child-items', (req, res, next) => {
+  if (req.query.id || req.url !== '/api/v1/admin/child-items') {
+    return next();
+  }
+  const db = router.db.getState();
+  const category_items = db.category_items || [];
+  const childItems = category_items.filter((item) => !!item.parentItemId);
+  res.json(childItems);
+});
+
+server.post('/api/v1/admin/parent-items', (req, res) => {
+  const db = router.db.getState();
+  const category_items = db.category_items || [];
+  const categories = db.categories || [];
+  
+  const { categoryId, name, status, image } = req.body;
+  
+  if (!categoryId || !name) {
+    return res.status(400).json({ error: "Missing required fields: categoryId, name" });
+  }
+  
+  const categoryExists = categories.find(c => c.id === categoryId);
+  if (!categoryExists) {
+    return res.status(400).json({ error: "Invalid categoryId" });
+  }
+
+  const newItem = {
+    id: 'M' + Date.now(),
+    categoryId,
+    name,
+    status: (status === "Active" || status === "Inactive") ? status : "Active",
+    image: image || null,
+    createdDate: req.body.createdDate
+  };
+  
+  router.db.get('category_items').push(newItem).write();
+  res.status(201).json(newItem);
+});
+
+server.post('/api/v1/admin/child-items', (req, res) => {
+  const db = router.db.getState();
+  const category_items = db.category_items || [];
+  const categories = db.categories || [];
+  
+  const { categoryId, parentItemId, name, status, image } = req.body;
+  
+  if (!categoryId || !parentItemId || !name) {
+    return res.status(400).json({ error: "Missing required fields: categoryId, parentItemId, name" });
+  }
+  
+  const parentItem = category_items.find(i => i.id === parentItemId);
+  if (!parentItem) {
+    return res.status(400).json({ error: "Invalid parentItemId. Parent Item does not exist." });
+  }
+  
+  if (parentItem.categoryId !== categoryId) {
+    return res.status(400).json({ error: "Invalid categoryId. Parent Item belongs to a different Category." });
+  }
+
+  const newChild = {
+    id: 'M' + Date.now(),
+    categoryId,
+    parentItemId,
+    name,
+    status: status || "Available",
+    image: image || null,
+    createdDate: req.body.createdDate
+  };
+  
+  router.db.get('category_items').push(newChild).write();
+  res.status(201).json(newChild);
+});
+
 server.use(
   jsonServer.rewriter({
     "/api/v1/admin/customers/*": "/users/$1",
@@ -981,6 +1120,10 @@ server.use(
     "/api/v1/admin/reports-summary": "/reportsSummary",
     "/api/v1/admin/reports/*": "/reports/$1",
     "/api/v1/admin/reports": "/reports",
+      "/api/v1/admin/settings/*": "/settings/$1",
+
+    "/api/v1/admin/parent-items/*": "/category_items/$1",
+    "/api/v1/admin/child-items/*": "/category_items/$1",
     "/api/v1/admin/categories/categoryitems/*": "/category_items/$1",
     "/api/v1/admin/categories/categoryitems": "/category_items",
     "/api/v1/admin/categories/*": "/categories/$1",

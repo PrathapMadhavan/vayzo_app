@@ -444,7 +444,7 @@ export default function Offers() {
  Cancel
  </Button>
  <Button
- className="bg-danger hover:bg-danger/90 text-white border-0"
+ variant="danger"
  onClick={handleDeleteOffer}
  >
  Delete

@@ -135,34 +135,7 @@
  } = getRouteInfo(location.pathname, location.search);
 
  const [isProfileOpen, setIsProfileOpen] = useState(false);
- const { unreadCount } = useNotifications();
- const [messageCount, setMessageCount] = useState(0);
-
- useEffect(() => {
- let isMounted = true;
- const fetchComplaints = async () => {
- try {
- const complaints = await getComplaints();
- if (isMounted) {
- const activeComplaints = complaints.filter(
- (c) => c.status === "Open" || c.status === "In Progress"
- );
- setMessageCount(activeComplaints.length);
- }
- } catch (err) {
- console.error("Failed to fetch complaints for header badge", err);
- }
- };
- 
- fetchComplaints();
- 
- // Optional polling could be added here if real-time isn't set up via context
- const intervalId = setInterval(fetchComplaints, 60000); // 60s
- return () => {
- isMounted = false;
- clearInterval(intervalId);
- };
- }, []);
+ const { unreadCount, messageCount } = useNotifications();
 
  const storedUser = localStorage.getItem("vayzo_admin_user");
 

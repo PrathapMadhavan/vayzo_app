@@ -13,7 +13,8 @@ import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
 import ActionMenu from "../components/ui/ActionMenu";
 import { getCategoryById, updateCategory, getCategories } from "../api/categoriesApi";
-import { getCategoryItemsByCategory as getProductsByCategory, addCategoryItem as addProduct, updateCategoryItem as updateProduct, deleteCategoryItem as deleteProduct } from "../api/categoryItemsApi";
+import { getParentItemsByCategory, getParentItemById, addParentItem, updateParentItem, deleteParentItem } from "../api/parentItemsApi";
+import { getChildItemsByParentItem, getChildItemById, addChildItem, updateChildItem, deleteChildItem } from "../api/childItemsApi";
 
 function CategoriesDetails() {
  const navigate = useNavigate();
@@ -22,7 +23,8 @@ function CategoriesDetails() {
  const [category, setCategory] = useState(null);
  const [parentCategory, setParentCategory] = useState(null);
  const [childCategories, setChildCategories] = useState([]);
- const [menuItems, setMenuItems] = useState([]);
+ const [parentItems, setParentItems] = useState([]);
+ const [childItems, setChildItems] = useState([]);
  const [allCategories, setAllCategories] = useState([]);
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState("");
@@ -33,7 +35,7 @@ function CategoriesDetails() {
  const [editingMenuId, setEditingMenuId] = useState(null);
  const [menuForm, setMenuForm] = useState({
  name: "",
- status: "Available",
+ status: selectedParentItem ? "Available" : "Active",
  image: null,
  categoryId: ""
  });
@@ -42,6 +44,7 @@ function CategoriesDetails() {
 
   
   const [isItemDeleteModalOpen, setIsItemDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [menuItemToDelete, setMenuItemToDelete] = useState(null);
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -81,37 +84,38 @@ function CategoriesDetails() {
   };
 
   const handleViewMenuClick = (item) => {
-    if (!selectedParentItem) {
-      navigate(`/categories/${categoryId}/parent-item/${item.id}`);
-    } else {
-      setViewingMenu(item);
-      setIsViewModalOpen(true);
-    }
-  };
+ setViewingMenu(item);
+ setIsViewModalOpen(true);
+ };
 
 
  const loadData = async (isMounted = true) => {
  try {
  setLoading(true);
  setError("");
- const [catData, productsData, allCats] = await Promise.all([
+ const [catData, allCats] = await Promise.all([
  getCategoryById(categoryId),
- getProductsByCategory(categoryId),
  getCategories()
  ]);
  if (isMounted) {
  setCategory(catData);
- setMenuItems(productsData || []);
  if (catData.parentId) {
  setParentCategory(allCats.find(c => c.id === catData.parentId) || null);
  }
  setChildCategories(allCats.filter(c => c.parentId === catData.id));
  setAllCategories(allCats || []);
+ 
  if (parentItemId) {
- const foundParentItem = (productsData || []).find(p => p.id === parentItemId);
- setSelectedParentItem(foundParentItem || null);
+ const [parentItemData, childItemsData] = await Promise.all([
+ getParentItemById(parentItemId),
+ getChildItemsByParentItem(parentItemId)
+ ]);
+ setSelectedParentItem(parentItemData || null);
+ setChildItems(childItemsData || []);
  } else {
+ const parentItemsData = await getParentItemsByCategory(categoryId);
  setSelectedParentItem(null);
+ setParentItems(parentItemsData || []);
  }
  }
  } catch {
@@ -145,57 +149,50 @@ function CategoriesDetails() {
  const handleAddMenu = async (e) => {
  e.preventDefault();
  if (!menuForm.name) return;
- 
  setMenuSubmitting(true);
  try {
  const targetCategoryId = menuForm.categoryId || categoryId;
-
  if (editingMenuId) {
- const currentItem = menuItems.find(m => m.id === editingMenuId);
- const oldCategoryId = currentItem ? currentItem.categoryId : null;
-
- const updateData = { ...currentItem,
-  name: menuForm.name,
-  status: menuForm.status,
-  image: menuForm.image,
-  categoryId: targetCategoryId,
-  
-  };
- await updateProduct(editingMenuId, updateData);
-
- if (oldCategoryId && oldCategoryId !== targetCategoryId) {
- const oldCat = allCategories.find(c => c.id === oldCategoryId) || category;
- const oldCatCount = Math.max((oldCat.itemCount || 1) - 1, 0);
- await updateCategory(oldCategoryId, { ...oldCat, itemCount: oldCatCount });
- 
- const newCat = allCategories.find(c => c.id === targetCategoryId);
- if (newCat) {
- const newCatCount = (newCat.itemCount || 0) + 1;
- await updateCategory(targetCategoryId, { ...newCat, itemCount: newCatCount });
- }
+ if (selectedParentItem) {
+ const currentItem = childItems.find(m => m.id === editingMenuId);
+ const updateData = { ...currentItem, name: menuForm.name, status: menuForm.status, image: menuForm.image };
+ await updateChildItem(editingMenuId, updateData);
+ } else {
+ const currentItem = parentItems.find(m => m.id === editingMenuId);
+ const updateData = { ...currentItem, name: menuForm.name, status: menuForm.status, image: menuForm.image, categoryId: targetCategoryId };
+ await updateParentItem(editingMenuId, updateData);
  }
  } else {
- const newMenu = {
-    id: `M${Date.now()}`,
-    categoryId: targetCategoryId,
-    parentItemId: selectedParentItem ? selectedParentItem.id : undefined,
-    name: menuForm.name,
-    status: menuForm.status,
-    image: menuForm.image,
-    createdDate: new Date().toISOString()
-  };
- await addProduct(newMenu);
- 
- // Update item count on category
+ if (selectedParentItem) {
+ const newChild = {
+ id: `M${Date.now()}`,
+ categoryId: targetCategoryId,
+ parentItemId: selectedParentItem.id,
+ name: menuForm.name,
+ status: menuForm.status,
+ image: menuForm.image,
+ createdDate: new Date().toISOString()
+ };
+ await addChildItem(selectedParentItem.id, newChild);
  const targetCat = allCategories.find(c => c.id === targetCategoryId) || category;
  const newCount = (targetCat.itemCount || 0) + 1;
  await updateCategory(targetCategoryId, { ...targetCat, itemCount: newCount });
+ } else {
+ const newParent = {
+ id: `M${Date.now()}`,
+ categoryId: targetCategoryId,
+ name: menuForm.name,
+ status: menuForm.status,
+ image: menuForm.image,
+ createdDate: new Date().toISOString()
+ };
+ await addParentItem(targetCategoryId, newParent);
  }
- 
- setMenuForm({ name: "", status: "Available", image: null, categoryId: "" });
+ }
+ setMenuForm({ name: "", status: selectedParentItem ? "Available" : "Active", image: null, categoryId: "" });
  setEditingMenuId(null);
  setIsMenuModalOpen(false);
- loadData(); // Refresh data
+ loadData();
  } catch (err) {
  alert("Failed to save Item.");
  } finally {
@@ -216,43 +213,19 @@ function CategoriesDetails() {
   };
 
  const handleDeleteMenuClick = async (itemId) => {
- 
  try {
- await deleteProduct(itemId);
+ if (selectedParentItem) {
+ await deleteChildItem(itemId);
  const newCount = Math.max((category.itemCount || 1) - 1, 0);
  await updateCategory(category.id, { ...category, itemCount: newCount });
+ } else {
+ await deleteParentItem(itemId);
+ }
  loadData();
  } catch (error) {
  alert("Failed to delete Item.");
  }
  };
-
- const handleToggleCategoryStatus = async () => {
- if (category.status === "Deleted") return;
- try {
- const newStatus = category.status === "Active" ? "Inactive" : "Active";
- const updatedCategory = { ...category, status: newStatus };
- await updateCategory(category.id, updatedCategory);
- setCategory(updatedCategory);
- } catch (err) {
- alert("Failed to update category status.");
- }
- };
-
-
-
-  const handleToggleParentItemStatus = async () => {
-    if (!selectedParentItem || selectedParentItem.status === "Deleted") return;
-    try {
-      const newStatus = selectedParentItem.status === "Active" ? "Inactive" : "Active";
-      const updatedParentItem = { ...selectedParentItem, status: newStatus };
-      await updateProduct(selectedParentItem.id, updatedParentItem);
-      setSelectedParentItem(updatedParentItem);
-      setMenuItems(menuItems.map(item => item.id === selectedParentItem.id ? updatedParentItem : item));
-    } catch (err) {
-      alert("Failed to update parent item status.");
-    }
-  };
 
   if (loading) {
  return (
@@ -320,13 +293,9 @@ function CategoriesDetails() {
  <div className="text-white">
  <div className="flex items-center gap-3 mb-1">
  <h1 className="text-3xl font-extrabold tracking-tight">{activeItem.name}</h1>
- <button 
- onClick={selectedParentItem ? handleToggleParentItemStatus : handleToggleCategoryStatus}
- className={`inline-flex items-center justify-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-0 cursor-pointer shadow-sm ${currentStatus === "Active" ? "bg-success text-white hover:bg-success/90" : "bg-danger text-white hover:bg-danger/90"}`}
- title="Click to toggle status"
- >
- {currentStatus}
- </button>
+ <Badge variant={currentStatus === "Active" ? "success" : "danger"} className="text-xs px-2.5 py-0.5">
+            {currentStatus}
+          </Badge>
  </div>
  <div className="flex items-center gap-4 text-sm font-medium text-white/80">
  <span>ID: {selectedParentItem ? selectedParentItem.id : category.categoryId}</span>
@@ -365,7 +334,7 @@ function CategoriesDetails() {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-foreground">{selectedParentItem ? "Items" : "Parent Items"}</h2>
         <Button size="sm" className="shadow-sm shadow-primary/20" onClick={() => {
-          setMenuForm({ name: "", status: "Available", image: category?.image || null, categoryId: categoryId });
+          setMenuForm({ name: "", status: selectedParentItem ? "Available" : "Active", image: category?.image || null, categoryId: categoryId });
           setEditingMenuId(null);
           setIsMenuModalOpen(true);
         }}>
@@ -373,7 +342,7 @@ function CategoriesDetails() {
         </Button>
       </div>
 
-      {menuItems.length === 0 ? (
+      {(selectedParentItem ? childItems : parentItems).length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
           <div className="rounded-full bg-primary/10 p-4 text-primary mb-4">
             <Tags size={32} />
@@ -381,16 +350,16 @@ function CategoriesDetails() {
           <h3 className="text-lg font-bold text-foreground mb-1">No items added yet</h3>
           <p className="text-sm text-muted mb-6 max-w-xs">There are currently no Items associated with this category. Add your first item!</p>
           <Button onClick={() => {
-            setMenuForm({ name: "", status: "Available", image: category?.image || null, categoryId: categoryId });
+            setMenuForm({ name: "", status: selectedParentItem ? "Available" : "Active", image: category?.image || null, categoryId: categoryId });
             setEditingMenuId(null);
             setIsMenuModalOpen(true);
           }}>+ Add Item</Button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {(selectedParentItem ? menuItems.filter(i => i.parentItemId === selectedParentItem.id) : menuItems.filter(i => !i.parentItemId)).map((item) => (
+        <div className="grid gap-4 sm:grid-cols-2 max-h-150 overflow-y-auto pr-2 scrollbar-thin">
+          {(selectedParentItem ? childItems : parentItems).map((item) => (
             <div key={item.id} className="group flex items-center gap-4 rounded-xl border border-border bg-surface p-4 shadow-sm transition-all hover:shadow-md hover:border-primary/50 cursor-pointer"
-                 onClick={() => handleViewMenuClick(item)}>
+                 onClick={() => { if (!selectedParentItem) navigate(`/categories/${categoryId}/parent-item/${item.id}`); else handleViewMenuClick(item); }}>
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-background border border-border overflow-hidden">
                 {item.image ? (
                   <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
@@ -406,11 +375,15 @@ function CategoriesDetails() {
                 </Badge>
               </div>
               <ActionMenu 
-                actions={[
-                  !selectedParentItem ? { label: "View Items", icon: Plus, onClick: (e) => { e.stopPropagation(); navigate(`/categories/${categoryId}/parent-item/${item.id}`); } } : null,
-                  { label: selectedParentItem ? "Edit Item" : "Edit Parent Item", icon: Edit2, onClick: (e) => { e.stopPropagation(); handleEditMenuClick(item); } },
-                  { label: "Delete", icon: Trash2, onClick: (e) => { e.stopPropagation(); setMenuItemToDelete(item.id); setIsItemDeleteModalOpen(true); }, danger: true }
-                ]} 
+                actions={selectedParentItem ? [
+ { label: "View", icon: FileText, onClick: (e) => { e.stopPropagation(); handleViewMenuClick(item); } },
+ { label: "Edit", icon: Edit2, onClick: (e) => { e.stopPropagation(); handleEditMenuClick(item); } },
+ { label: "Delete", icon: Trash2, onClick: (e) => { e.stopPropagation(); setMenuItemToDelete(item.id); setIsItemDeleteModalOpen(true); }, danger: true }
+ ] : [
+ { label: "View Items", icon: FileText, onClick: (e) => { e.stopPropagation(); navigate(`/categories/${categoryId}/parent-item/${item.id}`); } },
+ { label: "Edit", icon: Edit2, onClick: (e) => { e.stopPropagation(); handleEditMenuClick(item); } },
+ { label: "Delete", icon: Trash2, onClick: (e) => { e.stopPropagation(); setMenuItemToDelete(item.id); setIsItemDeleteModalOpen(true); }, danger: true }
+ ]} 
               />
             </div>
           ))}
@@ -449,7 +422,7 @@ function CategoriesDetails() {
    {selectedParentItem ? "Items Count" : "Parent Items Count"}
  </p>
  <p className="text-sm font-bold text-foreground">
-   {selectedParentItem ? `${menuItems.filter(i => i.parentItemId === selectedParentItem.id).length} Items linked` : `${menuItems.filter(i => !i.parentItemId).length} Parent Items linked`}
+   {selectedParentItem ? `${childItems.length} Items linked` : `${parentItems.length} Parent Items linked`}
  </p>
  </div>
  </div>
@@ -467,7 +440,7 @@ function CategoriesDetails() {
  <div>
  <p className="text-xs font-semibold text-muted uppercase tracking-wider">Created Date</p>
  <p className="text-sm font-medium text-foreground">
- {selectedParentItem ? (selectedParentItem.createdDate ? new Date(selectedParentItem.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "Not specified") : (category.createdDate ? new Date(category.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "Not specified")}
+ {selectedParentItem ? (selectedParentItem.createdDate ? `${new Date(selectedParentItem.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} at ${new Date(selectedParentItem.createdDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : "Date not found") : (category.createdDate ? `${new Date(category.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} at ${new Date(category.createdDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : "Date not found")}
  </p>
  </div>
  </div>
@@ -499,7 +472,7 @@ function CategoriesDetails() {
           setEditingMenuId(null);
           setMenuForm({
             name: "",
-            status: "Available",
+            status: selectedParentItem ? "Available" : "Active",
             image: null,
             categoryId: "",
             variants: [],

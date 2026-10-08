@@ -582,7 +582,7 @@ function Complaints() {
  <p className="text-sm text-muted">Are you sure you want to delete this complaint? This action cannot be undone.</p>
  <div className="mt-6 flex justify-end gap-3">
  <Button variant="secondary" onClick={() => setDeleteModalId(null)}>Cancel</Button>
- <Button className="bg-danger hover:bg-danger/90 text-white" onClick={handleDeleteComplaint}>Delete</Button>
+ <Button variant="danger" onClick={handleDeleteComplaint}>Delete</Button>
  </div>
  </Modal>
  </section>

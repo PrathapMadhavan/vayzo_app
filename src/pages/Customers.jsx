@@ -444,7 +444,7 @@ function Customers() {
  Cancel
  </Button>
  <Button
- className="bg-danger hover:bg-danger/90 text-white"
+ variant="danger"
  onClick={handleDeleteCustomer}
  >
  Delete

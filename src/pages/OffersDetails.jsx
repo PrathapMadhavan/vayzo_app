@@ -225,7 +225,7 @@ export default function OffersDetails() {
  <p className="text-sm text-muted">Are you sure you want to delete <strong>{offer.name}</strong>? This action cannot be undone.</p>
  <div className="mt-6 flex justify-end gap-3">
  <Button variant="secondary" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
- <Button className="bg-danger hover:bg-danger/90 text-white border-0" onClick={handleDelete}>Delete Offer</Button>
+ <Button variant="danger" onClick={handleDelete}>Delete Offer</Button>
  </div>
  </Modal>
 

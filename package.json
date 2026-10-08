@@ -9,7 +9,7 @@
     "lint": "oxlint",
     "mock-api": "node mock-server.cjs",
     "preview": "vite preview",
-    "server": "node mockServer.js",
+    "server": "node mock-server.cjs",
     "test-post": "node testPost.js"
   },
   "dependencies": {

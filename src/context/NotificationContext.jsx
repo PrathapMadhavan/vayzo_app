@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState, useEffect } from "react";
 import { notifications as notificationData } from "../mock/notifications";
 
 const NotificationContext = createContext(null);
@@ -20,55 +20,75 @@ function getInitialNotifications() {
 }
 
 export function NotificationProvider({ children }) {
- const [notifications, setNotifications] = useState(getInitialNotifications);
+  const [notifications, setNotifications] = useState(getInitialNotifications);
+  const [messageCount, setMessageCount] = useState(0);
 
- const updateNotifications = (updater) => {
- setNotifications((current) => {
- const updated =
- typeof updater === "function" ? updater(current) : updater;
+  const updateNotifications = (updater) => {
+    setNotifications((current) => {
+      const updated = typeof updater === "function" ? updater(current) : updater;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
 
- localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  const markAsRead = (notificationId) => {
+    updateNotifications((current) =>
+      current.map((notification) =>
+        notification.notificationId === notificationId ? { ...notification, isRead: true } : notification
+      )
+    );
+  };
 
- return updated;
- });
- };
+  const markAllAsRead = () => {
+    updateNotifications((current) =>
+      current.map((notification) => ({ ...notification, isRead: true }))
+    );
+  };
 
- const markAsRead = (notificationId) => {
- updateNotifications((current) =>
- current.map((notification) =>
- notification.notificationId === notificationId
- ? { ...notification, isRead: true }
- : notification,
- ),
- );
- };
+  const unreadCount = useMemo(
+    () => notifications.filter((notification) => !notification.isRead).length,
+    [notifications]
+  );
 
- const markAllAsRead = () => {
- updateNotifications((current) =>
- current.map((notification) => ({
- ...notification,
- isRead: true,
- })),
- );
- };
+  // Centralized polling for complaints to avoid duplicate calls on route changes
+  useEffect(() => {
+    let isMounted = true;
+    const fetchComplaints = async () => {
+      try {
+        const { getComplaints } = await import("../api/complaintsApi.js");
+        const complaints = await getComplaints();
+        if (isMounted) {
+          const activeComplaints = complaints.filter(
+            (c) => c.status === "Open" || c.status === "In Progress"
+          );
+          setMessageCount(activeComplaints.length);
+        }
+      } catch (err) {
+        console.error("Failed to fetch complaints for centralized notification badge", err);
+      }
+    };
+    
+    fetchComplaints();
+    const intervalId = setInterval(fetchComplaints, 60000); // 60s
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, []);
 
- const unreadCount = useMemo(
- () => notifications.filter((notification) => !notification.isRead).length,
- [notifications],
- );
-
- return (
- <NotificationContext.Provider
- value={{
- notifications,
- unreadCount,
- markAsRead,
- markAllAsRead,
- }}
- >
- {children}
- </NotificationContext.Provider>
- );
+  return (
+    <NotificationContext.Provider
+      value={{
+        notifications,
+        unreadCount,
+        markAsRead,
+        markAllAsRead,
+        messageCount,
+      }}
+    >
+      {children}
+    </NotificationContext.Provider>
+  );
 }
 
 export function useNotifications() {

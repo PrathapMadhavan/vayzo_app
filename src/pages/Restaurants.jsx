@@ -175,7 +175,7 @@ function Restaurants() {
  value={cuisine}
  options={["All Cuisine", ...categories.map(c => c.name)]}
  onChange={(e) => setCuisine(e.target.value)}
- className="w-full lg:w-[170px]"
+ className="w-full lg:w-42.5"
  />
  </>
  }
@@ -209,15 +209,15 @@ function Restaurants() {
  paginated.map((r, index) => (
  <tr
  key={r.id}
- className="border-b border-border transition-colors hover:bg-background last:border-0"
+ className="border-b border-border transition-colors hover:bg-background last:border-0 cursor-pointer"
+ onClick={() => navigate(`/restaurants/${r.id}`)}
  >
  <td className="whitespace-nowrap px-5 py-4 font-medium text-foreground">
  {String((currentPage - 1) * itemsPerPage + index + 1).padStart(2, "0")}
  </td>
  <td className="px-5 py-4 min-w-50">
  <div
- className="flex items-center gap-3 cursor-pointer group"
- onClick={() => navigate(`/restaurants/${r.id}`)}
+ className="flex items-center gap-3 group"
  >
  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl overflow-hidden ${r.logo ? 'border border-border' : 'bg-primary/10 text-primary'}`}>
                             {r.logo ? (
@@ -230,14 +230,14 @@ function Restaurants() {
  <span className="font-bold text-foreground text-sm group-hover:text-primary transition-colors truncate">
  {r.name}
  </span>
- <span className="text-[11px] text-muted truncate max-w-[180px]">{r.deliveryTime}</span>
+ <span className="text-[11px] text-muted truncate max-w-45">{r.deliveryTime}</span>
  </div>
  </div>
  </td>
  <td className="px-5 py-4 text-sm text-foreground whitespace-nowrap">{r.ownerName || '--'}</td>
- <td className="px-5 py-4 text-sm text-muted max-w-[200px] truncate">{r.address || '--'}</td>
+ <td className="px-5 py-4 text-sm text-muted max-w-50 truncate">{r.address || '--'}</td>
                 <td className="px-5 py-4 text-sm text-muted whitespace-nowrap">{r.city || '--'}</td>
- <td className="px-5 py-4 text-sm text-muted max-w-[150px] truncate">{r.cuisineType}</td>
+ <td className="px-5 py-4 text-sm text-muted max-w-37.5 truncate">{r.cuisineType}</td>
  <td className="px-5 py-4"><RatingStars rating={r.rating} /></td>
  <td className="px-5 py-4 text-sm font-semibold text-foreground whitespace-nowrap">
  {(r.totalOrders || 0).toLocaleString("en-IN")}
@@ -281,7 +281,7 @@ function Restaurants() {
  <div className="mt-6 flex justify-end gap-3">
  <Button variant="secondary" onClick={() => setDeleteModalId(null)}>Cancel</Button>
  <Button
- className="bg-danger hover:bg-danger/90 text-white"
+ variant="danger"
  onClick={handleDelete}
  disabled={deleteLoading}
  >

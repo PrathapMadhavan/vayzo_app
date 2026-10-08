@@ -15,13 +15,15 @@ import Table from "../components/ui/Table";
 import Card from "../components/ui/Card";
 import Modal from "../components/ui/Modal";
 import StatCard from "../components/ui/StatCard";
+import Badge from "../components/ui/Badge";
 import BadgeCell from "../components/ui/BadgeCell";
 import ActionMenu from "../components/ui/ActionMenu";
 import FilterPanel from "../components/ui/FilterPanel";
 import Toggle from "../components/ui/Toggle";
 
 import { getCategories, deleteCategory, updateCategory } from "../api/categoriesApi";
-import { getCategoryItems as getProducts } from "../api/categoryItemsApi";
+import { getAllParentItems } from "../api/parentItemsApi";
+import { getAllChildItems } from "../api/childItemsApi";
 import { exportToCSV } from "../utils/exportUtils";
 
 const statusOptions = [
@@ -37,6 +39,7 @@ const categoryTableHeaders = [
  "Parent Category",
  "Description",
  "Status",
+ "Menus",
  "Items",
  "Created At",
  "Actions",
@@ -70,6 +73,7 @@ export default function Categories() {
  const [error, setError] = useState("");
  
  const [deleteModalId, setDeleteModalId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
  // Filters
  const [searchText, setSearchText] = useState("");
@@ -83,11 +87,16 @@ export default function Categories() {
     try {
       setLoading(true);
       setError("");
-      const [data, productsData] = await Promise.all([getCategories(), getProducts()]);
+      const [data, parentItemsData, childItemsData] = await Promise.all([
+        getCategories(),
+        getAllParentItems(),
+        getAllChildItems()
+      ]);
       
       const updatedData = data.map(cat => {
-          const count = productsData.filter(p => p.categoryId === cat.id).length;
-          return { ...cat, itemCount: count };
+          const itemsCount = childItemsData.filter(p => p.categoryId === cat.id).length;
+          const menusCount = parentItemsData.filter(p => p.categoryId === cat.id).length;
+          return { ...cat, itemCount: itemsCount, menusCount: menusCount };
       });
       
       setCategories(updatedData);
@@ -179,19 +188,7 @@ export default function Categories() {
  }
  };
 
- const handleToggleStatus = async (category) => {
- if (category.status === "Deleted") return;
- try {
- const newStatus = category.status === "Active" ? "Inactive" : "Active";
- const updatedCategory = { ...category, status: newStatus };
- await updateCategory(category.id, updatedCategory);
- setCategories(categories.map((c) => c.id === category.id ? updatedCategory : c));
- } catch (err) {
- alert("Failed to update status");
- }
- };
-
- return (
+  return (
  <section className="min-h-full bg-background p-4 sm:p-6 pb-20 flex flex-col gap-6">
  
  {/* 2. Stat Cards Row */}
@@ -369,23 +366,21 @@ export default function Categories() {
  </td>
 
  <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
- <button
- type="button"
- disabled={category.status === 'Deleted'}
+                    <Badge variant={category.status === 'Active' ? 'success' : 'danger'}>
+                      {category.status || "Active"}
+                    </Badge>
+                  </td>
+
+ <td className="px-5 py-4 text-sm font-medium">
+ <span 
+ className="text-primary hover:underline cursor-pointer"
  onClick={(e) => {
  e.stopPropagation();
- handleToggleStatus(category);
+ navigate(`/categories/${category.id}`);
  }}
- className={`text-xs font-semibold px-3 py-1.5 rounded-md border transition-all ${
- category.status === 'Active'
- ? 'bg-success/10 text-success border-success/30 hover:bg-success/20'
- : category.status === 'Deleted'
- ? 'bg-danger/10 text-danger border-danger/30 cursor-not-allowed'
- : 'bg-danger/10 text-danger border-danger/30 hover:bg-danger/20'
- }`}
  >
- {category.status || "Active"}
- </button>
+ {category.menusCount || 0} Menus
+ </span>
  </td>
 
  <td className="px-5 py-4 text-sm font-medium">
@@ -403,10 +398,10 @@ export default function Categories() {
  <td className="whitespace-nowrap px-5 py-4">
  <div className="flex flex-col">
  <span className="text-sm font-medium text-foreground">
- {category.createdDate ? new Date(category.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "16 Jan 2025"}
+ {category.createdDate ? new Date(category.createdDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "--"}
  </span>
  <span className="text-xs text-muted">
- 10:24 AM
+ {category.createdDate && !isNaN(new Date(category.createdDate).getTime()) ? new Date(category.createdDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : "--"}
  </span>
  </div>
  </td>
@@ -459,7 +454,7 @@ export default function Categories() {
  <p className="text-sm text-muted">Are you sure you want to delete this category? This action cannot be undone.</p>
  <div className="mt-6 flex justify-end gap-3">
  <Button variant="secondary" onClick={() => setDeleteModalId(null)}>Cancel</Button>
- <Button className="bg-danger hover:bg-danger/90 text-white border-0" onClick={handleDeleteCategory}>Delete</Button>
+ <Button variant="danger" onClick={handleDeleteCategory}>Delete</Button>
  </div>
  </Modal>
  </section>

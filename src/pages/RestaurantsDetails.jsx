@@ -822,7 +822,7 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
  <div className="mt-6 flex justify-end gap-3">
  <Button variant="secondary" onClick={() => setDeleteModalOpen(false)}>Cancel</Button>
  <Button 
- className="bg-danger hover:bg-danger/90 text-white" 
+ variant="danger" 
  onClick={handleDelete}
  disabled={deleteLoading}
  >

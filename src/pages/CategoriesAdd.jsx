@@ -6,7 +6,7 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import { createCategory, getCategoryById, updateCategory, getCategories } from "../api/categoriesApi";
-import { getCategoryItemsByCategory as getProductsByCategory } from "../api/categoryItemsApi";
+import { getParentItemsByCategory } from "../api/parentItemsApi";
 
 const types = [
  "Select type",
@@ -66,6 +66,7 @@ function CategoriesAdd() {
  const [allCategories, setAllCategories] = useState([]);
  const [dbId, setDbId] = useState(null);
  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
  const [error, setError] = useState("");
  const [childCategories, setChildCategories] = useState([]);
  const [menuItems, setMenuItems] = useState([]);
@@ -146,10 +147,10 @@ function CategoriesAdd() {
  setChildCategories(allCats.filter(c => c.parentId === data.id));
  
  try {
- const products = await getProductsByCategory(categoryId);
- setMenuItems(products || []);
+ const parentItemsData = await getParentItemsByCategory(categoryId);
+ setMenuItems(parentItemsData || []);
  } catch (e) {
- console.error("Failed to load products", e);
+ console.error("Failed to load parent items", e);
  }
  }
  } catch (err) {
@@ -224,7 +225,7 @@ function CategoriesAdd() {
  } else {
  payload.id = finalId;
  payload.itemCount = 0;
- payload.createdDate = new Date().toISOString().split("T")[0];
+ payload.createdDate = new Date().toISOString();
  
  const response = await createCategory(payload);
  if (response) {
@@ -256,7 +257,7 @@ function CategoriesAdd() {
  <div className="w-full space-y-6">
  
  {/* Premium Page Header */}
- <div className="relative overflow-visible rounded-2xl bg-linear-to-r from-primary to-primary-hover p-8 shadow-lg">
+ <div className="relative overflow-hidden rounded-2xl bg-linear-to-r from-primary to-primary-hover p-8 shadow-lg">
  <div className="absolute top-0 right-0 -mt-10 -mr-10 h-40 w-40 rounded-full bg-white opacity-10 blur-2xl"></div>
  <div className="absolute bottom-0 left-10 -mb-10 h-32 w-32 rounded-full bg-white opacity-10 blur-2xl"></div>
  <div className="relative z-10 flex items-center justify-between">
@@ -457,28 +458,32 @@ function CategoriesAdd() {
  {isEditing && (
         <div className="grid gap-6">
           <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm hover:border-primary/50 transition-colors group relative overflow-visible">
-            <h3 className="mb-6 text-lg font-semibold text-foreground">Child Categories</h3>
-            {computedChildCategories.length === 0 ? (
+            <h3 className="mb-6 text-lg font-semibold text-foreground">Menus</h3>
+            {loading ? (
+              <div className="flex justify-center p-8 text-sm text-muted">Loading menus...</div>
+            ) : menuItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-background p-8 text-center">
                 <div className="rounded-full bg-primary/10 p-3 text-primary mb-3">
                   <FolderTree size={24} />
                 </div>
-                <p className="text-sm text-muted">No child categories found.</p>
+                <p className="text-sm text-muted">No menus found.</p>
               </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
-                {computedChildCategories.map((childCat) => (
-                  <div key={childCat.id} className="flex items-center gap-4 rounded-xl border border-border bg-background p-4 shadow-sm">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-surface border border-border overflow-visible">
-                      {childCat.image ? (
-                        <img src={childCat.image} alt={childCat.name} className="h-full w-full object-cover" />
+              <div className="grid gap-4 sm:grid-cols-2 max-h-150 overflow-y-auto pr-2 scrollbar-thin">
+                {menuItems.map((menu) => (
+                  <div key={menu.id} className="flex items-center gap-4 rounded-xl border border-border bg-background p-4 shadow-sm">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-surface border border-border overflow-hidden">
+                      {menu.image ? (
+                        <img src={menu.image} alt={menu.name} className="h-full w-full object-cover" />
                       ) : (
                         <FolderTree size={20} className="text-muted/50" />
                       )}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-foreground text-sm">{childCat.name}</h4>
-                      <p className="text-xs text-muted font-medium mb-1">{childCat.itemCount || 0} items</p>
+                      <h4 className="font-semibold text-foreground text-sm">{menu.name}</h4>
+                      <Badge variant={(menu.status === "Available" || menu.status === "Active") ? "success" : "danger"} className="text-[10px] px-1.5 py-0 h-4">
+                        {menu.status}
+                      </Badge>
                     </div>
                   </div>
                 ))}
