@@ -23,6 +23,7 @@ import {
   Camera,
   ShieldBan,
   MessageSquare,
+  X,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -43,6 +44,7 @@ import {
 import { getCategories } from "../api/categoriesApi";
 import { getParentItemsByCategory } from "../api/parentItemsApi";
 import { getChildItemsByParentItem } from "../api/childItemsApi";
+import { getProductById } from "../api/productsApi";
 import { fileToBase64 } from "../utils/fileUtils";
 
 function CustomToggle({ checked, onChange }) {
@@ -246,11 +248,16 @@ function RestaurantsDetails() {
     e.preventDefault();
     if (!variantForm.name || !variantForm.price) return;
     setEditingMenuItem((prev) => {
+      const variantToSave = {
+        name: variantForm.name,
+        price: Number(variantForm.price) || variantForm.price,
+        image: variantForm.image || prev.image || (prev.images && prev.images[0]) || null,
+      };
       const newV = [...(prev.variants || prev.varients || [])];
       if (editingVariantIndex >= 0) {
-        newV[editingVariantIndex] = variantForm;
+        newV[editingVariantIndex] = variantToSave;
       } else {
-        newV.push(variantForm);
+        newV.push(variantToSave);
       }
       return { ...prev, variants: newV };
     });
@@ -469,107 +476,6 @@ function RestaurantsDetails() {
             <ArrowLeft size={16} className="mr-2" /> Back to Restaurants
           </Button>
         </div>
-
-        {/* Add/Edit Variant Modal */}
-        <Modal
-          isOpen={isVariantModalOpen}
-          onClose={() => setIsVariantModalOpen(false)}
-          title={editingVariantIndex >= 0 ? "Edit Variant" : "Add Variant"}
-          maxWidth="max-w-md"
-        >
-          <form onSubmit={handleSaveVariant} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-medium text-muted mb-1 block">
-                  Variant Name
-                </label>
-                <Input
-                  value={variantForm.name}
-                  onChange={(e) =>
-                    setVariantForm({ ...variantForm, name: e.target.value })
-                  }
-                  placeholder="e.g. Half, Full"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted mb-1 block">
-                  Price (₹)
-                </label>
-                <Input
-                  type="number"
-                  value={variantForm.price}
-                  onChange={(e) =>
-                    setVariantForm({ ...variantForm, price: e.target.value })
-                  }
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-medium text-muted mb-2 block">
-                Variant Image (Optional)
-              </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="file"
-                  className="hidden"
-                  ref={variantFileInputRef}
-                  accept="image/*"
-                  onChange={handleVariantImageChange}
-                />
-                {variantForm.image ? (
-                  <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-border shadow-sm group">
-                    <img
-                      src={variantForm.image}
-                      alt="Variant preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <div
-                      className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
-                      onClick={() => variantFileInputRef.current?.click()}
-                    >
-                      <Pencil size={16} className="text-white" />
-                    </div>
-                    <button
-                      type="button"
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-danger text-white rounded-full flex items-center justify-center"
-                      onClick={() =>
-                        setVariantForm({ ...variantForm, image: null })
-                      }
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ) : (
-                  <div
-                    className="w-20 h-20 rounded-lg border border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-surface-hover hover:border-primary/40 transition-colors"
-                    onClick={() => variantFileInputRef.current?.click()}
-                  >
-                    <Plus size={20} className="text-muted mb-1" />
-                    <span className="text-[10px] text-muted">Upload</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t border-border mt-6">
-              <button
-                type="button"
-                className="px-4 py-2 rounded-lg border border-border hover:bg-surface-hover text-sm font-medium transition-colors"
-                onClick={() => setIsVariantModalOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 text-sm font-medium transition-colors"
-              >
-                Save Variant
-              </button>
-            </div>
-          </form>
-        </Modal>
       </section>
     );
   }
@@ -957,19 +863,8 @@ function RestaurantsDetails() {
                     onDrop={(e) => handleDrop(e, index)}
                     className="p-4 flex gap-4 items-center group relative border-border/60 hover:border-primary/30 transition-colors cursor-pointer"
                     onClick={async () => {
-                      if (item.menuItemId) {
-                        try {
-                          const fullProduct = await getProductById(
-                            item.menuItemId,
-                          );
-                          setViewingMenuItem({ ...item, ...fullProduct });
-                        } catch (err) {
-                          console.error(err);
-                          setViewingMenuItem(item);
-                        }
-                      } else {
-                        setViewingMenuItem(item);
-                      }
+                      setViewingMenuItem(item);
+                      setIsViewModalOpen(true);
                       setIsViewModalOpen(true);
                     }}
                   >
@@ -1007,22 +902,8 @@ function RestaurantsDetails() {
                                 label: "View",
                                 icon: Eye,
                                 onClick: async () => {
-                                  if (item.menuItemId) {
-                                    try {
-                                      const fullProduct = await getProductById(
-                                        item.menuItemId,
-                                      );
-                                      setViewingMenuItem({
-                                        ...item,
-                                        ...fullProduct,
-                                      });
-                                    } catch (err) {
-                                      console.error(err);
-                                      setViewingMenuItem(item);
-                                    }
-                                  } else {
-                                    setViewingMenuItem(item);
-                                  }
+                                  setViewingMenuItem(item);
+                                  setIsViewModalOpen(true);
                                   setIsViewModalOpen(true);
                                 },
                               },
@@ -1915,7 +1796,8 @@ function RestaurantsDetails() {
                 <button
                   type="button"
                   onClick={() => {
-                    setVariantForm({ name: "", price: "", image: null });
+                    const parentImage = editingMenuItem?.image || (editingMenuItem?.images && editingMenuItem?.images[0]) || null;
+                    setVariantForm({ name: "", price: "", image: parentImage });
                     setEditingVariantIndex(-1);
                     setIsVariantModalOpen(true);
                   }}
@@ -2131,6 +2013,108 @@ function RestaurantsDetails() {
             {restaurant?.status === "Blocked" ? "Yes, Unblock" : "Yes, Block"}
           </Button>
         </div>
+      </Modal>
+
+      {/* Add/Edit Variant Modal */}
+      <Modal
+        isOpen={isVariantModalOpen}
+        onClose={() => setIsVariantModalOpen(false)}
+        title={editingVariantIndex >= 0 ? "Edit Variant" : "Add Variant"}
+        maxWidth="max-w-md"
+        zIndex="z-[70]"
+      >
+        <form onSubmit={handleSaveVariant} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-medium text-muted mb-1 block">
+                Variant Name
+              </label>
+              <Input
+                value={variantForm.name}
+                onChange={(e) =>
+                  setVariantForm({ ...variantForm, name: e.target.value })
+                }
+                placeholder="e.g. Half, Full"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted mb-1 block">
+                Price (₹)
+              </label>
+              <Input
+                type="number"
+                value={variantForm.price}
+                onChange={(e) =>
+                  setVariantForm({ ...variantForm, price: e.target.value })
+                }
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted mb-2 block">
+              Variant Image (Optional)
+            </label>
+            <div className="flex items-center gap-4">
+              <input
+                type="file"
+                className="hidden"
+                ref={variantFileInputRef}
+                accept="image/*"
+                onChange={handleVariantImageChange}
+              />
+              {variantForm.image ? (
+                <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-border shadow-sm group">
+                  <img
+                    src={variantForm.image}
+                    alt="Variant preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <div
+                    className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                    onClick={() => variantFileInputRef.current?.click()}
+                  >
+                    <Pencil size={16} className="text-white" />
+                  </div>
+                  <button
+                    type="button"
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-danger text-white rounded-full flex items-center justify-center"
+                    onClick={() =>
+                      setVariantForm({ ...variantForm, image: null })
+                    }
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ) : (
+                <div
+                  className="w-20 h-20 rounded-lg border border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-surface-hover hover:border-primary/40 transition-colors"
+                  onClick={() => variantFileInputRef.current?.click()}
+                >
+                  <Plus size={20} className="text-muted mb-1" />
+                  <span className="text-[10px] text-muted">Upload</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-border mt-6">
+            <button
+              type="button"
+              className="px-4 py-2 rounded-lg border border-border hover:bg-surface-hover text-sm font-medium transition-colors"
+              onClick={() => setIsVariantModalOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 text-sm font-medium transition-colors"
+            >
+              Save Variant
+            </button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

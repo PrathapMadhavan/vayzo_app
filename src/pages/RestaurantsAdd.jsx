@@ -159,11 +159,16 @@ function RestaurantsAdd() {
     e.preventDefault();
     if (!variantForm.name || !variantForm.price) return;
     setEditingMenuItem((prev) => {
+      const variantToSave = {
+        name: variantForm.name,
+        price: Number(variantForm.price) || variantForm.price,
+        image: variantForm.image || prev.image || (prev.images && prev.images[0]) || null,
+      };
       const newV = [...(prev.variants || prev.varients || [])];
       if (editingVariantIndex >= 0) {
-        newV[editingVariantIndex] = variantForm;
+        newV[editingVariantIndex] = variantToSave;
       } else {
-        newV.push(variantForm);
+        newV.push(variantToSave);
       }
       return { ...prev, variants: newV };
     });
@@ -1039,19 +1044,8 @@ function RestaurantsAdd() {
                       onDrop={(e) => handleDrop(e, index)}
                       className="flex gap-4 p-4 items-center bg-surface border border-border rounded-xl hover:border-primary/30 hover:shadow-sm transition-all group cursor-pointer"
                       onClick={async () => {
-                        if (item.menuItemId) {
-                          try {
-                            const fullProduct = await getProductById(
-                              item.menuItemId,
-                            );
-                            setViewingMenuItem({ ...item, ...fullProduct });
-                          } catch (err) {
-                            console.error(err);
-                            setViewingMenuItem(item);
-                          }
-                        } else {
-                          setViewingMenuItem(item);
-                        }
+                        setViewingMenuItem(item);
+                        setIsViewModalOpen(true);
                         setIsViewModalOpen(true);
                       }}
                     >
@@ -1136,22 +1130,7 @@ function RestaurantsAdd() {
                                 label: "View",
                                 icon: Eye,
                                 onClick: async () => {
-                                  if (item.menuItemId) {
-                                    try {
-                                      const fullProduct = await getProductById(
-                                        item.menuItemId,
-                                      );
-                                      setViewingMenuItem({
-                                        ...item,
-                                        ...fullProduct,
-                                      });
-                                    } catch (err) {
-                                      console.error(err);
-                                      setViewingMenuItem(item);
-                                    }
-                                  } else {
-                                    setViewingMenuItem(item);
-                                  }
+                                  setViewingMenuItem(item);
                                   setIsViewModalOpen(true);
                                 },
                               },
@@ -1971,7 +1950,8 @@ function RestaurantsAdd() {
                 <button
                   type="button"
                   onClick={() => {
-                    setVariantForm({ name: "", price: "", image: null });
+                    const parentImage = editingMenuItem?.image || (editingMenuItem?.images && editingMenuItem?.images[0]) || null;
+                    setVariantForm({ name: "", price: "", image: parentImage });
                     setEditingVariantIndex(-1);
                     setIsVariantModalOpen(true);
                   }}
@@ -2171,6 +2151,7 @@ function RestaurantsAdd() {
         onClose={() => setIsVariantModalOpen(false)}
         title={editingVariantIndex >= 0 ? "Edit Variant" : "Add Variant"}
         maxWidth="max-w-md"
+        zIndex="z-[70]"
       >
         <form onSubmit={handleSaveVariant} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
