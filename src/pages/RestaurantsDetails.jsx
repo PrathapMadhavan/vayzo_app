@@ -1419,7 +1419,7 @@ function RestaurantsDetails() {
                         }))
                       }
                       placeholder="Enter custom category"
-                      className="w-full bg-surface border border-primary/50 px-3 py-2.5 rounded-lg text-sm outline-none focus:border-primary/20 transition-all "
+                      className="w-full bg-surface border border-primary/50 px-3 py-2.5 rounded-lg text-sm outline-none transition-all "
                     />
                   </div>
                 ) : (
@@ -1429,7 +1429,7 @@ function RestaurantsDetails() {
                       onClick={() =>
                         setIsCategoryDropdownOpen(!isCategoryDropdownOpen)
                       }
-                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none focus:border-primary/50 transition-all text-sm"
+                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none transition-all text-sm"
                       disabled={!editingMenuItem.isNew}
                     >
                       <span
@@ -1447,7 +1447,7 @@ function RestaurantsDetails() {
                       />
                     </button>
                     {isCategoryDropdownOpen && (
-                      <div className="absolute z-[100] top-full mt-1 w-full min-w-60 bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
+                      <div className="absolute z-100 top-full mt-1 w-full min-w-60 bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
                         <div className="p-2 border-b border-border/50 shrink-0">
                           <div className="relative">
                             <Search
@@ -1541,7 +1541,7 @@ function RestaurantsDetails() {
                       }))
                     }
                     placeholder="Enter custom parent item"
-                    className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none focus:border-primary/50 transition-all "
+                    className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none transition-all "
                   />
                 ) : (
                   <div className="relative">
@@ -1550,7 +1550,7 @@ function RestaurantsDetails() {
                       onClick={() =>
                         setIsParentDropdownOpen(!isParentDropdownOpen)
                       }
-                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none focus:border-primary/50 transition-all   text-sm"
+                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none transition-all   text-sm"
                       disabled={
                         !editingMenuItem.categoryId || !editingMenuItem.isNew
                       }
@@ -1570,7 +1570,7 @@ function RestaurantsDetails() {
                       />
                     </button>
                     {isParentDropdownOpen && (
-                      <div className="absolute z-[100] top-full mt-1 w-full bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
+                      <div className="absolute z-100 top-full mt-1 w-full bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
                         <div className="p-2 border-b border-border/50 shrink-0">
                           <div className="relative">
                             <Search
@@ -1653,7 +1653,7 @@ function RestaurantsDetails() {
                     <button
                       type="button"
                       onClick={() => setIsMenuDropdownOpen(!isMenuDropdownOpen)}
-                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none focus:border-primary/50 transition-all   text-sm"
+                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none transition-all   text-sm"
                       disabled={
                         !editingMenuItem.parentItemId || !editingMenuItem.isNew
                       }
@@ -1680,7 +1680,7 @@ function RestaurantsDetails() {
                       />
                     </button>
                     {isMenuDropdownOpen && (
-                      <div className="absolute z-[100] top-full mt-1 w-full bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
+                      <div className="absolute z-100 top-full mt-1 w-full bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
                         <div className="p-2 border-b border-border/50 shrink-0">
                           <div className="relative">
                             <Search
@@ -1779,7 +1779,7 @@ function RestaurantsDetails() {
                     editingMenuItem.itemMode === "catalog" &&
                     !editingMenuItem.menuItemId
                   }
-                  className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none focus:border-primary/50 transition-all   disabled:opacity-50"
+                  className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none transition-all   disabled:opacity-50"
                 />
               </div>
               <div className="w-32 shrink-0">
@@ -1796,7 +1796,7 @@ function RestaurantsDetails() {
                     }))
                   }
                   placeholder="0.00"
-                  className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none focus:border-primary/50 transition-all  "
+                  className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none transition-all  "
                 />
               </div>
             </div>
@@ -2137,3 +2137,5 @@ function RestaurantsDetails() {
 }
 
 export default RestaurantsDetails;
+
+

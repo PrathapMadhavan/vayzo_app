@@ -1475,7 +1475,7 @@ function RestaurantsAdd() {
                         }))
                       }
                       placeholder="Enter custom category"
-                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20"
+                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
                 ) : (
@@ -1485,7 +1485,7 @@ function RestaurantsAdd() {
                       onClick={() =>
                         setIsCategoryDropdownOpen(!isCategoryDropdownOpen)
                       }
-                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20 text-sm"
+                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none transition-all focus:ring-2 focus:ring-primary/20 text-sm"
                       disabled={!editingMenuItem.isNew}
                     >
                       <span
@@ -1503,7 +1503,7 @@ function RestaurantsAdd() {
                       />
                     </button>
                     {isCategoryDropdownOpen && (
-                      <div className="absolute z-[100] top-full mt-1 w-full min-w-60 bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
+                      <div className="absolute z-100 top-full mt-1 w-full min-w-60 bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
                         <div className="p-2 border-b border-border/50 shrink-0">
                           <div className="relative">
                             <Search
@@ -1597,7 +1597,7 @@ function RestaurantsAdd() {
                       }))
                     }
                     placeholder="Enter custom parent item"
-                    className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20"
+                    className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20"
                   />
                 ) : (
                   <div className="relative">
@@ -1606,7 +1606,7 @@ function RestaurantsAdd() {
                       onClick={() =>
                         setIsParentDropdownOpen(!isParentDropdownOpen)
                       }
-                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20 text-sm"
+                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none transition-all focus:ring-2 focus:ring-primary/20 text-sm"
                       disabled={
                         !editingMenuItem.categoryId || !editingMenuItem.isNew
                       }
@@ -1626,7 +1626,7 @@ function RestaurantsAdd() {
                       />
                     </button>
                     {isParentDropdownOpen && (
-                      <div className="absolute z-[100] top-full mt-1 w-full bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
+                      <div className="absolute z-100 top-full mt-1 w-full bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
                         <div className="p-2 border-b border-border/50 shrink-0">
                           <div className="relative">
                             <Search
@@ -1709,7 +1709,7 @@ function RestaurantsAdd() {
                     <button
                       type="button"
                       onClick={() => setIsMenuDropdownOpen(!isMenuDropdownOpen)}
-                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20 text-sm"
+                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none transition-all focus:ring-2 focus:ring-primary/20 text-sm"
                       disabled={
                         !editingMenuItem.parentItemId || !editingMenuItem.isNew
                       }
@@ -1736,7 +1736,7 @@ function RestaurantsAdd() {
                       />
                     </button>
                     {isMenuDropdownOpen && (
-                      <div className="absolute z-[100] top-full mt-1 w-full bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
+                      <div className="absolute z-100 top-full mt-1 w-full bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
                         <div className="p-2 border-b border-border/50 shrink-0">
                           <div className="relative">
                             <Search
@@ -1835,7 +1835,7 @@ function RestaurantsAdd() {
                     editingMenuItem.itemMode === "catalog" &&
                     !editingMenuItem.menuItemId
                   }
-                  className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+                  className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
                 />
               </div>
               <div className="w-32 shrink-0">
@@ -1852,7 +1852,7 @@ function RestaurantsAdd() {
                     }))
                   }
                   placeholder="0.00"
-                  className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20"
+                  className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20"
                 />
               </div>
             </div>
@@ -2270,3 +2270,5 @@ function RestaurantsAdd() {
 }
 
 export default RestaurantsAdd;
+
+

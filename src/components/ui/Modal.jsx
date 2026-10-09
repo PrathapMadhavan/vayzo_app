@@ -1,9 +1,9 @@
-function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md", overflow = "auto" }) {
+function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md", overflow = "auto", zIndex = "z-50" }) {
  if (!isOpen) return null;
 
  return (
  <div 
- className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+ className={`fixed inset-0 ${zIndex} flex items-center justify-center bg-black/40 p-4`}
  onClick={onClose}
  >
  <div 
@@ -33,3 +33,4 @@ function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-md", overfl
 }
 
 export default Modal;
+
