@@ -16,6 +16,7 @@ import {
   Check,
   ChevronDown,
   CloudUpload,
+  Eye,
 } from "lucide-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 
@@ -23,6 +24,7 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import Card from "../components/ui/Card";
+import ActionMenu from "../components/ui/ActionMenu";
 import Modal from "../components/ui/Modal";
 import Badge from "../components/ui/Badge";
 import {
@@ -33,7 +35,8 @@ import {
 } from "../api/restaurantsApi";
 import { validateImage, fileToBase64 } from "../utils/fileUtils";
 import { getCategories } from "../api/categoriesApi";
-import { getProductsByCategory, getProductById } from "../api/productsApi";
+import { getParentItemsByCategory } from "../api/parentItemsApi";
+import { getChildItemsByParentItem } from "../api/childItemsApi";
 
 function RequiredLabel({ text }) {
   return (
@@ -99,48 +102,89 @@ function RestaurantsAdd() {
   const [editingMenuItem, setEditingMenuItem] = useState(null);
   const [openDropdownId, setOpenDropdownId] = useState(null);
   const [itemToDelete, setItemToDelete] = useState(null);
-  const [categoryMenuItems, setCategoryMenuItems] = useState([]);
+  const [categoryParentItems, setCategoryParentItems] = useState([]);
+  const [parentChildItems, setParentChildItems] = useState([]);
 
-    const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
+  const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
   const [editingVariantIndex, setEditingVariantIndex] = useState(-1);
-  const [variantForm, setVariantForm] = useState({ name: "", price: "", image: null });
+  const [variantForm, setVariantForm] = useState({
+    name: "",
+    price: "",
+    image: null,
+  });
   const variantFileInputRef = useRef(null);
+
+  const [draggedItemIndex, setDraggedItemIndex] = useState(null);
+  const handleDragStart = (e, index) => {
+    setDraggedItemIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+  };
+  const handleDrop = async (e, targetIndex) => {
+    e.preventDefault();
+    if (draggedItemIndex === null || draggedItemIndex === targetIndex) return;
+    const filteredItems = form.menuItems.filter((item) =>
+      item.name.toLowerCase().includes(menuSearch.toLowerCase()),
+    );
+    const draggedItemId = filteredItems[draggedItemIndex].id;
+    const targetItemId = filteredItems[targetIndex].id;
+    const mainDraggedIndex = form.menuItems.findIndex(
+      (i) => i.id === draggedItemId,
+    );
+    const mainTargetIndex = form.menuItems.findIndex(
+      (i) => i.id === targetItemId,
+    );
+    if (mainDraggedIndex === -1 || mainTargetIndex === -1) return;
+    setForm((prev) => {
+      const newItems = [...prev.menuItems];
+      const [removed] = newItems.splice(mainDraggedIndex, 1);
+      newItems.splice(mainTargetIndex, 0, removed);
+      return { ...prev, menuItems: newItems };
+    });
+    setDraggedItemIndex(null);
+  };
 
   const handleVariantImageChange = async (e) => {
     if (e.target.files?.[0]) {
       try {
         const base64 = await fileToBase64(e.target.files[0]);
         setVariantForm({ ...variantForm, image: base64 });
-      } catch(err) {}
+      } catch (err) {}
     }
   };
 
   const handleSaveVariant = (e) => {
     e.preventDefault();
     if (!variantForm.name || !variantForm.price) return;
-    setEditingMenuItem(prev => {
-        const newV = [...(prev.variants || prev.varients || [])];
-        if (editingVariantIndex >= 0) {
-            newV[editingVariantIndex] = variantForm;
-        } else {
-            newV.push(variantForm);
-        }
-        return { ...prev, variants: newV };
+    setEditingMenuItem((prev) => {
+      const newV = [...(prev.variants || prev.varients || [])];
+      if (editingVariantIndex >= 0) {
+        newV[editingVariantIndex] = variantForm;
+      } else {
+        newV.push(variantForm);
+      }
+      return { ...prev, variants: newV };
     });
     setIsVariantModalOpen(false);
   };
-const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   const [viewingMenuItem, setViewingMenuItem] = useState(null);
+
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [categorySearchText, setCategorySearchText] = useState("");
   const categoryDropdownRef = useRef(null);
+
+  const [isParentDropdownOpen, setIsParentDropdownOpen] = useState(false);
+  const [parentSearchText, setParentSearchText] = useState("");
+  const parentDropdownRef = useRef(null);
 
   const [isMenuDropdownOpen, setIsMenuDropdownOpen] = useState(false);
   const [menuDropdownSearchText, setMenuDropdownSearchText] = useState("");
   const menuDropdownRef = useRef(null);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       setOpenDropdownId(null);
@@ -149,6 +193,12 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
         !categoryDropdownRef.current.contains(e.target)
       ) {
         setIsCategoryDropdownOpen(false);
+      }
+      if (
+        parentDropdownRef.current &&
+        !parentDropdownRef.current.contains(e.target)
+      ) {
+        setIsParentDropdownOpen(false);
       }
       if (
         menuDropdownRef.current &&
@@ -178,25 +228,47 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   }, []);
 
   useEffect(() => {
-    const fetchCategoryMenuItems = async () => {
+    const fetchParentItems = async () => {
       const selectedCatId =
         editingMenuItem?.categoryId ||
         (editingMenuItem?.category
           ? categories.find((c) => c.name === editingMenuItem.category)?.id
           : null);
-      if (!selectedCatId) {
-        setCategoryMenuItems([]);
+      if (!selectedCatId || editingMenuItem?.itemMode === "custom") {
+        setCategoryParentItems([]);
         return;
       }
       try {
-        const items = await getProductsByCategory(selectedCatId);
-        setCategoryMenuItems(items || []);
+        const items = await getParentItemsByCategory(selectedCatId);
+        setCategoryParentItems(items || []);
       } catch (err) {
-        console.error("Failed to load category menu items", err);
+        console.error("Failed to load category parent items", err);
       }
     };
-    fetchCategoryMenuItems();
-  }, [editingMenuItem?.categoryId, editingMenuItem?.category, categories]);
+    fetchParentItems();
+  }, [
+    editingMenuItem?.categoryId,
+    editingMenuItem?.category,
+    categories,
+    editingMenuItem?.itemMode,
+  ]);
+
+  useEffect(() => {
+    const fetchChildItems = async () => {
+      const parentId = editingMenuItem?.parentItemId;
+      if (!parentId || editingMenuItem?.itemMode === "custom") {
+        setParentChildItems([]);
+        return;
+      }
+      try {
+        const items = await getChildItemsByParentItem(parentId);
+        setParentChildItems(items || []);
+      } catch (err) {
+        console.error("Failed to load child items", err);
+      }
+    };
+    fetchChildItems();
+  }, [editingMenuItem?.parentItemId, editingMenuItem?.itemMode]);
 
   useEffect(() => {
     if (!isEditing) return;
@@ -270,7 +342,9 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
       !editingMenuItem.category ||
       !editingMenuItem.foodType
     ) {
-      alert("Item Name, Category, Food Type, and either a Base Price or at least one Variant are required.");
+      alert(
+        "Item Name, Category, Food Type, and either a Base Price or at least one Variant are required.",
+      );
       return;
     }
     setForm((prev) => {
@@ -509,7 +583,10 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
                 onChange={handleChange("name")}
                 placeholder="ABC Cafe"
               />
-              <div className="cursor-not-allowed opacity-80 group/slug" title="Slug cannot be changed directly">
+              <div
+                className="cursor-not-allowed opacity-80 group/slug"
+                title="Slug cannot be changed directly"
+              >
                 <div className="pointer-events-none">
                   <Input
                     id="rst-slug"
@@ -673,7 +750,9 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
                     </div>
                   )}
                 </div>
-                <p className="text-[11px] text-muted">Recommended size: 512x512px. Max 2MB.</p>
+                <p className="text-[11px] text-muted">
+                  Recommended size: 512x512px. Max 2MB.
+                </p>
               </div>
 
               <div className="space-y-1.5">
@@ -731,7 +810,9 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
                     </div>
                   )}
                 </div>
-                <p className="text-[11px] text-muted">Recommended size: 1200x400px. Max 2MB.</p>
+                <p className="text-[11px] text-muted">
+                  Recommended size: 1200x400px. Max 2MB.
+                </p>
               </div>
             </div>
           </div>
@@ -759,11 +840,15 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
               <Input
                 id="rst-phone"
                 label={<RequiredLabel text="Phone Number" />}
-                prefix={<span className="text-muted pl-3.5 pr-2 border-r border-border text-sm font-medium">+91</span>}
+                prefix={
+                  <span className="text-muted pl-3.5 pr-2 border-r border-border text-sm font-medium">
+                    +91
+                  </span>
+                }
                 value={form.phone}
                 onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
-                  setForm(prev => ({ ...prev, phone: val }));
+                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                  setForm((prev) => ({ ...prev, phone: val }));
                 }}
                 placeholder="9876543210"
               />
@@ -929,22 +1014,10 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
                   placeholder="Search menu items..."
                   value={menuSearch}
                   onChange={(e) => setMenuSearch(e.target.value)}
-                  icon={
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-muted"
-                    >
-                      <circle cx="11" cy="11" r="8"></circle>
-                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
+                  prefix={
+                    <div className="pl-3.5 pr-1.5">
+                      <Search size={16} className="text-muted" />
+                    </div>
                   }
                 />
               </div>
@@ -957,25 +1030,35 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
                   .filter((item) =>
                     item.name.toLowerCase().includes(menuSearch.toLowerCase()),
                   )
-                  .map((item) => (
-                    <Card 
-    key={item.id} 
-    className="flex gap-4 p-4 items-center bg-surface border border-border rounded-xl hover:border-primary/30 hover:shadow-sm transition-all group cursor-pointer" 
-    onClick={async () => {
-      if (item.menuItemId) {
-        try {
-          const fullProduct = await getProductById(item.menuItemId);
-          setViewingMenuItem({ ...item, ...fullProduct });
-        } catch(err) {
-          console.error(err);
-          setViewingMenuItem(item);
-        }
-      } else {
-        setViewingMenuItem(item);
-      }
-      setIsViewModalOpen(true);
-    }}
-  >
+                  .map((item, index) => (
+                    <Card
+                      key={item.id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDrop={(e) => handleDrop(e, index)}
+                      className="flex gap-4 p-4 items-center bg-surface border border-border rounded-xl hover:border-primary/30 hover:shadow-sm transition-all group cursor-pointer"
+                      onClick={async () => {
+                        if (item.menuItemId) {
+                          try {
+                            const fullProduct = await getProductById(
+                              item.menuItemId,
+                            );
+                            setViewingMenuItem({ ...item, ...fullProduct });
+                          } catch (err) {
+                            console.error(err);
+                            setViewingMenuItem(item);
+                          }
+                        } else {
+                          setViewingMenuItem(item);
+                        }
+                        setIsViewModalOpen(true);
+                      }}
+                    >
+                      <div className="text-muted/40 cursor-grab hover:text-muted hidden sm:block shrink-0">
+                        <GripVertical size={20} />
+                      </div>
+
                       <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-primary/5 border border-primary/10 flex items-center justify-center">
                         {item.image || (item.images && item.images[0]) ? (
                           <img
@@ -1003,7 +1086,12 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
                                 "Uncategorized"}
                             </span>
                             <span className="font-semibold text-foreground mt-0.5">
-                              ₹{item.price || 0}
+                              {item.price
+                                ? `₹${item.price}`
+                                : (item.variants || item.varients || [])
+                                      .length > 0
+                                  ? `${(item.variants || item.varients).length} Variants`
+                                  : "₹0"}
                             </span>
                           </div>
                         </div>
@@ -1038,47 +1126,54 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
                           />
                         </div>
 
-                        <div className="relative shrink-0 dropdown-container">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenDropdownId(
-                                openDropdownId === item.id ? null : item.id,
-                              );
-                            }}
-                            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${openDropdownId === item.id ? "bg-primary text-white border-primary" : "border-border text-foreground hover:bg-surface-hover hover:border-primary/50 hover:text-primary"}`}
-                          >
-                            <MoreVertical size={16} />
-                          </button>
-
-                          {openDropdownId === item.id && (
-                            <div
-                              className="absolute right-0 top-full mt-1 z-50 w-32 rounded-lg border border-border bg-surface p-1 shadow-lg"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEditingMenuItem({ ...item });
-                                  setOpenDropdownId(null);
-                                }}
-                                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-foreground hover:bg-primary-light hover:text-primary transition-colors"
-                              >
-                                <Pencil size={14} /> Edit
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setItemToDelete(item);
-                                  setOpenDropdownId(null);
-                                }}
-                                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-danger hover:bg-danger/10 transition-colors"
-                              >
-                                <Trash2 size={14} /> Delete
-                              </button>
-                            </div>
-                          )}
+                        <div
+                          className="relative shrink-0 dropdown-container"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ActionMenu
+                            actions={[
+                              {
+                                label: "View",
+                                icon: Eye,
+                                onClick: async () => {
+                                  if (item.menuItemId) {
+                                    try {
+                                      const fullProduct = await getProductById(
+                                        item.menuItemId,
+                                      );
+                                      setViewingMenuItem({
+                                        ...item,
+                                        ...fullProduct,
+                                      });
+                                    } catch (err) {
+                                      console.error(err);
+                                      setViewingMenuItem(item);
+                                    }
+                                  } else {
+                                    setViewingMenuItem(item);
+                                  }
+                                  setIsViewModalOpen(true);
+                                },
+                              },
+                              {
+                                label: "Edit",
+                                icon: Pencil,
+                                onClick: () =>
+                                  setEditingMenuItem({
+                                    ...item,
+                                    itemMode: item.categoryId
+                                      ? "catalog"
+                                      : "custom",
+                                  }),
+                              },
+                              {
+                                label: "Delete",
+                                icon: Trash2,
+                                danger: true,
+                                onClick: () => setItemToDelete(item),
+                              },
+                            ]}
+                          />
                         </div>
                       </div>
                     </Card>
@@ -1128,7 +1223,7 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
         </div>
       </form>
 
-            {/* View Item Modal */}
+      {/* View Item Modal */}
       {viewingMenuItem && (
         <Modal
           isOpen={isViewModalOpen}
@@ -1142,80 +1237,135 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
           <div className="flex flex-col md:flex-row gap-8">
             {/* Left Col: Image */}
             <div className="w-full md:w-5/12 shrink-0">
-               {(viewingMenuItem.image || (viewingMenuItem.images && viewingMenuItem.images[0])) ? (
-                 <div className="w-full aspect-square rounded-2xl overflow-hidden border border-border shadow-sm">
-                   <img src={viewingMenuItem.image || viewingMenuItem.images[0]} alt={viewingMenuItem.name} className="w-full h-full object-cover" />
-                 </div>
-               ) : (
-                 <div className="w-full aspect-square rounded-2xl overflow-hidden border border-border bg-background flex items-center justify-center shadow-sm">
-                   <Utensils size={48} className="text-muted/50" />
-                 </div>
-               )}
+              {viewingMenuItem.image ||
+              (viewingMenuItem.images && viewingMenuItem.images[0]) ? (
+                <div className="w-full aspect-square rounded-2xl overflow-hidden border border-border shadow-sm">
+                  <img
+                    src={viewingMenuItem.image || viewingMenuItem.images[0]}
+                    alt={viewingMenuItem.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-full aspect-square rounded-2xl overflow-hidden border border-border bg-background flex items-center justify-center shadow-sm">
+                  <Utensils size={48} className="text-muted/50" />
+                </div>
+              )}
             </div>
 
             {/* Right Col: Details */}
             <div className="flex-1 space-y-6">
               <div>
-                <h3 className="text-2xl font-bold text-foreground mb-2">{viewingMenuItem.name}</h3>
+                <h3 className="text-2xl font-bold text-foreground mb-2">
+                  {viewingMenuItem.name}
+                </h3>
                 <div className="flex items-center gap-2">
-                   <span className="text-lg font-bold text-primary">₹{viewingMenuItem.price}</span>
-                   <span className="w-1.5 h-1.5 rounded-full bg-border mx-1"></span>
-                   <span className={viewingMenuItem.foodType === "Non-Veg" ? "text-danger font-medium" : "text-success font-medium"}>
-                     {viewingMenuItem.foodType || "Veg"}
-                   </span>
+                  <span className="text-lg font-bold text-primary">
+                    ₹{viewingMenuItem.price}
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-border mx-1"></span>
+                  <span
+                    className={
+                      viewingMenuItem.foodType === "Non-Veg"
+                        ? "text-danger font-medium"
+                        : "text-success font-medium"
+                    }
+                  >
+                    {viewingMenuItem.foodType || "Veg"}
+                  </span>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-background rounded-xl p-4 border border-border shadow-sm">
-                  <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">Status</p>
-                  <Badge variant={viewingMenuItem.status !== false && viewingMenuItem.status !== "Inactive" && viewingMenuItem.status !== "inactive" ? "success" : "danger"}>
-                    {viewingMenuItem.status !== false && viewingMenuItem.status !== "Inactive" && viewingMenuItem.status !== "inactive" ? 'Active' : 'Inactive'}
+                  <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">
+                    Status
+                  </p>
+                  <Badge
+                    variant={
+                      viewingMenuItem.status !== false &&
+                      viewingMenuItem.status !== "Inactive" &&
+                      viewingMenuItem.status !== "inactive"
+                        ? "success"
+                        : "danger"
+                    }
+                  >
+                    {viewingMenuItem.status !== false &&
+                    viewingMenuItem.status !== "Inactive" &&
+                    viewingMenuItem.status !== "inactive"
+                      ? "Active"
+                      : "Inactive"}
                   </Badge>
                 </div>
                 <div className="bg-background rounded-xl p-4 border border-border shadow-sm">
-                  <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">Category</p>
-                  <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                  <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">
+                    Category
+                  </p>
+                  <Badge
+                    variant="outline"
+                    className="bg-primary/5 text-primary border-primary/20"
+                  >
                     {viewingMenuItem.category || "Uncategorized"}
                   </Badge>
                 </div>
               </div>
 
-              {(viewingMenuItem.varients || viewingMenuItem.variants) && (viewingMenuItem.varients || viewingMenuItem.variants).length > 0 && (
-                <div>
-                  <h4 className="text-sm font-bold text-foreground mb-3 uppercase tracking-wider flex items-center gap-2">
-                    <Lightbulb size={16} className="text-primary"/> 
-                    Available Variants
-                  </h4>
-                  <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-thin pr-2">
-                    {(viewingMenuItem.varients || viewingMenuItem.variants).map((v, idx) => (
-                      <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background">
-                        {v.image ? (
+              {(viewingMenuItem.varients || viewingMenuItem.variants) &&
+                (viewingMenuItem.varients || viewingMenuItem.variants).length >
+                  0 && (
+                  <div>
+                    <h4 className="text-sm font-bold text-foreground mb-3 uppercase tracking-wider flex items-center gap-2">
+                      <Lightbulb size={16} className="text-primary" />
+                      Available Variants
+                    </h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-thin pr-2">
+                      {(
+                        viewingMenuItem.varients || viewingMenuItem.variants
+                      ).map((v, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background"
+                        >
+                          {v.image ? (
                             <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-border">
-                                <img src={v.image} className="w-full h-full object-cover" />
+                              <img
+                                src={v.image}
+                                className="w-full h-full object-cover"
+                              />
                             </div>
-                        ) : (
+                          ) : (
                             <div className="w-10 h-10 rounded-lg shrink-0 border border-border bg-surface flex items-center justify-center">
-                                <Utensils size={16} className="text-muted/50" />
+                              <Utensils size={16} className="text-muted/50" />
                             </div>
-                        )}
-                        <div className="flex-1">
-                            <p className="text-sm font-bold text-foreground">{v.name}</p>
-                            <p className="text-xs font-bold text-primary">₹{v.price}</p>
+                          )}
+                          <div className="flex-1">
+                            <p className="text-sm font-bold text-foreground">
+                              {v.name}
+                            </p>
+                            <p className="text-xs font-bold text-primary">
+                              ₹{v.price}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-              
+                )}
+
               <div className="flex justify-end pt-4 mt-auto border-t border-border">
-                <Button onClick={() => {
-                  setIsViewModalOpen(false);
-                  setTimeout(() => {
-                    setEditingMenuItem({ ...viewingMenuItem });
-                  }, 100);
-                }}>
+                <Button
+                  onClick={() => {
+                    setIsViewModalOpen(false);
+                    setTimeout(() => {
+                      setEditingMenuItem({
+                        ...viewingMenuItem,
+                        itemMode: viewingMenuItem.categoryId
+                          ? "catalog"
+                          : "custom",
+                      });
+                    }, 100);
+                  }}
+                >
                   <Pencil size={16} className="mr-2" />
                   Edit Item
                 </Button>
@@ -1232,14 +1382,16 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
         title="Add Menu Item"
       >
         <div className="space-y-4">
-          <p className="text-sm text-muted">How would you like to add a new menu item?</p>
+          <p className="text-sm text-muted">
+            How would you like to add a new menu item?
+          </p>
           <div className="flex gap-4">
             <button
               onClick={() => {
                 setIsPromptModalOpen(false);
                 setEditingMenuItem({
                   isNew: true,
-                  itemMode: 'catalog',
+                  itemMode: "catalog",
                   id: `temp-${Date.now()}`,
                   name: "",
                   category: "",
@@ -1257,14 +1409,16 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
                 <Search size={20} />
               </div>
               <p className="font-semibold text-sm">Select from Catalog</p>
-              <p className="text-xs text-muted">Choose from existing categories and items</p>
+              <p className="text-xs text-muted">
+                Choose from existing categories and items
+              </p>
             </button>
             <button
               onClick={() => {
                 setIsPromptModalOpen(false);
                 setEditingMenuItem({
                   isNew: true,
-                  itemMode: 'custom',
+                  itemMode: "custom",
                   id: `temp-${Date.now()}`,
                   name: "",
                   category: "",
@@ -1289,396 +1443,671 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
       </Modal>
 
       {/* Edit/Add Menu Item Modal */}
- <Modal
- isOpen={!!editingMenuItem}
- onClose={() => setEditingMenuItem(null)}
- title={editingMenuItem?.isNew ? "Add Menu Item" : "Edit Menu Item"}
- >
- {editingMenuItem && (
- <div className={`space-y-4 ${editingMenuItem?.isViewOnly ? 'pointer-events-none opacity-90' : ''}`}>
- <div>
- <label className="text-xs font-medium text-muted mb-1 block">Item Name</label>
- <Input
- value={editingMenuItem.name}
- onChange={(e) => setEditingMenuItem(prev => ({ ...prev, name: e.target.value }))}
- placeholder="Enter item name"
- />
- </div>
- 
- <div className="flex gap-4">
- <div className="flex-1" ref={categoryDropdownRef}>
- <label className="text-xs font-medium text-muted mb-1 block">Category</label>
- <div className="relative">
- <button
- type="button"
- onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
- className="w-full flex items-center justify-between bg-surface-hover text-sm text-foreground outline-none border border-border rounded-lg px-3 h-10 hover:border-primary/50 transition-colors"
- >
- <span className={editingMenuItem.category ? "text-foreground" : "text-muted/70"}>
- {editingMenuItem.category || "Select Category"}
- </span>
- <ChevronDown size={16} className={`text-muted transition-transform duration-200 ${isCategoryDropdownOpen ? "rotate-180" : ""}`} />
- </button>
-
- {isCategoryDropdownOpen && (
- <div className="absolute z-100 top-full mt-2 w-full min-w-60 bg-surface border border-border rounded-xl shadow-lg overflow-hidden flex flex-col">
- <div className="p-2 border-b border-border/50 shrink-0">
- <div className="relative">
- <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" size={14} />
- <input
- type="text"
- placeholder="Search category..."
- value={categorySearchText}
- onChange={(e) => setCategorySearchText(e.target.value)}
- onKeyDown={(e) => {
- if (e.key === "Escape") setIsCategoryDropdownOpen(false);
- }}
- className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:ring-1 focus:ring-primary /30 rounded-lg outline-none text-foreground transition-colors"
- autoFocus
- />
- </div>
- </div>
- <div className="max-h-60 overflow-y-auto scrollbar-thin p-1">
- {categories
-  .filter(c => c.name.toLowerCase().includes(categorySearchText.toLowerCase()) && (restaurant.cuisineType || "").split(",").map(s=>s.trim()).includes(c.name))
-  .map(cat => {
- const isSelected = editingMenuItem.categoryId === cat.id || editingMenuItem.category === cat.name;
- return (
- <button
- key={cat.id}
- type="button"
- onClick={() => {
- setEditingMenuItem(prev => ({ 
- ...prev, 
- category: cat.name,
- categoryId: cat.id,
- menuItemId: "" // Reset menu item when category changes
- }));
- setIsCategoryDropdownOpen(false);
- setCategorySearchText("");
- }}
- className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${isSelected ? "bg-primary/10" : "hover:bg-surface-hover"}`}
- >
- <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center ${isSelected ? "bg-primary text-white" : "bg-primary/10 text-primary"}`}>
- {cat.image ? (
- <img src={cat.image} alt={cat.name} className="w-full h-full object-cover rounded-lg" />
- ) : (
- <Utensils size={16} />
- )}
- </div>
- <div className="flex-1 min-w-0">
- <div className={`text-sm truncate ${isSelected ? "font-medium text-primary" : "text-foreground"}`}>
- {cat.name}
- </div>
- <div className="text-xs text-muted">
- {cat.itemCount || 0} menu items
- </div>
- </div>
- {isSelected && (
- <Check size={16} className="text-primary shrink-0" />
- )}
- </button>
- );
- })}
- {categories.filter(c => c.name.toLowerCase().includes(categorySearchText.toLowerCase())).length === 0 && (
- <div className="p-4 text-center text-sm text-muted">
- No categories found
- </div>
- )}
- </div>
- </div>
- )}
- </div>
- </div>
-
- <div className="w-28 shrink-0">
- <label className="text-xs font-medium text-muted mb-1 block">Price (₹)</label>
- <Input
- type="number"
- value={editingMenuItem.price}
- onChange={(e) => setEditingMenuItem(prev => ({ ...prev, price: e.target.value }))}
- placeholder="0.00"
- />
- </div>
- </div>
-
- <div>
- <label className="text-xs font-medium text-muted mb-1 block">Menu Items</label>
- <div className="relative" ref={menuDropdownRef}>
- <button
- type="button"
- onClick={() => {
- if (editingMenuItem.categoryId || editingMenuItem.category) {
- setIsMenuDropdownOpen(!isMenuDropdownOpen);
- }
- }}
- className={`w-full flex items-center justify-between bg-surface-hover text-sm outline-none border border-border rounded-lg px-3 h-10 hover:border-primary/50 transition-colors ${(!editingMenuItem.categoryId && !editingMenuItem.category) ? "text-muted/50 cursor-not-allowed opacity-70" : "text-foreground"}`}
- disabled={!editingMenuItem.categoryId && !editingMenuItem.category}
- >
- <span className={editingMenuItem.menuItemId ? "text-foreground truncate" : "text-muted/70 truncate"}>
- {editingMenuItem.menuItemId && categoryMenuItems.find(i => i.id === editingMenuItem.menuItemId)
- ? categoryMenuItems.find(i => i.id === editingMenuItem.menuItemId).name 
- : "Select Menu Item"}
- </span>
- <ChevronDown size={16} className={`text-muted transition-transform duration-200 ${isMenuDropdownOpen ? "rotate-180" : ""}`} />
- </button>
-
- {isMenuDropdownOpen && (
- <div className="absolute z-100 top-full mt-2 w-full min-w-60 bg-surface border border-border rounded-xl shadow-lg overflow-hidden flex flex-col">
- <div className="p-2 border-b border-border/50 shrink-0">
- <div className="relative">
- <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" size={14} />
- <input
- type="text"
- placeholder="Search menu items..."
- value={menuDropdownSearchText}
- onChange={(e) => setMenuDropdownSearchText(e.target.value)}
- onKeyDown={(e) => {
- if (e.key === "Escape") setIsMenuDropdownOpen(false);
- }}
- className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:ring-1 focus:ring-primary /30 rounded-lg outline-none text-foreground transition-colors"
- autoFocus
- />
- </div>
- </div>
- <div className="max-h-60 overflow-y-auto scrollbar-thin p-1">
- {categoryMenuItems.length === 0 ? (
- <div className="p-4 text-center text-sm text-muted">
- No menu items available for this category
- </div>
- ) : (
- <>
- {categoryMenuItems
- .filter(i => i.name.toLowerCase().includes(menuDropdownSearchText.toLowerCase()))
- .map(item => {
- const isSelected = editingMenuItem.menuItemId === item.id;
- return (
- <button
- key={item.id}
- type="button"
- onClick={() => {
- setEditingMenuItem(prev => ({ 
- ...prev, 
- menuItemId: item.id,
- name: item.name || prev.name,
- price: prev.price, variants: (item.varients || item.variants || []).map(v => ({...v})),
- foodType: item.foodType || prev.foodType,
- image: item.image || prev.image,
- images: item.image ? [item.image, ...(prev.images || []).slice(1)] : prev.images
- }));
- setIsMenuDropdownOpen(false);
- setMenuDropdownSearchText("");
- }}
- className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 transition-colors ${isSelected ? "bg-primary/10" : "hover:bg-surface-hover"}`}
- >
- <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center ${isSelected ? "bg-primary text-white" : "bg-primary/10 text-primary"}`}>
- {item.image ? (
- <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-lg" />
- ) : (
- <Utensils size={16} />
- )}
- </div>
- <div className="flex-1 min-w-0">
- <div className={`text-sm truncate ${isSelected ? "font-medium text-primary" : "text-foreground"}`}>
- {item.name}
- </div>
- </div>
- {isSelected && (
- <Check size={16} className="text-primary shrink-0" />
- )}
- </button>
- );
- })}
- {categoryMenuItems.filter(i => i.name.toLowerCase().includes(menuDropdownSearchText.toLowerCase())).length === 0 && (
- <div className="p-4 text-center text-sm text-muted">
- No matching menu items found
- </div>
- )}
- </>
- )}
- </div>
- </div>
- )}
- </div>
- </div>
-
- <div>
- <label className="text-xs font-medium text-muted mb-2 block">Menu Item Image</label>
- <div>
- {[0].map((index) => {
- const currentImages = editingMenuItem.images || (editingMenuItem.image ? [editingMenuItem.image] : []);
- const img = currentImages[index];
- return (
- <div
- key={index}
- className="border border-dashed border-primary/20 rounded-lg h-30 bg-primary/5 flex items-center justify-center relative overflow-visible group w-full"
- >
- {img ? (
- <>
- <div className="w-full h-full rounded-lg overflow-hidden relative">
- <img
- src={img}
- className="w-full h-full object-cover"
- />
- </div>
- <button
- type="button"
- onClick={(e) => {
- e.stopPropagation();
- setEditingMenuItem((prev) => {
- const newImages = [...(prev.images || (prev.image ? [prev.image] : []))];
- newImages[index] = null;
- return { ...prev, images: newImages, image: newImages.find(Boolean) || "" };
- });
- }}
- className="absolute -top-3 -right-3 w-8 h-8 bg-white text-danger rounded-full flex items-center justify-center shadow-md z-20 transition-all border border-border/10"
- >
- <Trash2 size={14} />
- </button>
- </>
- ) : (
- <div 
- onClick={() => document.getElementById(`menuItemImgUpload-${index}`)?.click()}
- className="w-full h-full flex flex-col items-center justify-center cursor-pointer hover:bg-primary/10 transition-colors rounded-lg"
- >
- <CloudUpload size={24} className="text-primary mb-1.5" />
- <p className="text-xs font-semibold text-primary">Click to upload</p>
- <p className="text-[10px] text-muted/70 mt-0.5">PNG, JPG or WEBP</p>
- <input
- id={`menuItemImgUpload-${index}`}
- type="file"
- className="hidden"
- accept="image/*"
- onChange={async (e) => {
- if (e.target.files?.[0]) {
- try {
- const base64 = await fileToBase64(e.target.files[0]);
- setEditingMenuItem((prev) => {
- const newImages = [...(prev.images || (prev.image ? [prev.image] : []))];
- newImages[index] = base64;
- return { ...prev, images: newImages, image: newImages.find(Boolean) || "" };
- });
- } catch (err) {
- console.error(err);
- }
- }
- }}
- />
- </div>
- )}
- </div>
- );
- })}
- </div>
- </div>
-
- 
- <div className="pt-2">
-    <div className="flex items-center justify-between mb-2">
-        <label className="text-xs font-medium text-muted block">Item Variants (e.g. Types, Sizes)</label>
-        <button
-            type="button"
-            onClick={() => {
-                setVariantForm({ name: "", price: "", image: editingMenuItem.image || "" });
-                setEditingVariantIndex(-1);
-                setIsVariantModalOpen(true);
-            }}
-            className="text-[10px] font-bold text-primary flex items-center bg-primary/10 px-2 py-1 rounded-md hover:bg-primary/20 transition-colors"
-        >
-            <Plus size={12} className="mr-1" /> Add Variant
-        </button>
-    </div>
-    
-    <div className="space-y-2">
-        {(editingMenuItem.variants || editingMenuItem.varients || []).length > 0 ? (
-            <div className="space-y-2 max-h-40 overflow-y-auto pr-2 scrollbar-thin">
-            {(editingMenuItem.variants || editingMenuItem.varients).map((variant, index) => (
-                <div key={index} className="flex items-center justify-between p-2 rounded-lg border border-border bg-background group hover:border-primary/30 transition-colors">
-                    <div className="flex items-center gap-3 cursor-pointer flex-1" onClick={() => {
-                        setVariantForm(variant);
-                        setEditingVariantIndex(index);
-                        setIsVariantModalOpen(true);
-                    }}>
-                        {variant.image ? (
-                            <div className="w-8 h-8 rounded-md overflow-hidden shrink-0 border border-border">
-                                <img src={variant.image} className="w-full h-full object-cover" />
-                            </div>
-                        ) : (
-                            <div className="w-8 h-8 rounded-md shrink-0 border border-border bg-surface flex items-center justify-center">
-                                <Utensils size={12} className="text-muted/50" />
-                            </div>
-                        )}
-                        <div>
-                            <p className="text-sm font-bold text-foreground">{variant.name}</p>
-                            <p className="text-xs font-semibold text-primary">₹{variant.price}</p>
-                        </div>
-                    </div>
+      <Modal
+        isOpen={!!editingMenuItem}
+        onClose={() => setEditingMenuItem(null)}
+        title={
+          <span className="text-lg font-bold text-foreground">
+            {editingMenuItem?.isNew ? "Add Menu Item" : "Edit Menu Item"}
+          </span>
+        }
+      >
+        {editingMenuItem && (
+          <div
+            className={`space-y-4 ${editingMenuItem?.isViewOnly ? "pointer-events-none opacity-90" : ""}`}
+          >
+            {/* Category */}
+            <div className="flex gap-4">
+              <div className="flex-1" ref={categoryDropdownRef}>
+                <label className="text-xs font-semibold text-muted mb-1.5 block uppercase tracking-wide">
+                  Category
+                </label>
+                {editingMenuItem.itemMode === "custom" ? (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={editingMenuItem.category || ""}
+                      onChange={(e) =>
+                        setEditingMenuItem((prev) => ({
+                          ...prev,
+                          category: e.target.value,
+                          categoryId: null,
+                        }))
+                      }
+                      placeholder="Enter custom category"
+                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                ) : (
+                  <div className="relative">
                     <button
-                        type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingMenuItem(prev => {
-                                const newV = [...(prev.variants || prev.varients || [])];
-                                newV.splice(index, 1);
-                                return { ...prev, variants: newV };
-                            });
-                        }}
-                        className="w-7 h-7 rounded-md bg-danger/10 text-danger flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      type="button"
+                      onClick={() =>
+                        setIsCategoryDropdownOpen(!isCategoryDropdownOpen)
+                      }
+                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20 text-sm"
+                      disabled={!editingMenuItem.isNew}
                     >
-                        <Trash2 size={12} />
+                      <span
+                        className={
+                          editingMenuItem.category
+                            ? "text-foreground font-medium truncate"
+                            : "text-muted/70 truncate"
+                        }
+                      >
+                        {editingMenuItem.category || "Select Category"}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className={`text-muted transition-transform duration-200 ${isCategoryDropdownOpen ? "rotate-180" : ""}`}
+                      />
                     </button>
-                </div>
-            ))}
+                    {isCategoryDropdownOpen && (
+                      <div className="absolute z-[100] top-full mt-1 w-full min-w-60 bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
+                        <div className="p-2 border-b border-border/50 shrink-0">
+                          <div className="relative">
+                            <Search
+                              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted"
+                              size={14}
+                            />
+                            <input
+                              type="text"
+                              placeholder="Search category..."
+                              value={categorySearchText}
+                              onChange={(e) =>
+                                setCategorySearchText(e.target.value)
+                              }
+                              className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors"
+                              autoFocus
+                            />
+                          </div>
+                        </div>
+                        <div className="max-h-48 overflow-y-auto scrollbar-thin p-1">
+                          {categories
+                            .filter(
+                              (c) =>
+                                c.name
+                                  .toLowerCase()
+                                  .includes(categorySearchText.toLowerCase()) &&
+                                c.type === "Product",
+                            )
+                            .map((cat) => {
+                              const isSelected =
+                                editingMenuItem.categoryId === cat.id;
+                              return (
+                                <button
+                                  key={cat.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingMenuItem((prev) => ({
+                                      ...prev,
+                                      category: cat.name,
+                                      categoryId: cat.id,
+                                      parentItemName: "",
+                                      parentItemId: null,
+                                      menuItemId: "",
+                                      name: "",
+                                      price: "",
+                                      variants: [],
+                                    }));
+                                    setIsCategoryDropdownOpen(false);
+                                    setCategorySearchText("");
+                                  }}
+                                  className={`w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 transition-colors ${isSelected ? "bg-primary/10" : "hover:bg-surface-hover"}`}
+                                >
+                                  <div className="flex-1 min-w-0">
+                                    <div
+                                      className={`text-sm truncate ${isSelected ? "font-semibold text-primary" : "font-medium text-foreground"}`}
+                                    >
+                                      {cat.name}
+                                    </div>
+                                  </div>
+                                  {isSelected && (
+                                    <Check
+                                      size={16}
+                                      className="text-primary shrink-0"
+                                    />
+                                  )}
+                                </button>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-        ) : (
-            <p className="text-xs text-muted italic mb-2">No variants added. Base price will be used.</p>
+
+            {/* Parent Item */}
+            <div className="flex gap-4">
+              <div className="flex-1" ref={parentDropdownRef}>
+                <label className="text-xs font-semibold text-muted mb-1.5 block uppercase tracking-wide">
+                  Parent Item
+                </label>
+                {editingMenuItem.itemMode === "custom" ? (
+                  <input
+                    type="text"
+                    value={editingMenuItem.parentItemName || ""}
+                    onChange={(e) =>
+                      setEditingMenuItem((prev) => ({
+                        ...prev,
+                        parentItemName: e.target.value,
+                        parentItemId: null,
+                      }))
+                    }
+                    placeholder="Enter custom parent item"
+                    className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20"
+                  />
+                ) : (
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setIsParentDropdownOpen(!isParentDropdownOpen)
+                      }
+                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20 text-sm"
+                      disabled={
+                        !editingMenuItem.categoryId || !editingMenuItem.isNew
+                      }
+                    >
+                      <span
+                        className={
+                          editingMenuItem.parentItemName
+                            ? "text-foreground font-medium truncate"
+                            : "text-muted/70 truncate"
+                        }
+                      >
+                        {editingMenuItem.parentItemName || "Select Parent Item"}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className={`text-muted transition-transform duration-200 ${isParentDropdownOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {isParentDropdownOpen && (
+                      <div className="absolute z-[100] top-full mt-1 w-full bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
+                        <div className="p-2 border-b border-border/50 shrink-0">
+                          <div className="relative">
+                            <Search
+                              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted"
+                              size={14}
+                            />
+                            <input
+                              type="text"
+                              placeholder="Search parent item..."
+                              value={parentSearchText}
+                              onChange={(e) =>
+                                setParentSearchText(e.target.value)
+                              }
+                              className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors"
+                              autoFocus
+                            />
+                          </div>
+                        </div>
+                        <div className="max-h-48 overflow-y-auto scrollbar-thin p-1">
+                          {categoryParentItems
+                            .filter((i) =>
+                              i.name
+                                .toLowerCase()
+                                .includes(parentSearchText.toLowerCase()),
+                            )
+                            .map((item) => {
+                              const isSelected =
+                                editingMenuItem.parentItemId === item.id;
+                              return (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingMenuItem((prev) => ({
+                                      ...prev,
+                                      parentItemName: item.name,
+                                      parentItemId: item.id,
+                                      menuItemId: "",
+                                      name: "",
+                                      price: "",
+                                      variants: [],
+                                    }));
+                                    setIsParentDropdownOpen(false);
+                                    setParentSearchText("");
+                                  }}
+                                  className={`w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 transition-colors ${isSelected ? "bg-primary/10" : "hover:bg-surface-hover"}`}
+                                >
+                                  <div className="flex-1 min-w-0">
+                                    <div
+                                      className={`text-sm truncate ${isSelected ? "font-semibold text-primary" : "font-medium text-foreground"}`}
+                                    >
+                                      {item.name}
+                                    </div>
+                                  </div>
+                                  {isSelected && (
+                                    <Check
+                                      size={16}
+                                      className="text-primary shrink-0"
+                                    />
+                                  )}
+                                </button>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Child Item (Catalog Only) */}
+            {editingMenuItem.itemMode === "catalog" && (
+              <div className="flex gap-4">
+                <div className="flex-1" ref={menuDropdownRef}>
+                  <label className="text-xs font-semibold text-muted mb-1.5 block uppercase tracking-wide">
+                    Item
+                  </label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsMenuDropdownOpen(!isMenuDropdownOpen)}
+                      className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg flex items-center justify-between outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20 text-sm"
+                      disabled={
+                        !editingMenuItem.parentItemId || !editingMenuItem.isNew
+                      }
+                    >
+                      <span
+                        className={
+                          editingMenuItem.menuItemId
+                            ? "text-foreground font-medium truncate"
+                            : "text-muted/70 truncate"
+                        }
+                      >
+                        {editingMenuItem.menuItemId &&
+                        parentChildItems.find(
+                          (i) => i.id === editingMenuItem.menuItemId,
+                        )
+                          ? parentChildItems.find(
+                              (i) => i.id === editingMenuItem.menuItemId,
+                            ).name
+                          : "Select Item"}
+                      </span>
+                      <ChevronDown
+                        size={16}
+                        className={`text-muted transition-transform duration-200 ${isMenuDropdownOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {isMenuDropdownOpen && (
+                      <div className="absolute z-[100] top-full mt-1 w-full bg-surface border border-primary/30 rounded-xl shadow-xl overflow-hidden flex flex-col">
+                        <div className="p-2 border-b border-border/50 shrink-0">
+                          <div className="relative">
+                            <Search
+                              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted"
+                              size={14}
+                            />
+                            <input
+                              type="text"
+                              placeholder="Search item..."
+                              value={menuDropdownSearchText}
+                              onChange={(e) =>
+                                setMenuDropdownSearchText(e.target.value)
+                              }
+                              className="w-full pl-8 pr-3 py-1.5 text-sm bg-surface-hover border focus:border-primary/30 rounded-lg outline-none text-foreground transition-colors"
+                              autoFocus
+                            />
+                          </div>
+                        </div>
+                        <div className="max-h-48 overflow-y-auto scrollbar-thin p-1">
+                          {parentChildItems
+                            .filter((i) =>
+                              i.name
+                                .toLowerCase()
+                                .includes(menuDropdownSearchText.toLowerCase()),
+                            )
+                            .map((item) => {
+                              const isSelected =
+                                editingMenuItem.menuItemId === item.id;
+                              return (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingMenuItem((prev) => ({
+                                      ...prev,
+                                      menuItemId: item.id,
+                                      name: item.name || prev.name,
+                                      price: prev.price,
+                                      variants: (
+                                        item.varients ||
+                                        item.variants ||
+                                        []
+                                      ).map((v) => ({ ...v })),
+                                      foodType: item.foodType || prev.foodType,
+                                      image: item.image || prev.image,
+                                      images: item.image
+                                        ? [item.image]
+                                        : prev.images || [],
+                                    }));
+                                    setIsMenuDropdownOpen(false);
+                                    setMenuDropdownSearchText("");
+                                  }}
+                                  className={`w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 transition-colors ${isSelected ? "bg-primary/10" : "hover:bg-surface-hover"}`}
+                                >
+                                  <div className="flex-1 min-w-0">
+                                    <div
+                                      className={`text-sm truncate ${isSelected ? "font-semibold text-primary" : "font-medium text-foreground"}`}
+                                    >
+                                      {item.name}
+                                    </div>
+                                  </div>
+                                  {isSelected && (
+                                    <Check
+                                      size={16}
+                                      className="text-primary shrink-0"
+                                    />
+                                  )}
+                                </button>
+                              );
+                            })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Item Name & Price */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="text-xs font-semibold text-muted mb-1.5 block uppercase tracking-wide">
+                  Item Name
+                </label>
+                <input
+                  type="text"
+                  value={editingMenuItem.name || ""}
+                  onChange={(e) =>
+                    setEditingMenuItem((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter item name"
+                  disabled={
+                    editingMenuItem.itemMode === "catalog" &&
+                    !editingMenuItem.menuItemId
+                  }
+                  className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+                />
+              </div>
+              <div className="w-32 shrink-0">
+                <label className="text-xs font-semibold text-muted mb-1.5 block uppercase tracking-wide">
+                  Price (₹)
+                </label>
+                <input
+                  type="number"
+                  value={editingMenuItem.price || ""}
+                  onChange={(e) =>
+                    setEditingMenuItem((prev) => ({
+                      ...prev,
+                      price: e.target.value,
+                    }))
+                  }
+                  placeholder="0.00"
+                  className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none focus:border-primary/50 transition-all focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+            </div>
+
+            {/* Single Item Image Full Cover */}
+            <div>
+              <label className="text-xs font-semibold text-muted mb-1.5 block uppercase tracking-wide">
+                Item Image
+              </label>
+              {editingMenuItem?.image ||
+              (editingMenuItem?.images && editingMenuItem.images[0]) ? (
+                <div className="w-full h-40 rounded-lg border border-primary/30 bg-surface relative overflow-hidden group">
+                  <img
+                    src={getImageUrl(
+                      editingMenuItem.image || editingMenuItem.images[0],
+                    )}
+                    alt="Menu Item"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-6 backdrop-blur-[2px]">
+                    <label
+                      className="flex flex-col items-center gap-1.5 cursor-pointer text-white/90 hover:text-white transition-colors"
+                      title="Change Image"
+                    >
+                      <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20 hover:scale-105 transition-transform">
+                        <Pencil size={18} />
+                      </div>
+                      <span className="text-xs font-semibold tracking-wide">
+                        Change
+                      </span>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          if (e.target.files?.[0]) {
+                            try {
+                              const base64 = await fileToBase64(
+                                e.target.files[0],
+                              );
+                              setEditingMenuItem((prev) => ({
+                                ...prev,
+                                image: base64,
+                                images: [base64],
+                              }));
+                            } catch (err) {
+                              console.error(err);
+                            }
+                          }
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingMenuItem((prev) => ({
+                          ...prev,
+                          image: null,
+                          images: [],
+                        }));
+                      }}
+                      className="flex flex-col items-center gap-1.5 text-danger/90 hover:text-danger transition-colors"
+                      title="Remove Image"
+                    >
+                      <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20 hover:scale-105 transition-transform">
+                        <Trash2 size={18} />
+                      </div>
+                      <span className="text-xs font-semibold tracking-wide">
+                        Remove
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <label className="w-full h-32 rounded-lg border border-primary/30 bg-surface flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-all group">
+                  <Camera
+                    size={24}
+                    className="text-muted group-hover:text-primary transition-colors mb-2"
+                  />
+                  <span className="text-sm font-medium text-foreground mb-1">
+                    Click to upload image
+                  </span>
+                  <span className="text-xs text-muted">
+                    PNG, JPG, up to 2MB
+                  </span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      if (e.target.files?.[0]) {
+                        try {
+                          const base64 = await fileToBase64(e.target.files[0]);
+                          setEditingMenuItem((prev) => ({
+                            ...prev,
+                            image: base64,
+                            images: [base64],
+                          }));
+                        } catch (err) {
+                          console.error(err);
+                        }
+                      }
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* Variants */}
+            <div className="pt-2">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-semibold text-muted block uppercase tracking-wide">
+                  Item Variants
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVariantForm({ name: "", price: "", image: null });
+                    setEditingVariantIndex(-1);
+                    setIsVariantModalOpen(true);
+                  }}
+                  className="text-xs font-bold text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
+                >
+                  <Plus size={14} />
+                  Add Variant
+                </button>
+              </div>
+              <div className="space-y-2">
+                {(editingMenuItem.variants || []).length > 0 ? (
+                  <div className="space-y-2 max-h-40 overflow-y-auto pr-2 scrollbar-thin">
+                    {(editingMenuItem.variants || []).map((variant, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-2 rounded-lg border border-primary/30 bg-background group hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer"
+                        onClick={() => {
+                          setEditingVariantIndex(index);
+                          setVariantForm(variant);
+                          setIsVariantModalOpen(true);
+                        }}
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          {variant.image ? (
+                            <img
+                              src={getImageUrl(variant.image)}
+                              alt={variant.name}
+                              className="w-10 h-10 rounded-md object-cover border border-primary/30 shadow-sm"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-md bg-surface border border-primary/30 flex items-center justify-center shadow-sm">
+                              <Camera size={14} className="text-muted/50" />
+                            </div>
+                          )}
+                          <div>
+                            <div className="text-sm font-semibold text-foreground">
+                              {variant.name}
+                            </div>
+                            <div className="text-xs text-primary font-bold">
+                              ₹{variant.price}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingMenuItem((prev) => {
+                              const newV = [...(prev.variants || [])];
+                              newV.splice(index, 1);
+                              return { ...prev, variants: newV };
+                            });
+                          }}
+                          className="w-8 h-8 rounded-full bg-danger/10 text-danger flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-danger hover:text-white transition-all shadow-sm"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-lg border border-dashed border-border bg-surface-hover flex items-center justify-center">
+                    <p className="text-xs text-muted/70 font-medium">
+                      No variants added. Base price will be used.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Food Type */}
+            <div className="pt-2">
+              <label className="text-xs font-semibold text-muted mb-2 block uppercase tracking-wide">
+                Food Type
+              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditingMenuItem((prev) => ({ ...prev, foodType: "Veg" }))
+                  }
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-semibold transition-all ${editingMenuItem.foodType === "Veg" ? "border-success bg-success/10 text-success ring-1 ring-success/30" : "border-primary/30 text-foreground hover:bg-surface"}`}
+                >
+                  <span className="w-2.5 h-2.5 rounded-full bg-success"></span>{" "}
+                  Veg
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditingMenuItem((prev) => ({
+                      ...prev,
+                      foodType: "Non-Veg",
+                    }))
+                  }
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-semibold transition-all ${editingMenuItem.foodType === "Non-Veg" ? "border-danger bg-danger/10 text-danger ring-1 ring-danger/30" : "border-primary/30 text-foreground hover:bg-surface"}`}
+                >
+                  <span className="w-2.5 h-2.5 rounded-full bg-danger"></span>{" "}
+                  Non-Veg
+                </button>
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
+              <span className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                Status
+              </span>
+              <CustomToggle
+                checked={editingMenuItem.status}
+                onChange={(v) =>
+                  setEditingMenuItem((prev) => ({ ...prev, status: v }))
+                }
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border">
+              <button
+                type="button"
+                className="px-5 py-2.5 rounded-lg text-sm font-semibold text-foreground bg-surface border border-primary/30 hover:bg-surface-hover transition-colors shadow-sm"
+                onClick={() => setEditingMenuItem(null)}
+              >
+                Cancel
+              </button>
+              {!editingMenuItem?.isViewOnly && (
+                <button
+                  type="button"
+                  className="px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-primary hover:bg-primary/90 transition-colors shadow-md hover:shadow-lg"
+                  onClick={handleSaveMenuItem}
+                >
+                  {editingMenuItem.isNew ? "Add Item" : "Update Item"}
+                </button>
+              )}
+            </div>
+          </div>
         )}
-    </div>
- </div>
-
-<div className="pt-2">
- <label className="text-xs font-medium text-muted mb-2 block">Food Type</label>
- <div className="flex items-center gap-3">
- <button
- type="button"
- onClick={() => setEditingMenuItem(prev => ({ ...prev, foodType: 'Veg' }))}
- className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${editingMenuItem.foodType === 'Veg' ? 'border-success bg-success/10 text-success' : 'border-border text-foreground hover:bg-surface'}`}
- >
- <span className="w-2.5 h-2.5 rounded-full bg-success"></span>
- Veg
- </button>
- <button
- type="button"
- onClick={() => setEditingMenuItem(prev => ({ ...prev, foodType: 'Non-Veg' }))}
- className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${editingMenuItem.foodType === 'Non-Veg' ? 'border-danger bg-danger/10 text-danger' : 'border-border text-foreground hover:bg-surface'}`}
- >
- <span className="w-2.5 h-2.5 rounded-full bg-danger"></span>
- Non-Veg
- </button>
- </div>
- </div>
-
- <div className="flex items-center justify-between pt-2">
- <span className="text-sm font-medium text-foreground">Status</span>
- <CustomToggle
- checked={editingMenuItem.status}
- onChange={(v) => setEditingMenuItem(prev => ({ ...prev, status: v }))}
- />
- </div>
-
- <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border">
-    <Button type="button" variant="secondary" onClick={() => setEditingMenuItem(null)}>
-      Cancel
-            </Button>
-    {!editingMenuItem?.isViewOnly && (
-      <button type="button" className="px-5 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors font-medium text-sm" onClick={handleSaveMenuItem}>
-        {editingMenuItem.isNew ? "Add Item" : "Update Item"}
-      </button>
-    )}
-  </div>
- </div>
- )}
- </Modal>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
       <Modal
@@ -1695,7 +2124,9 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
             ?
           </p>
           <div className="mt-8 flex justify-end gap-3">
-            <Button type="button" variant="secondary"
+            <Button
+              type="button"
+              variant="secondary"
               onClick={() => setItemToDelete(null)}
             >
               Cancel
@@ -1733,7 +2164,7 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
           </Button>
         </div>
       </Modal>
-    
+
       {/* Add/Edit Variant Modal */}
       <Modal
         isOpen={isVariantModalOpen}
@@ -1744,26 +2175,36 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
         <form onSubmit={handleSaveVariant} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-medium text-muted mb-1 block">Variant Name</label>
+              <label className="text-xs font-medium text-muted mb-1 block">
+                Variant Name
+              </label>
               <Input
                 value={variantForm.name}
-                onChange={(e) => setVariantForm({ ...variantForm, name: e.target.value })}
+                onChange={(e) =>
+                  setVariantForm({ ...variantForm, name: e.target.value })
+                }
                 placeholder="e.g. Half, Full"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted mb-1 block">Price (₹)</label>
+              <label className="text-xs font-medium text-muted mb-1 block">
+                Price (₹)
+              </label>
               <Input
                 type="number"
                 value={variantForm.price}
-                onChange={(e) => setVariantForm({ ...variantForm, price: e.target.value })}
+                onChange={(e) =>
+                  setVariantForm({ ...variantForm, price: e.target.value })
+                }
                 placeholder="0.00"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-medium text-muted mb-2 block">Variant Image (Optional)</label>
+            <label className="text-xs font-medium text-muted mb-2 block">
+              Variant Image (Optional)
+            </label>
             <div className="flex items-center gap-4">
               <input
                 type="file"
@@ -1779,7 +2220,7 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
                     alt="Variant preview"
                     className="w-full h-full object-cover"
                   />
-                  <div 
+                  <div
                     className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
                     onClick={() => variantFileInputRef.current?.click()}
                   >
@@ -1788,13 +2229,15 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
                   <button
                     type="button"
                     className="absolute -top-2 -right-2 w-6 h-6 bg-danger text-white rounded-full flex items-center justify-center"
-                    onClick={() => setVariantForm({ ...variantForm, image: null })}
+                    onClick={() =>
+                      setVariantForm({ ...variantForm, image: null })
+                    }
                   >
                     <X size={12} />
                   </button>
                 </div>
               ) : (
-                <div 
+                <div
                   className="w-20 h-20 rounded-lg border border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-surface-hover hover:border-primary/40 transition-colors"
                   onClick={() => variantFileInputRef.current?.click()}
                 >
@@ -1806,7 +2249,9 @@ const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-border mt-6">
-            <Button type="button" variant="secondary"
+            <Button
+              type="button"
+              variant="secondary"
               onClick={() => setIsVariantModalOpen(false)}
             >
               Cancel
