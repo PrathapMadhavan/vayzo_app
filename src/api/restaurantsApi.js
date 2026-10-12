@@ -35,3 +35,14 @@ export async function deleteRestaurant(id) {
  await apiRequest(`${ENDPOINT}/${id}`, { method: "DELETE" }, "Unable to delete restaurant");
  return true;
 }
+
+export async function getRestaurantCategories(restaurantId) {
+  return apiRequest(`/restaurant_categories?restaurant_id=${restaurantId}`, {}, "Unable to load restaurant categories");
+}
+
+export async function createRestaurantCategory(data) {
+  return apiRequest(`/restaurant_categories`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  }, "Unable to create restaurant category");
+}

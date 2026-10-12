@@ -40,11 +40,13 @@ import {
   updateRestaurant,
   deleteRestaurant,
   updateRestaurantStatus,
+  getRestaurantCategories,
+  createRestaurantCategory
 } from "../api/restaurantsApi";
 import { getCategories } from "../api/categoriesApi";
 import { getParentItemsByCategory } from "../api/parentItemsApi";
 import { getChildItemsByParentItem } from "../api/childItemsApi";
-import { getProductById } from "../api/productsApi";
+import { getProductById, getProducts, addProduct } from "../api/productsApi";
 import { fileToBase64 } from "../utils/fileUtils";
 
 function CustomToggle({ checked, onChange }) {
@@ -192,6 +194,10 @@ function RestaurantsDetails() {
   const [menuSearch, setMenuSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [editingMenuItem, setEditingMenuItem] = useState(null);
+  const [customCategories, setCustomCategories] = useState([]);
+  const [customParentItems, setCustomParentItems] = useState([]);
+  const [isCustomCategoryDropdownOpen, setIsCustomCategoryDropdownOpen] = useState(false);
+  const [isCustomParentDropdownOpen, setIsCustomParentDropdownOpen] = useState(false);
 
   const [isVariantModalOpen, setIsVariantModalOpen] = useState(false);
   const [editingVariantIndex, setEditingVariantIndex] = useState(-1);
@@ -304,6 +310,19 @@ function RestaurantsDetails() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (editingMenuItem && editingMenuItem.itemMode === "custom") {
+      getRestaurantCategories(restaurantId)
+        .then(res => setCustomCategories(res || []))
+        .catch(console.error);
+      getProducts({ restaurant_id: restaurantId, parentItemId_like: "" })
+        .then(res => {
+          setCustomParentItems((res || []).filter(r => !r.parentItemId));
+        })
+        .catch(console.error);
+    }
+  }, [editingMenuItem?.itemMode, restaurantId]);
 
   useEffect(() => {
     let isMounted = true;
@@ -422,21 +441,51 @@ function RestaurantsDetails() {
       return;
     }
     try {
+      let finalCategoryId = editingMenuItem.categoryId;
+      let finalParentItemId = editingMenuItem.parentItemId;
+      
+      if (editingMenuItem.itemMode === "custom") {
+        if (!finalCategoryId && editingMenuItem.category) {
+          const newCat = await createRestaurantCategory({
+            restaurant_id: restaurant.id,
+            name: editingMenuItem.category,
+            status: "Active"
+          });
+          finalCategoryId = newCat.id;
+        }
+        if (!finalParentItemId && editingMenuItem.parentItemName) {
+          const newParent = await addProduct({
+            restaurant_id: restaurant.id,
+            category_id: finalCategoryId,
+            name: editingMenuItem.parentItemName,
+            status: "Active"
+          });
+          finalParentItemId = newParent.id;
+        }
+      }
+
       const updatedRestaurant = { ...restaurant };
       updatedRestaurant.menuItems = updatedRestaurant.menuItems || [];
-      if (editingMenuItem.isNew) {
-        const newItem = { ...editingMenuItem };
-        delete newItem.isNew;
-        updatedRestaurant.menuItems.push(newItem);
+      
+      const itemToSave = {
+        ...editingMenuItem,
+        categoryId: finalCategoryId,
+        parentItemId: finalParentItemId,
+      };
+      
+      if (itemToSave.isNew) {
+        delete itemToSave.isNew;
+        updatedRestaurant.menuItems.push(itemToSave);
       } else {
         updatedRestaurant.menuItems = updatedRestaurant.menuItems.map((item) =>
-          item.id === editingMenuItem.id ? editingMenuItem : item,
+          item.id === itemToSave.id ? itemToSave : item,
         );
       }
       await updateRestaurant(restaurant.id, updatedRestaurant);
       setRestaurant(updatedRestaurant);
       setEditingMenuItem(null);
     } catch (err) {
+      console.error(err);
       alert("Failed to save menu item");
     }
   };
@@ -1299,9 +1348,38 @@ function RestaurantsDetails() {
                           categoryId: null,
                         }))
                       }
+                      onFocus={() => setIsCustomCategoryDropdownOpen(true)}
+                      onBlur={() => setTimeout(() => setIsCustomCategoryDropdownOpen(false), 200)}
                       placeholder="Enter custom category"
-                      className="w-full bg-surface border border-primary/50 px-3 py-2.5 rounded-lg text-sm outline-none transition-all "
+                      className="w-full bg-surface border border-primary/30 pl-3 pr-8 py-2.5 rounded-lg text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20"
                     />
+                    <ChevronDown
+                      size={16}
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 text-muted transition-transform duration-200 pointer-events-none ${isCustomCategoryDropdownOpen ? "rotate-180" : ""}`}
+                    />
+                    {isCustomCategoryDropdownOpen && customCategories.length > 0 && (
+                      <div className="absolute z-100 top-full mt-1 w-full max-h-48 overflow-y-auto bg-surface border border-primary/30 rounded-xl shadow-xl p-1">
+                        {customCategories
+                          .filter(c => c.name.toLowerCase().includes((editingMenuItem.category || "").toLowerCase()))
+                          .map(cat => (
+                            <button
+                              key={cat.id}
+                              type="button"
+                              onClick={() => {
+                                setEditingMenuItem(prev => ({
+                                  ...prev,
+                                  category: cat.name,
+                                  categoryId: cat.id,
+                                }));
+                                setIsCustomCategoryDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-surface-hover"
+                            >
+                              {cat.name}
+                            </button>
+                          ))}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="relative">
@@ -1411,19 +1489,50 @@ function RestaurantsDetails() {
                   Parent Item
                 </label>
                 {editingMenuItem.itemMode === "custom" ? (
-                  <input
-                    type="text"
-                    value={editingMenuItem.parentItemName || ""}
-                    onChange={(e) =>
-                      setEditingMenuItem((prev) => ({
-                        ...prev,
-                        parentItemName: e.target.value,
-                        parentItemId: null,
-                      }))
-                    }
-                    placeholder="Enter custom parent item"
-                    className="w-full bg-surface border border-primary/30 px-3 py-2.5 rounded-lg text-sm outline-none transition-all "
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={editingMenuItem.parentItemName || ""}
+                      onChange={(e) =>
+                        setEditingMenuItem((prev) => ({
+                          ...prev,
+                          parentItemName: e.target.value,
+                          parentItemId: null,
+                        }))
+                      }
+                      onFocus={() => setIsCustomParentDropdownOpen(true)}
+                      onBlur={() => setTimeout(() => setIsCustomParentDropdownOpen(false), 200)}
+                      placeholder="Enter custom parent item"
+                      className="w-full bg-surface border border-primary/30 pl-3 pr-8 py-2.5 rounded-lg text-sm outline-none transition-all focus:ring-2 focus:ring-primary/20"
+                    />
+                    <ChevronDown
+                      size={16}
+                      className={`absolute right-3 top-1/2 -translate-y-1/2 text-muted transition-transform duration-200 pointer-events-none ${isCustomParentDropdownOpen ? "rotate-180" : ""}`}
+                    />
+                    {isCustomParentDropdownOpen && customParentItems.length > 0 && (
+                      <div className="absolute z-100 top-full mt-1 w-full max-h-48 overflow-y-auto bg-surface border border-primary/30 rounded-xl shadow-xl p-1">
+                        {customParentItems
+                          .filter(p => (!editingMenuItem.categoryId || p.category_id === editingMenuItem.categoryId) && p.name.toLowerCase().includes((editingMenuItem.parentItemName || "").toLowerCase()))
+                          .map(parent => (
+                            <button
+                              key={parent.id}
+                              type="button"
+                              onClick={() => {
+                                setEditingMenuItem(prev => ({
+                                  ...prev,
+                                  parentItemName: parent.name,
+                                  parentItemId: parent.id,
+                                }));
+                                setIsCustomParentDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-surface-hover"
+                            >
+                              {parent.name}
+                            </button>
+                          ))}
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <div className="relative">
                     <button
