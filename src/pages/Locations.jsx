@@ -27,6 +27,9 @@ import Modal from "../components/ui/Modal";
 import ActionMenu from "../components/ui/ActionMenu";
 import FilterPanel from "../components/ui/FilterPanel";
 import MockMap from "../components/ui/MockMap";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import EmptyState from "../components/ui/EmptyState";
 
 import { getLocations, deleteLocation } from "../api/locationsApi";
 import { exportToCSV } from "../utils/exportUtils";
@@ -66,23 +69,21 @@ export default function Locations() {
  const [currentPage, setCurrentPage] = useState(1);
  const itemsPerPage = 10;
 
- useEffect(() => {
- let mounted = true;
- const fetchLocations = async () => {
+ const loadLocations = async () => {
  try {
  setLoading(true);
+ setError("");
  const data = await getLocations();
- if (mounted) setLocations(data);
+ setLocations(data);
  } catch (err) {
- if (mounted) setError("Failed to load locations");
+ setError(err);
  } finally {
- if (mounted) setLoading(false);
+ setLoading(false);
  }
  };
- fetchLocations();
- return () => {
- mounted = false;
- };
+
+ useEffect(() => {
+ loadLocations();
  }, []);
 
  const filteredLocations = useMemo(() => {
@@ -250,9 +251,7 @@ export default function Locations() {
  <div className="flex flex-col gap-6 flex-1 w-full lg:w-3/5 xl:w-2/3">
  <Card noPadding className="w-full overflow-hidden flex flex-col">
  {error ? (
- <div className="p-8 text-center text-sm font-medium text-danger">
- {error}
- </div>
+ <ErrorState onRetry={loadLocations} />
  ) : (
  <Table
  headers={[
@@ -274,8 +273,8 @@ export default function Locations() {
  >
  {loading ? (
  <tr>
- <td colSpan={7} className="p-10 text-center text-sm text-muted">
- Loading locations...
+ <td colSpan={7}>
+ <LoadingState message="Loading locations..." />
  </td>
  </tr>
  ) : paginatedLocations.length > 0 ? (
@@ -353,11 +352,11 @@ export default function Locations() {
  );
  })
  ) : (
- <tr>
- <td colSpan={7} className="p-10 text-center text-sm text-muted">
- No locations found.
- </td>
- </tr>
+ <EmptyState
+ colSpan={7}
+ message="No locations found."
+ description={hasFilters ? "Try adjusting your search query or filter options." : undefined}
+ />
  )}
  </Table>
  )}
@@ -365,7 +364,7 @@ export default function Locations() {
  </div>
 
  {/* 6. Right-side map/location panel */}
- <Card className="flex flex-col h-[500px] lg:h-[calc(100vh-200px)] w-full lg:w-2/5 xl:w-1/3 shrink-0 p-0 overflow-hidden lg:sticky lg:top-24">
+ <Card className="flex flex-col h-125 lg:h-[calc(100vh-200px)] w-full lg:w-2/5 xl:w-1/3 shrink-0 p-0 overflow-hidden lg:sticky lg:top-24">
  <div className="p-5 border-b border-border flex justify-between items-center bg-surface shrink-0">
  <h3 className="font-bold text-foreground">Location Map</h3>
  <div className="flex gap-2">

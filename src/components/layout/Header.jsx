@@ -137,11 +137,23 @@
  const [isProfileOpen, setIsProfileOpen] = useState(false);
  const { unreadCount, messageCount } = useNotifications();
 
+ const [user, setUser] = useState(() => {
  const storedUser = localStorage.getItem("vayzo_admin_user");
+ return storedUser ? JSON.parse(storedUser) : null;
+ });
 
- const user = storedUser
- ? JSON.parse(storedUser)
- : null;
+ useEffect(() => {
+ const syncUser = () => {
+ const stored = localStorage.getItem("vayzo_admin_user");
+ if (stored) setUser(JSON.parse(stored));
+ };
+ window.addEventListener("vayzo_admin_user_updated", syncUser);
+ window.addEventListener("storage", syncUser);
+ return () => {
+ window.removeEventListener("vayzo_admin_user_updated", syncUser);
+ window.removeEventListener("storage", syncUser);
+ };
+ }, []);
 
  if (!user) {
  return (

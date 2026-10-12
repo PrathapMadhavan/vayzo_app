@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { Download, RefreshCw, Eye, Calendar, Laptop, Info, Edit, Trash2 } from "lucide-react";
+import { Download, Eye, Calendar, Laptop, Info, Trash2 } from "lucide-react";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
-import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
 import DateRangeInput from "../components/ui/DateRangeInput";
 import Table from "../components/ui/Table";
@@ -11,6 +10,9 @@ import ActionMenu from "../components/ui/ActionMenu";
 import FilterPanel from "../components/ui/FilterPanel";
 import SearchInput from "../components/ui/SearchInput";
 import Card from "../components/ui/Card";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import EmptyState from "../components/ui/EmptyState";
 import { getActivityLogs, deleteActivityLog } from "../api/activityLogsApi";
 import { exportToCSV } from "../utils/exportUtils";
 
@@ -52,7 +54,7 @@ function ActivityLogs() {
  setLogsData(data);
  setCurrentPage(1); // Reset to page 1 when filtering
  } catch (err) {
- setError(err.message || "Failed to load activity logs");
+ setError(err.message || "Unable to connect to the server. Please check your connection or server status.");
  } finally {
  setIsLoading(false);
  }
@@ -74,11 +76,13 @@ function ActivityLogs() {
  };
 
  const handleExport = () => {
- setIsExporting(true);
- setTimeout(() => {
- setIsExporting(false);
- alert("Activity logs exported successfully.");
- }, 1500);
+  if (!logsData || logsData.length === 0) return;
+  setIsExporting(true);
+  try {
+    exportToCSV(logsData, "activity_logs.csv");
+  } finally {
+    setIsExporting(false);
+  }
  };
 
  const handleViewDetails = (log) => {
@@ -86,9 +90,6 @@ function ActivityLogs() {
  setIsModalOpen(true);
  };
 
- const handleEdit = (log) => {
- alert(`Editing activity log ${log.id}`);
- };
 
  const handleDelete = async (log) => {
  if (window.confirm(`Are you sure you want to delete this activity log?`)) {
@@ -183,7 +184,7 @@ function ActivityLogs() {
  size="sm"
  type="button"
  className="h-10 w-full sm:w-auto"
- onClick={() => exportToCSV(logsData, "activity_logs.csv")}
+ onClick={handleExport}
  disabled={isExporting}
  >
  <Download size={14} className="mr-1" /> Export
@@ -195,7 +196,7 @@ function ActivityLogs() {
  id="activity-action"
  value={action}
  onChange={(e) => setAction(e.target.value)}
- className="w-full sm:w-[160px]"
+ className="w-full sm:w-40"
  >
  <option value="All Actions">All Actions</option>
  <option value="LOGIN">LOGIN</option>
@@ -209,7 +210,7 @@ function ActivityLogs() {
  id="activity-module"
  value={module}
  onChange={(e) => setModule(e.target.value)}
- className="w-full sm:w-[160px]"
+ className="w-full sm:w-40"
  >
  <option value="All Modules">All Modules</option>
  <option value="System">System</option>
@@ -239,19 +240,11 @@ function ActivityLogs() {
  />
 
  {/* Loading / Error States */}
- {isLoading ? (
- <div className="flex h-64 items-center justify-center bg-surface">
- <div className="flex flex-col items-center gap-3">
- <RefreshCw className="h-8 w-8 animate-spin text-primary" />
- <p className="text-sm font-medium text-muted">Loading activity logs...</p>
- </div>
- </div>
- ) : error ? (
- <div className="flex h-64 flex-col items-center justify-center gap-3 bg-surface text-center">
- <p className="text-sm text-danger font-medium">{error}</p>
- <Button onClick={fetchLogsData} variant="secondary" size="sm">Try Again</Button>
- </div>
- ) : (
+        {isLoading ? (
+          <LoadingState message="Loading activity logs..." />
+        ) : error ? (
+          <ErrorState message={error} onRetry={fetchLogsData} />
+        ) : (
  /* Table Section */
  <div className="flex-1 w-full flex flex-col min-h-0 overflow-hidden border-t border-border">
  <Table
@@ -265,11 +258,7 @@ function ActivityLogs() {
  className="border-0 shadow-none rounded-none border-t-0"
  >
  {logsData.length === 0 ? (
- <tr>
- <td colSpan={8} className="p-8 text-center text-sm text-muted">
- No activity logs found matching your filters.
- </td>
- </tr>
+              <EmptyState colSpan={tableHeaders.length} message={query || action !== "All Actions" || module !== "All Modules" || dateRange[0] || dateRange[1] ? "No activity logs found matching your filters." : "No activity logs found."} />
  ) : (
  currentData.map((log) => (
  <tr 
@@ -289,7 +278,7 @@ function ActivityLogs() {
  {log.module}
  </Badge>
  </td>
- <td className="px-4 py-4 text-muted min-w-[250px] truncate max-w-xs" title={log.details}>
+ <td className="px-4 py-4 text-muted min-w-62.5 truncate max-w-xs" title={log.details}>
  {log.details}
  </td>
  <td className="px-4 py-4 text-muted whitespace-nowrap font-mono text-xs">{log.ipAddress}</td>
@@ -301,8 +290,7 @@ function ActivityLogs() {
  <td className="px-4 py-4 whitespace-nowrap text-center sm:text-left">
  <ActionMenu
  actions={[
- { label: "View", icon: Eye, onClick: () => handleViewDetails(log) },
- { label: "Edit", icon: Edit, onClick: () => handleEdit(log) },
+ { label: "View Details", icon: Eye, onClick: () => handleViewDetails(log) },
  { label: "Delete", icon: Trash2, danger: true, onClick: () => handleDelete(log) }
  ]}
  />
@@ -344,13 +332,19 @@ function ActivityLogs() {
  <p className="font-medium text-foreground">{formatDate(selectedLog.timestamp)}</p>
  </div>
  <div>
- <p className="text-xs text-muted mb-1">Admin/User</p>
- <p className="font-medium text-foreground">{selectedLog.user}</p>
+ <p className="text-xs text-muted mb-1">Admin User</p>
+ <p className="font-medium text-foreground">{selectedLog.user}{selectedLog.adminId ? ` (${selectedLog.adminId})` : ""}</p>
  </div>
  <div>
  <p className="text-xs text-muted mb-1 flex items-center gap-1.5"><Laptop size={12} /> IP Address</p>
- <p className="font-mono text-foreground text-xs pt-0.5">{selectedLog.ipAddress}</p>
+ <p className="font-mono text-foreground text-xs pt-0.5">{selectedLog.ipAddress || "127.0.0.1"}</p>
  </div>
+ {selectedLog.targetId && (
+ <div className="col-span-2">
+ <p className="text-xs text-muted mb-1">Target Record ID</p>
+ <p className="font-mono text-foreground text-xs">{selectedLog.targetId}</p>
+ </div>
+ )}
  </div>
 
  <div className="pt-2">

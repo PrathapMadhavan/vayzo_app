@@ -182,8 +182,8 @@ function App() {
  <Route path=":restaurantId" element={<RestaurantsDetails />} />
  </Route>
 
- {/* Admin Customers */}
- <Route path="/admin-Customers" element={<Outlet />}>
+ {/* Admin Users */}
+ <Route path="/admin-users" element={<Outlet />}>
  <Route index element={<AdminUsers />} />
  <Route path="add" element={<AddAdminUser />} />
  <Route path="edit/:userId" element={<AddAdminUser />} />

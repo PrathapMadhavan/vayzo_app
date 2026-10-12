@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
+import LoadingState from "../../components/ui/LoadingState";
 import { getPaymentSettings, savePaymentSettings } from "../../api/settingsApi";
 import { Eye, Edit, GripVertical, CheckCircle2, Circle, ArrowRight, Smartphone, Building2, Banknote, HelpCircle, Receipt, RefreshCcw, HandCoins, Save, Check } from "lucide-react";
 
@@ -88,7 +89,7 @@ function PaymentSettings() {
 
  const tabs = ["Payment Gateways", "UPI Settings", "Wallet Settings", "Refund Settings", "Other Settings"];
 
- if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+ if (loading) return <LoadingState message="Loading payment settings..." />;
 
  return (
  <section>
@@ -158,7 +159,7 @@ function PaymentSettings() {
  type="text"
  value={gateways.razorpay.keyId}
  onChange={(e) => handleGatewayChange("razorpay", "keyId", e.target.value)}
- className="mt-1 flex items-center rounded-lg border border-border bg-surface px-3 py-1.5 w-48 text-xs outline-none focus:border-primary"
+ className="mt-1 flex items-center rounded-lg border border-border bg-surface px-3 py-1.5 w-48 text-xs outline-none focus:ring-1 focus:ring-primary"
  placeholder="rzp_test_..."
  />
  </div>
@@ -168,7 +169,7 @@ function PaymentSettings() {
  type="password"
  value={gateways.razorpay.keySecret}
  onChange={(e) => handleGatewayChange("razorpay", "keySecret", e.target.value)}
- className="mt-1 flex items-center rounded-lg border border-border bg-surface px-3 py-1.5 w-48 text-xs outline-none focus:border-primary"
+ className="mt-1 flex items-center rounded-lg border border-border bg-surface px-3 py-1.5 w-48 text-xs outline-none focus:ring-1 focus:ring-primary"
  placeholder="secret_..."
  />
  </div>
@@ -178,7 +179,7 @@ function PaymentSettings() {
 
  <div className="flex flex-col items-end gap-6 justify-between h-full">
  <button type="button" onClick={() => toggleGateway("razorpay")} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${gateways.razorpay.enabled ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.razorpay.enabled ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.razorpay.enabled ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  <Button type="button" variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary-light whitespace-nowrap">
  Edit Settings
@@ -225,7 +226,7 @@ function PaymentSettings() {
 
  <div className="flex flex-col items-end gap-6 justify-between h-full">
  <button type="button" onClick={() => toggleGateway("stripe")} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${gateways.stripe.enabled ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.stripe.enabled ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.stripe.enabled ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  <Button type="button" variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary-light whitespace-nowrap">
  Edit Settings
@@ -272,7 +273,7 @@ function PaymentSettings() {
 
  <div className="flex flex-col items-end gap-6 justify-between h-full">
  <button type="button" onClick={() => toggleGateway("paypal")} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${gateways.paypal.enabled ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.paypal.enabled ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.paypal.enabled ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  <Button type="button" variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary-light whitespace-nowrap">
  Edit Settings
@@ -299,7 +300,7 @@ function PaymentSettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleGateway("cod")} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${gateways.cod.enabled ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.cod.enabled ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.cod.enabled ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
  </div>
@@ -323,7 +324,7 @@ function PaymentSettings() {
  </div>
  <div className="flex items-center gap-6">
  <button type="button" onClick={() => toggleGateway("razorpayUpi")} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${gateways.razorpayUpi.enabled ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.razorpayUpi.enabled ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${gateways.razorpayUpi.enabled ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  <Button type="button" variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary-light whitespace-nowrap">
  Edit Settings

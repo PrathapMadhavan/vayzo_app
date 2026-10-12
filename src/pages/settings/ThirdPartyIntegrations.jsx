@@ -22,6 +22,7 @@ import {
  ChevronDown
 } from "lucide-react";
 import Button from "../../components/ui/Button";
+import LoadingState from "../../components/ui/LoadingState";
 import { getIntegrationSettings, saveIntegrationSettings } from "../../api/settingsApi";
 
 const integrationsData = [
@@ -166,7 +167,7 @@ function ThirdPartyIntegrations() {
  );
  };
 
- if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+ if (loading) return <LoadingState message="Loading integration settings..." />;
 
  return (
  <div className="flex-1 space-y-6 pb-10">
@@ -193,7 +194,7 @@ function ThirdPartyIntegrations() {
  </div>
  </div>
  {/* Decorative Elements - matching the illustration vibe */}
- <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-primary/5 to-transparent pointer-events-none flex items-center justify-end pr-8">
+ <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-linear-to-l from-primary/5 to-transparent pointer-events-none flex items-center justify-end pr-8">
  <div className="flex items-center justify-center h-24 w-24 shrink-0 border-2 border-primary/20 rounded-2xl rotate-12 opacity-50 relative">
  <span className="absolute -top-3 -left-3 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">G</span>
  <span className="absolute -bottom-3 -right-3 h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600"><MapPin size={14}/></span>
@@ -251,7 +252,7 @@ function ThirdPartyIntegrations() {
  <div className="space-y-4">
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Google Maps API Key</label>
- <input type="text" value={googleMapsApiKey} onChange={(e) => setGoogleMapsApiKey(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" value={googleMapsApiKey} onChange={(e) => setGoogleMapsApiKey(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <Button onClick={handleSave} className="bg-primary text-white">Save Changes</Button>
  </div>
@@ -260,7 +261,7 @@ function ThirdPartyIntegrations() {
  <div className="space-y-4">
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Firebase Server Key</label>
- <input type="text" value={firebaseKey} onChange={(e) => setFirebaseKey(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" value={firebaseKey} onChange={(e) => setFirebaseKey(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <Button onClick={handleSave} className="bg-primary text-white">Save Changes</Button>
  </div>

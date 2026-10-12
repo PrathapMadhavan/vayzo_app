@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/Button";
+import LoadingState from "../../components/ui/LoadingState";
 import { getNotificationSettings, saveNotificationSettings } from "../../api/settingsApi";
 import { 
  User, 
@@ -96,7 +97,7 @@ function NotificationSettings() {
  setPushConfig(p => ({ ...p, events: newEvents }));
  };
 
- if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+ if (loading) return <LoadingState message="Loading notification settings..." />;
 
  return (
  <>
@@ -140,13 +141,13 @@ function NotificationSettings() {
  <div className="flex items-center gap-3">
  <span className="text-xs font-medium text-foreground">Enable All Email Notifications</span>
  <button type="button" onClick={toggleEmailGlobal} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${emailConfig.global ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${emailConfig.global ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${emailConfig.global ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
  </div>
 
  <div className="overflow-x-auto">
- <table className="w-full text-left text-sm min-w-[600px]">
+ <table className="w-full text-left text-sm min-w-150">
  <thead>
  <tr className="border-b border-border pb-2 text-xs font-semibold text-foreground">
  <th className="pb-3 w-1/2">Notification Type</th>
@@ -173,17 +174,17 @@ function NotificationSettings() {
  </td>
  <td className="py-4 text-center">
  <button type="button" onClick={() => toggleEmailEvent(idx, 'admin')} className={`inline-flex relative h-5 w-9 rounded-full transition-colors ${evt.admin ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.admin ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.admin ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </td>
  <td className="py-4 text-center">
  <button type="button" onClick={() => toggleEmailEvent(idx, 'user')} className={`inline-flex relative h-5 w-9 rounded-full transition-colors ${evt.user ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.user ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.user ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </td>
  <td className="py-4 text-center">
  <button type="button" onClick={() => toggleEmailEvent(idx, 'partner')} className={`inline-flex relative h-5 w-9 rounded-full transition-colors ${evt.partner ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.partner ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.partner ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </td>
  </tr>
@@ -204,13 +205,13 @@ function NotificationSettings() {
  <div className="flex items-center gap-3">
  <span className="text-xs font-medium text-foreground">Enable All Push Notifications</span>
  <button type="button" onClick={togglePushGlobal} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${pushConfig.global ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${pushConfig.global ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${pushConfig.global ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
  </div>
 
  <div className="overflow-x-auto">
- <table className="w-full text-left text-sm min-w-[600px]">
+ <table className="w-full text-left text-sm min-w-150">
  <thead>
  <tr className="border-b border-border pb-2 text-xs font-semibold text-foreground">
  <th className="pb-3 w-1/2">Notification Type</th>
@@ -237,17 +238,17 @@ function NotificationSettings() {
  </td>
  <td className="py-4 text-center">
  <button type="button" onClick={() => togglePushEvent(idx, 'admin')} className={`inline-flex relative h-5 w-9 rounded-full transition-colors ${evt.admin ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.admin ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.admin ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </td>
  <td className="py-4 text-center">
  <button type="button" onClick={() => togglePushEvent(idx, 'user')} className={`inline-flex relative h-5 w-9 rounded-full transition-colors ${evt.user ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.user ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.user ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </td>
  <td className="py-4 text-center">
  <button type="button" onClick={() => togglePushEvent(idx, 'partner')} className={`inline-flex relative h-5 w-9 rounded-full transition-colors ${evt.partner ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.partner ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${evt.partner ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </td>
  </tr>

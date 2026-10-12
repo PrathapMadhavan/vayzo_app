@@ -25,6 +25,9 @@ import {
   CreditCard,
   Calendar,
 } from "lucide-react";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import NotFoundState from "../components/ui/NotFoundState";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -231,7 +234,7 @@ export default function DeliveryPartner() {
  const data = await getDeliveryPartnerById(id);
  setPartnerData(data);
  } catch (err) {
- setError(err.message || "Failed to load delivery partner");
+      setError(err);
  } finally {
  setLoading(false);
  }
@@ -243,33 +246,50 @@ export default function DeliveryPartner() {
  }
  }, [id]);
 
- if (loading) {
- return (
- <section className="flex min-h-full items-center justify-center bg-background p-6">
- <div className="flex flex-col items-center gap-3">
- <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
- <p className="text-sm text-muted">Loading partner details...</p>
- </div>
- </section>
- );
- }
+  if (loading) {
+    return (
+      <section className="min-h-full bg-background p-4 sm:p-6 flex items-center justify-center">
+        <LoadingState message="Loading delivery partner details..." />
+      </section>
+    );
+  }
 
- if (error || !partnerData) {
- return (
- <section className="flex min-h-full items-center justify-center bg-background p-6">
- <div className="rounded-xl border border-border bg-surface p-6 text-center shadow-sm">
- <h1 className="text-lg font-semibold text-foreground">
- Delivery Partner Not Found
- </h1>
- <p className="mt-2 text-sm text-muted">
- {error || "The requested delivery partner could not be found."}
- </p>
- <Button className="mt-4" onClick={() => navigate("/delivery")}>Back to List</Button>
- </div>
- </section>
- );
- }
+  if (error) {
+    const isNotFound = error?.status === 404 || error?.message?.toLowerCase().includes("not found");
+    if (isNotFound) {
+      return (
+        <section className="min-h-full bg-background p-4 sm:p-6 flex items-center justify-center">
+          <NotFoundState
+            title="Delivery Partner Not Found"
+            message="The requested delivery partner could not be found or does not exist."
+            backPath="/delivery"
+            backLabel="Back to Delivery Partners"
+          />
+        </section>
+      );
+    }
+    return (
+      <section className="min-h-full bg-background p-4 sm:p-6">
+        <ErrorState
+          message={typeof error === "string" ? error : error?.message || "Unable to connect to the server. Please check your connection or server status."}
+          onRetry={loadPartner}
+        />
+      </section>
+    );
+  }
 
+  if (!partnerData) {
+    return (
+      <section className="min-h-full bg-background p-4 sm:p-6 flex items-center justify-center">
+        <NotFoundState
+          title="Delivery Partner Not Found"
+          message="The requested delivery partner could not be found."
+          backPath="/delivery"
+          backLabel="Back to Delivery Partners"
+        />
+      </section>
+    );
+  }
   const partner = {
  ...partnerData?.partner,
  ...partnerData?.personalDetails,

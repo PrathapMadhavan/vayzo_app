@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
+import LoadingState from "../../components/ui/LoadingState";
 import { getEmailSettings, saveEmailSettings } from "../../api/settingsApi";
 import { 
  Eye, 
@@ -80,7 +81,7 @@ function EmailSettings() {
  setToggles(prev => ({ ...prev, [key]: !prev[key] }));
  };
 
- if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+ if (loading) return <LoadingState message="Loading email settings..." />;
 
  return (
  <>
@@ -119,7 +120,7 @@ function EmailSettings() {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Mail Driver</label>
- <Select defaultValue="SMTP" className="h-[38px] text-sm">
+ <Select defaultValue="SMTP" className="h-9.5 text-sm">
  <option>SMTP</option>
  <option>SendGrid</option>
  <option>Mailgun</option>
@@ -127,7 +128,7 @@ function EmailSettings() {
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Encryption</label>
- <Select defaultValue="TLS" className="h-[38px] text-sm">
+ <Select defaultValue="TLS" className="h-9.5 text-sm">
  <option>TLS</option>
  <option>SSL</option>
  <option>None</option>
@@ -135,28 +136,28 @@ function EmailSettings() {
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Host</label>
- <input type="text" value={smtp.host} onChange={(e) => handleSmtpChange("host", e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" value={smtp.host} onChange={(e) => handleSmtpChange("host", e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">From Name</label>
- <input type="text" defaultValue="VAYZO" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="VAYZO" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Port</label>
- <input type="text" value={smtp.port} onChange={(e) => handleSmtpChange("port", e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" value={smtp.port} onChange={(e) => handleSmtpChange("port", e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">From Email</label>
- <input type="text" defaultValue="no-reply@vayzo.com" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="no-reply@vayzo.com" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Username</label>
- <input type="text" value={smtp.user} onChange={(e) => handleSmtpChange("user", e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" value={smtp.user} onChange={(e) => handleSmtpChange("user", e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Password</label>
  <div className="relative">
- <input type="password" value={smtp.pass} onChange={(e) => handleSmtpChange("pass", e.target.value)} className="w-full rounded-md border border-border bg-surface pl-3 pr-10 py-2 text-sm focus:border-primary outline-none" />
+ <input type="password" value={smtp.pass} onChange={(e) => handleSmtpChange("pass", e.target.value)} className="w-full rounded-md border border-border bg-surface pl-3 pr-10 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  <Eye size={16} className="absolute right-3 top-2.5 text-muted cursor-pointer hover:text-foreground" />
  </div>
  </div>
@@ -175,7 +176,7 @@ function EmailSettings() {
  <p className="text-[11px] text-muted mt-0.5">Turn on to allow system to send emails.</p>
  </div>
  <button type="button" onClick={() => toggleSetting('enableSending')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.enableSending ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.enableSending ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.enableSending ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -185,7 +186,7 @@ function EmailSettings() {
  <p className="text-[11px] text-muted mt-0.5">Use this configuration as the default.</p>
  </div>
  <button type="button" onClick={() => toggleSetting('setAsDefault')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.setAsDefault ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.setAsDefault ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.setAsDefault ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -195,7 +196,7 @@ function EmailSettings() {
  <p className="text-[11px] text-muted mt-0.5">Send emails in HTML format.</p>
  </div>
  <button type="button" onClick={() => toggleSetting('htmlEmail')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.htmlEmail ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.htmlEmail ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.htmlEmail ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -205,7 +206,7 @@ function EmailSettings() {
  <p className="text-[11px] text-muted mt-0.5">Log all email activities for debugging.</p>
  </div>
  <button type="button" onClick={() => toggleSetting('emailLogging')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.emailLogging ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.emailLogging ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.emailLogging ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
  </div>
@@ -219,9 +220,9 @@ function EmailSettings() {
  <div className="flex items-end gap-4 max-w-lg">
  <div className="flex-1">
  <label className="text-[11px] font-medium text-muted mb-2 block">Test Email Address</label>
- <input type="text" placeholder="Enter email address" className="w-full rounded-md border border-border bg-surface px-3 h-[38px] text-sm focus:border-primary outline-none placeholder:text-muted/60" />
+ <input type="text" placeholder="Enter email address" className="w-full rounded-md border border-border bg-surface px-3 h-9.5 text-sm focus:ring-1 focus:ring-primary outline-none placeholder:text-muted/60" />
  </div>
- <Button variant="outline" className="h-[38px] px-6 text-primary border-primary hover:bg-primary-light">Send Test Email</Button>
+ <Button variant="outline" className="h-9.5 px-6 text-primary border-primary hover:bg-primary-light">Send Test Email</Button>
  </div>
 
  {/* Position absolute to match the design placing save at bottom right */}

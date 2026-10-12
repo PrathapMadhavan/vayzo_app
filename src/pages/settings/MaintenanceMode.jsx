@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
+import LoadingState from "../../components/ui/LoadingState";
 import { getMaintenanceModeSettings, saveMaintenanceModeSettings } from "../../api/settingsApi";
 import { 
  Shield, 
@@ -83,7 +84,7 @@ function MaintenanceMode() {
  }
  };
 
- if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+ if (loading) return <LoadingState message="Loading maintenance mode settings..." />;
 
  return (
  <>
@@ -141,14 +142,14 @@ function MaintenanceMode() {
  {/* Title */}
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Title</label>
- <input type="text" defaultValue="We'll Be Back Soon!" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="We'll Be Back Soon!" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  <p className="text-[10px] text-muted text-right mt-1">19 / 60</p>
  </div>
 
  {/* Message */}
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Message</label>
- <textarea rows="4" defaultValue="We're currently performing some scheduled maintenance. We apologize for the inconvenience. Please try again later." className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none resize-none" />
+ <textarea rows="4" defaultValue="We're currently performing some scheduled maintenance. We apologize for the inconvenience. Please try again later." className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none resize-none" />
  <p className="text-[10px] text-muted text-right mt-1">102 / 200</p>
  </div>
 
@@ -157,17 +158,17 @@ function MaintenanceMode() {
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Estimated Time</label>
  <div className="relative flex items-center">
- <input type="text" defaultValue="25 May 2024" className="w-full rounded-md border border-border bg-surface pl-10 pr-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="25 May 2024" className="w-full rounded-md border border-border bg-surface pl-10 pr-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  <Calendar size={14} className="absolute left-3 text-muted" />
  </div>
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block invisible">Time</label>
- <input type="text" defaultValue="04:30 PM" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="04:30 PM" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Timezone</label>
- <Select defaultValue="(GMT +05:30) Asia/Kolkata" className="h-[38px] text-sm">
+ <Select defaultValue="(GMT +05:30) Asia/Kolkata" className="h-9.5 text-sm">
  <option>(GMT +05:30) Asia/Kolkata</option>
  <option>(GMT +00:00) UTC</option>
  </Select>
@@ -226,8 +227,8 @@ function MaintenanceMode() {
  <p className="text-[11px] text-muted mt-1 mb-3">Add IP addresses to allow access to the website even in maintenance mode.</p>
  
  <div className="flex items-center gap-3 max-w-lg mb-3">
- <input type="text" placeholder="Enter IP address" value={newIp} onChange={(e) => setNewIp(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddIp()} className="flex-1 rounded-md border border-border bg-surface px-3 h-[38px] text-sm focus:border-primary outline-none" />
- <Button type="button" onClick={handleAddIp} className="bg-primary/90 text-white px-6 h-[38px]">
+ <input type="text" placeholder="Enter IP address" value={newIp} onChange={(e) => setNewIp(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddIp()} className="flex-1 rounded-md border border-border bg-surface px-3 h-9.5 text-sm focus:ring-1 focus:ring-primary outline-none" />
+ <Button type="button" onClick={handleAddIp} className="bg-primary/90 text-white px-6 h-9.5">
  Add
  </Button>
  </div>

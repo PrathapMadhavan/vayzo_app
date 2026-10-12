@@ -38,6 +38,8 @@ import StatCard from "../components/ui/StatCard";
 import Table from "../components/ui/Table";
 import Badge from "../components/ui/Badge";
 import Select from "../components/ui/Select";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
 
 function Dashboard() {
  const navigate = useNavigate();
@@ -66,33 +68,13 @@ function Dashboard() {
  }, []);
 
  if (loading) {
- return (
- <div className="flex h-full min-h-100 items-center justify-center">
- <div className="flex flex-col items-center gap-4">
- <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
- <p className="text-muted">Loading Dashboard...</p>
- </div>
- </div>
- );
+ return <LoadingState message="Loading dashboard..." />;
  }
 
  if (error) {
  return (
- <div className="flex h-full min-h-100 items-center justify-center">
- <div className="flex flex-col items-center gap-4 text-center">
- <div className="rounded-full bg-danger/10 p-3 text-danger">
- <XCircle size={24} />
- </div>
- <div>
- <h3 className="text-lg font-semibold text-foreground">
- Failed to load Dashboard
- </h3>
- <p className="text-muted">{error}</p>
- </div>
- <Button onClick={loadData} variant="outline">
- Try Again
- </Button>
- </div>
+ <div className="p-6">
+ <ErrorState onRetry={loadData} />
  </div>
  );
  }
@@ -284,7 +266,7 @@ function Dashboard() {
  {recentOrders.map((order, idx) => (
  <div 
  key={idx} 
- className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0 cursor-pointer hover:bg-muted/5 p-2 -mx-2 rounded-lg transition-colors"
+ className="flex items-center justify-between not-last:border-b border-border not-last:pb-3 cursor-pointer hover:bg-muted/5 p-2 -mx-2 rounded-lg transition-colors"
  onClick={() => navigate(`/orders/${order.id}`)}
  >
  <div className="flex items-center gap-3">
@@ -379,7 +361,7 @@ function Dashboard() {
  <h3 className="mb-4 font-semibold text-foreground">Delivery Partner Overview</h3>
  <div className="space-y-4">
  {deliveryPartnerOverview.map((item, idx) => (
- <div key={idx} className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0">
+ <div key={idx} className="flex items-center justify-between not-last:border-b border-border not-last:pb-3">
  <div className="flex items-center gap-2">
  <div className={`h-2 w-2 rounded-full ${item.color.replace('text-', 'bg-')}`}></div>
  <span className="text-sm text-foreground">{item.name}</span>
@@ -398,7 +380,7 @@ function Dashboard() {
  </div>
  <div className="space-y-4">
  {topRestaurants.map((rest, idx) => (
- <div key={idx} className="flex items-center justify-between border-b border-border pb-3 last:border-0 last:pb-0">
+ <div key={idx} className="flex items-center justify-between not-last:border-b border-border not-last:pb-3">
  <div className="flex items-center gap-3">
  <span className="text-xs font-medium text-muted">{rest.id}</span>
  <div className="flex h-8 w-8 items-center justify-center rounded bg-warning/10 text-warning">

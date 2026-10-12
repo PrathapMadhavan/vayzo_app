@@ -13,6 +13,9 @@ import Modal from "../components/ui/Modal";
 import StatCard from "../components/ui/StatCard";
 import ActionMenu from "../components/ui/ActionMenu";
 import FilterPanel from "../components/ui/FilterPanel";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import EmptyState from "../components/ui/EmptyState";
 
 import { getRestaurants, deleteRestaurant } from "../api/restaurantsApi";
 import { getCategories } from "../api/categoriesApi";
@@ -47,25 +50,26 @@ function Restaurants() {
  const [deleteModalId, setDeleteModalId] = useState(null);
  const [deleteLoading, setDeleteLoading] = useState(false);
 
- useEffect(() => {
- let isMounted = true;
- const load = async () => {
- try {
- setLoading(true);
- setError(null);
- const data = await getRestaurants();
- if (isMounted) setRestaurants(data);
- const catData = await getCategories();
- if (isMounted) setCategories(catData.filter(c => c.status === "Active" || c.status === "active"));
- } catch {
- if (isMounted) setError("Failed to load restaurants");
- } finally {
- if (isMounted) setLoading(false);
- }
- };
- load();
- return () => { isMounted = false; };
- }, []);
+  const loadRestaurants = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [data, catData] = await Promise.all([
+        getRestaurants(),
+        getCategories().catch(() => []),
+      ]);
+      setRestaurants(data || []);
+      setCategories((catData || []).filter(c => c.status?.toLowerCase() === "active"));
+    } catch (err) {
+      setError(err.message || "Unable to connect to the server. Please check your connection or server status.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadRestaurants();
+  }, []);
 
  const filtered = useMemo(() => {
  const q = search.trim().toLowerCase();
@@ -186,9 +190,11 @@ function Restaurants() {
 
  {/* Table */}
  <Card className="p-0 overflow-hidden">
- {error ? (
- <div className="p-8 text-center text-danger text-sm">{error}</div>
- ) : (
+        {loading ? (
+          <LoadingState message="Loading restaurants..." />
+        ) : error ? (
+          <ErrorState message={error} onRetry={loadRestaurants} />
+        ) : (
  <Table
  headers={tableHeaders}
  currentCount={paginated.length}
@@ -199,13 +205,7 @@ function Restaurants() {
  minWidth="900px"
  className="border-0 shadow-none rounded-none"
  >
- {loading ? (
- <tr>
- <td colSpan={tableHeaders.length} className="p-10 text-center text-sm text-muted">
- Loading restaurants...
- </td>
- </tr>
- ) : paginated.length ? (
+          {paginated.length ? (
  paginated.map((r, index) => (
  <tr
  key={r.id}
@@ -264,11 +264,10 @@ function Restaurants() {
  </tr>
  ))
  ) : (
- <tr>
- <td colSpan={tableHeaders.length} className="p-10 text-center text-sm text-muted">
- No restaurants found.
- </td>
- </tr>
+            <EmptyState
+              colSpan={tableHeaders.length}
+              message={hasFilters ? "No restaurants found matching your filters." : "No restaurants found."}
+            />
  )}
  </Table>
  )}

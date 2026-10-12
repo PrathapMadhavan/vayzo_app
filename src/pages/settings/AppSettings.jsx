@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
+import LoadingState from "../../components/ui/LoadingState";
 import { getAppSettings, saveAppSettings } from "../../api/settingsApi";
 import { 
  Wrench,
@@ -80,7 +81,7 @@ function AppSettings() {
  setToggles(prev => ({ ...prev, [key]: !prev[key] }));
  };
 
- if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+ if (loading) return <LoadingState message="Loading app settings..." />;
 
  return (
  <>
@@ -134,30 +135,30 @@ function AppSettings() {
  <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6">
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Application Name</label>
- <input type="text" defaultValue="Vayzo Delivery" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="Vayzo Delivery" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Application Tagline</label>
- <input type="text" defaultValue="Fast. Reliable. Delivered." className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="Fast. Reliable. Delivered." className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Application Version</label>
- <input type="text" value={version} onChange={(e) => setVersion(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" value={version} onChange={(e) => setVersion(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Support Email</label>
- <input type="text" defaultValue="support@vayzo.com" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="support@vayzo.com" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Default Timezone</label>
- <Select defaultValue="(GMT +05:30) Asia/Kolkata" className="h-[38px] text-sm">
+ <Select defaultValue="(GMT +05:30) Asia/Kolkata" className="h-9.5 text-sm">
  <option>(GMT +05:30) Asia/Kolkata</option>
  <option>(GMT +00:00) UTC</option>
  </Select>
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Date Format</label>
- <Select defaultValue="DD MMM YYYY" className="h-[38px] text-sm">
+ <Select defaultValue="DD MMM YYYY" className="h-9.5 text-sm">
  <option>DD MMM YYYY</option>
  <option>MM/DD/YYYY</option>
  <option>YYYY-MM-DD</option>
@@ -165,14 +166,14 @@ function AppSettings() {
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Time Format</label>
- <Select defaultValue="12 Hour (hh:mm AM/PM)" className="h-[38px] text-sm">
+ <Select defaultValue="12 Hour (hh:mm AM/PM)" className="h-9.5 text-sm">
  <option>12 Hour (hh:mm AM/PM)</option>
  <option>24 Hour (HH:mm)</option>
  </Select>
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Currency</label>
- <Select defaultValue="INR (₹) - Indian Rupee" className="h-[38px] text-sm">
+ <Select defaultValue="INR (₹) - Indian Rupee" className="h-9.5 text-sm">
  <option>INR (₹) - Indian Rupee</option>
  <option>USD ($) - US Dollar</option>
  <option>EUR (€) - Euro</option>
@@ -199,7 +200,7 @@ function AppSettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('maintenanceMode')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.maintenanceMode ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.maintenanceMode ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.maintenanceMode ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -212,7 +213,7 @@ function AppSettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('userRegistration')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.userRegistration ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.userRegistration ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.userRegistration ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -225,7 +226,7 @@ function AppSettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('emailVerification')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.emailVerification ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.emailVerification ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.emailVerification ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -238,7 +239,7 @@ function AppSettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('phoneVerification')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.phoneVerification ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.phoneVerification ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.phoneVerification ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -251,7 +252,7 @@ function AppSettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('referralSystem')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.referralSystem ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.referralSystem ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.referralSystem ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -264,7 +265,7 @@ function AppSettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('multiLanguage')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.multiLanguage ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.multiLanguage ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.multiLanguage ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -277,7 +278,7 @@ function AppSettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('darkMode')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.darkMode ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.darkMode ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.darkMode ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -299,7 +300,7 @@ function AppSettings() {
  <p className="text-xs text-muted mt-0.5">Current Version {version}</p>
  </div>
  </div>
- <Button variant="outline" className="h-[36px] text-primary border-primary hover:bg-primary-light flex items-center gap-2">
+ <Button variant="outline" className="h-9 text-primary border-primary hover:bg-primary-light flex items-center gap-2">
  <RefreshCw size={14} />
  Check for Update
  </Button>
@@ -314,7 +315,7 @@ function AppSettings() {
  </div>
  </div>
  <button type="button" onClick={() => setForceUpdate(!forceUpdate)} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${forceUpdate ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${forceUpdate ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${forceUpdate ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import Button from "../components/ui/Button";
+import BadgeCell from "../components/ui/BadgeCell";
 import SearchInput from "../components/ui/SearchInput";
 import StatusSelect from "../components/ui/StatusSelect";
 import StatCard from "../components/ui/StatCard";
@@ -22,8 +23,10 @@ import Table from "../components/ui/Table";
 import Card from "../components/ui/Card";
 import Modal from "../components/ui/Modal";
 import ActionMenu from "../components/ui/ActionMenu";
-import BadgeCell from "../components/ui/BadgeCell";
 import FilterPanel from "../components/ui/FilterPanel";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import EmptyState from "../components/ui/EmptyState";
 
 import { getOffers, deleteOffer } from "../api/offersApi";
 import { exportToCSV } from "../utils/exportUtils";
@@ -255,9 +258,7 @@ export default function Offers() {
  <div className="flex flex-col gap-6 mt-2">
  <Card noPadding className="w-full overflow-hidden flex flex-col">
  {error ? (
- <div className="p-8 text-center text-sm font-medium text-danger">
- {error}
- </div>
+ <ErrorState onRetry={loadOffers} />
  ) : (
  <Table
  headers={[
@@ -280,11 +281,8 @@ export default function Offers() {
  >
  {loading ? (
  <tr>
- <td
- colSpan={8}
- className="p-10 text-center text-sm text-muted"
- >
- Loading offers...
+ <td colSpan={8}>
+ <LoadingState message="Loading offers..." />
  </td>
  </tr>
  ) : paginatedOffers.length ? (
@@ -416,14 +414,11 @@ export default function Offers() {
  );
  })
  ) : (
- <tr>
- <td
+ <EmptyState
  colSpan={8}
- className="p-10 text-center text-sm text-muted"
- >
- No offers found.
- </td>
- </tr>
+ message="No offers found."
+ description={hasFilters ? "Try adjusting your filters or search query." : undefined}
+ />
  )}
  </Table>
  )}

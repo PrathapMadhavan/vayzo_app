@@ -19,6 +19,7 @@ import Input from "../../components/ui/Input";
 import Select from "../../components/ui/Select";
 import Toggle from "../../components/ui/Toggle";
 import Card from "../../components/ui/Card";
+import LoadingState from "../../components/ui/LoadingState";
 import { getGeneralSettings, saveGeneralSettings } from "../../api/settingsApi";
 import { applyThemeToDocument } from "../../utils/themeUtils";
 
@@ -184,11 +185,7 @@ function GeneralSettings() {
  };
 
  if (loading) {
- return (
- <div className="flex h-100 items-center justify-center">
- <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
- </div>
- );
+ return <LoadingState message="Loading general settings..." />;
  }
 
  return (
@@ -264,7 +261,7 @@ function GeneralSettings() {
  })}
  </div>
 
- <div className="absolute right-0 top-0 bottom-0 flex items-center md:hidden bg-gradient-to-l from-surface via-surface to-transparent px-2 z-10">
+ <div className="absolute right-0 top-0 bottom-0 flex items-center md:hidden bg-linear-to-l from-surface via-surface to-transparent px-2 z-10">
  <button onClick={() => scrollTabs('right')} className="p-1 rounded-full hover:bg-background text-muted">
  <ChevronRight size={20} />
  </button>
@@ -392,7 +389,7 @@ function GeneralSettings() {
  <div className="w-full">
  <label className="mb-2 block text-sm font-medium text-foreground">Complete Address</label>
  <textarea
- className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted focus:border-primary focus:ring-1 focus:ring-primary"
+ className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-all focus:ring-1 focus:ring-primary"
  rows={4}
  placeholder="e.g. 123, Anna Salai, Chennai, 600002"
  value={formValues.contactAddress}
@@ -416,7 +413,7 @@ function GeneralSettings() {
  <div className="w-full">
  <label className="mb-2 block text-sm font-medium text-foreground">Meta Description</label>
  <textarea
- className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted focus:border-primary focus:ring-1 focus:ring-primary"
+ className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition-all focus:ring-1 focus:ring-primary"
  rows={3}
  placeholder="Enter a brief description of the platform for search engines..."
  value={formValues.metaDescription}
@@ -644,7 +641,7 @@ function GeneralSettings() {
  
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border p-5 bg-background">
  <div>
- <h4 className="font-medium text-foreground border-danger text-danger">Maintenance Mode</h4>
+ <h4 className="font-medium text-danger">Maintenance Mode</h4>
  <p className="text-xs text-muted mt-1">Restrict public access during updates and maintenance.</p>
  </div>
  <Toggle

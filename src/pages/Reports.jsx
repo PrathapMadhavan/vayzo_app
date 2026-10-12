@@ -18,6 +18,9 @@ import Table from "../components/ui/Table";
 import ActionMenu from "../components/ui/ActionMenu";
 import FilterPanel from "../components/ui/FilterPanel";
 import Card from "../components/ui/Card";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import EmptyState from "../components/ui/EmptyState";
 import { exportToCSV } from "../utils/exportUtils";
 import { getReports, getReportSummary, deleteReport } from "../api/reportsApi";
 
@@ -214,16 +217,10 @@ function Reports() {
 
  {/* Loading / Error States */}
  {isLoading ? (
- <div className="flex h-64 items-center justify-center bg-surface">
- <div className="flex flex-col items-center gap-3">
- <RefreshCw className="h-8 w-8 animate-spin text-primary" />
- <p className="text-sm font-medium text-muted">Loading reports...</p>
- </div>
- </div>
+ <LoadingState message="Loading reports..." />
  ) : error ? (
- <div className="flex h-64 flex-col items-center justify-center gap-3 bg-surface text-center">
- <p className="text-sm text-danger font-medium">{error}</p>
- <Button onClick={fetchReportsData} variant="secondary" size="sm">Try Again</Button>
+ <div className="p-6">
+ <ErrorState onRetry={fetchReportsData} />
  </div>
  ) : (
  <div className="flex-1 w-full flex flex-col min-h-0 overflow-hidden border-t border-border">
@@ -253,14 +250,15 @@ function Reports() {
  className="border-0 shadow-none rounded-none border-t-0"
  >
  {reportsData.length === 0 ? (
- <tr>
- <td
+ <EmptyState
  colSpan={8}
- className="p-8 text-center text-sm text-muted"
- >
- No reports found matching your filters.
- </td>
- </tr>
+ message="No reports found."
+ description={
+ reportType !== "All" || status !== "All Status" || dateRange[0] || dateRange[1]
+ ? "No reports found matching your filters."
+ : undefined
+ }
+ />
  ) : (
  currentData.map((report) => (
  <tr

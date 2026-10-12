@@ -35,6 +35,9 @@ import {
  updateCustomer,
 } from "../api/usersApi";
 import Button from "../components/ui/Button";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import NotFoundState from "../components/ui/NotFoundState";
 import Badge from "../components/ui/Badge";
 import Modal from "../components/ui/Modal";
 import Avatar from "../components/ui/Avatar";
@@ -111,32 +114,34 @@ export default function CustomerDetails() {
  const [pendingImageFile, setPendingImageFile] = useState(null);
  const [pendingImagePreview, setPendingImagePreview] = useState(null);
 
- useEffect(() => {
- if (!publicId) return;
- const fetchData = async () => {
- try {
- setLoading(true);
- const [custData, walletData, txnsData, reqData, compData] =
- await Promise.all([
- getCustomerById(publicId),
- getCustomerWallet(publicId).catch(() => null),
- getCustomerTransactions(publicId).catch(() => []),
- getCustomerRequests(publicId).catch(() => []),
- getCustomerComplaints(publicId).catch(() => []),
- ]);
- setCustomer(custData);
- setWallet(walletData);
- setTransactions(Array.isArray(txnsData) ? txnsData : []);
- setRequests(Array.isArray(reqData) ? reqData : []);
- setComplaints(Array.isArray(compData) ? compData : []);
- } catch {
- setError("Unable to load customer details.");
- } finally {
- setLoading(false);
- }
- };
- fetchData();
- }, [publicId]);
+  const loadCustomer = async () => {
+    if (!publicId) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const [custData, walletData, txnsData, reqData, compData] =
+        await Promise.all([
+          getCustomerById(publicId),
+          getCustomerWallet(publicId).catch(() => null),
+          getCustomerTransactions(publicId).catch(() => []),
+          getCustomerRequests(publicId).catch(() => []),
+          getCustomerComplaints(publicId).catch(() => []),
+        ]);
+      setCustomer(custData);
+      setWallet(walletData);
+      setTransactions(Array.isArray(txnsData) ? txnsData : []);
+      setRequests(Array.isArray(reqData) ? reqData : []);
+      setComplaints(Array.isArray(compData) ? compData : []);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCustomer();
+  }, [publicId]);
 
  const handleBadgeToggle = async () => {
  if (!customer) return;
@@ -169,29 +174,50 @@ export default function CustomerDetails() {
  setMsgForm({ title: "", message: "" });
  };
 
- if (loading)
- return (
- <div className="flex items-center justify-center min-h-[60vh]">
- <div className="flex flex-col items-center gap-3">
- <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
- <p className="text-sm text-muted">Loading customer details...</p>
- </div>
- </div>
- );
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] bg-background p-4 sm:p-6 flex items-center justify-center">
+        <LoadingState message="Loading customer details..." />
+      </div>
+    );
+  }
 
- if (error || !customer)
- return (
- <div className="flex items-center justify-center min-h-[60vh]">
- <div className="text-center">
- <p className="text-danger font-medium mb-2">
- {error || "Customer not found"}
- </p>
- <Button variant="secondary" onClick={() => navigate("/customers")}>
- <ArrowLeft size={16} className="mr-2" /> Back to Customers
- </Button>
- </div>
- </div>
- );
+  if (error) {
+    const isNotFound = error?.status === 404 || error?.message?.toLowerCase().includes("not found");
+    if (isNotFound) {
+      return (
+        <div className="min-h-[60vh] bg-background p-4 sm:p-6 flex items-center justify-center">
+          <NotFoundState
+            title="Customer Not Found"
+            message="The requested customer profile could not be found or does not exist."
+            backPath="/customers"
+            backLabel="Back to Customers"
+          />
+        </div>
+      );
+    }
+    return (
+      <div className="p-4 sm:p-6">
+        <ErrorState
+          message={typeof error === "string" ? error : error?.message || "Unable to connect to the server. Please check your connection or server status."}
+          onRetry={loadCustomer}
+        />
+      </div>
+    );
+  }
+
+  if (!customer) {
+    return (
+      <div className="min-h-[60vh] bg-background p-4 sm:p-6 flex items-center justify-center">
+        <NotFoundState
+          title="Customer Not Found"
+          message="The requested customer profile could not be found."
+          backPath="/customers"
+          backLabel="Back to Customers"
+        />
+      </div>
+    );
+  }
 
  const isBlocked = customer.status?.toLowerCase() === "blocked";
  const totalCredits = transactions
@@ -324,10 +350,10 @@ export default function CustomerDetails() {
  isBlocked ? "cursor-not-allowed opacity-80" : "cursor-pointer hover:opacity-80 transition-opacity"
  } ${
  customer.status?.toLowerCase() === "active"
- ? "!bg-success"
+ ? "bg-success!"
  : isBlocked
- ? "!bg-danger"
- : "!bg-warning"
+ ? "bg-danger!"
+ : "bg-warning!"
  }`}
  >
  {customer.status || "Active"}
@@ -369,7 +395,7 @@ export default function CustomerDetails() {
  </div>
 
  {/* Stats row (Gradient Section) */}
- <div className="p-5 sm:p-6 lg:p-8 grid grid-cols-2 gap-x-4 lg:flex lg:flex-nowrap w-full xl:w-auto items-center gap-y-6 sm:gap-y-6 lg:gap-0 lg:divide-x divide-white/20 lg:px-6 xl:px-8 border-t xl:border-t-0 xl:border-l border-white/20">
+ <div className="p-5 sm:p-6 lg:p-8 grid grid-cols-2 gap-x-4 lg:flex lg:flex-nowrap w-full xl:w-auto items-center gap-y-6 sm:gap-y-6 lg:gap-0 lg:divide-x divide-white/20 lg:px-6 xl:px-8 border-t border-t-white/20 xl:border-t-0 xl:border-l xl:border-l-white/20">
  {/* Customer ID */}
  <div className="flex flex-col gap-1 px-3 sm:px-4 min-w-0 border-r border-white/20 lg:border-0">
  <p className="text-[11px] sm:text-xs text-white/70 whitespace-nowrap">
@@ -831,7 +857,7 @@ export default function CustomerDetails() {
  Message Description *
  </label>
  <textarea
- className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-primary transition-colors min-h-25 resize-y"
+ className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-foreground outline-none focus:ring-1 focus:ring-primary transition-colors min-h-25 resize-y"
  placeholder="Enter your message here..."
  value={msgForm.message}
  onChange={(e) =>

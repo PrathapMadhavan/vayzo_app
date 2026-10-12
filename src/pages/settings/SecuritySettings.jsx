@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
+import LoadingState from "../../components/ui/LoadingState";
 import { getSecuritySettings, saveSecuritySettings } from "../../api/settingsApi";
 import { 
  ShieldCheck,
@@ -71,7 +72,7 @@ function SecuritySettings() {
  setToggles(prev => ({ ...prev, [key]: !prev[key] }));
  };
 
- if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+ if (loading) return <LoadingState message="Loading security settings..." />;
 
  return (
  <>
@@ -155,7 +156,7 @@ function SecuritySettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('twoFactor')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.twoFactor ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.twoFactor ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.twoFactor ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -168,7 +169,7 @@ function SecuritySettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('loginNotification')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.loginNotification ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.loginNotification ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.loginNotification ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -180,7 +181,7 @@ function SecuritySettings() {
  <p className="text-[11px] text-muted mt-0.5">Automatically log out inactive users after a period of time.</p>
  </div>
  </div>
- <Select value={sessionTimeout} onChange={(e) => setSessionTimeout(e.target.value)} className="h-[38px] text-sm w-40">
+ <Select value={sessionTimeout} onChange={(e) => setSessionTimeout(e.target.value)} className="h-9.5 text-sm w-40">
  <option value="15">15 Minutes</option>
  <option value="30">30 Minutes</option>
  <option value="60">1 Hour</option>
@@ -195,7 +196,7 @@ function SecuritySettings() {
  <p className="text-[11px] text-muted mt-0.5">Lock account after multiple failed login attempts.</p>
  </div>
  </div>
- <Select defaultValue="5 Attempts" className="h-[38px] text-sm w-40">
+ <Select defaultValue="5 Attempts" className="h-9.5 text-sm w-40">
  <option>3 Attempts</option>
  <option>5 Attempts</option>
  <option>10 Attempts</option>
@@ -210,7 +211,7 @@ function SecuritySettings() {
  <p className="text-[11px] text-muted mt-0.5">Allow login access only from specific IP addresses.</p>
  </div>
  </div>
- <Button variant="outline" className="h-[38px] text-primary border-primary hover:bg-primary-light">Manage IPs</Button>
+ <Button variant="outline" className="h-9.5 text-primary border-primary hover:bg-primary-light">Manage IPs</Button>
  </div>
 
  <div className="flex items-center justify-between pb-4 border-b border-border">
@@ -221,7 +222,7 @@ function SecuritySettings() {
  <p className="text-[11px] text-muted mt-0.5">Locked accounts will be automatically unlocked after this duration.</p>
  </div>
  </div>
- <Select defaultValue="30 Minutes" className="h-[38px] text-sm w-40">
+ <Select defaultValue="30 Minutes" className="h-9.5 text-sm w-40">
  <option>15 Minutes</option>
  <option>30 Minutes</option>
  <option>1 Hour</option>
@@ -237,7 +238,7 @@ function SecuritySettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('forceHttps')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.forceHttps ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.forceHttps ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.forceHttps ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -250,7 +251,7 @@ function SecuritySettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('recaptcha')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.recaptcha ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.recaptcha ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.recaptcha ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 

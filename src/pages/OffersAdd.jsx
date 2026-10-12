@@ -94,18 +94,20 @@ export default function OffersAdd() {
 
  const handleSubmit = async (e) => {
  e.preventDefault();
+ if (loading) return;
  if (form.type === "Select offer type") {
- alert("Please select a valid type.");
+ setError("Please select a valid offer type.");
  return;
  }
 
  try {
  setLoading(true);
+ setError("");
  
  const payload = {
  name: form.name,
  title: form.title,
- type: form.type === "Percentage" ? "Discount" : form.type, // Map UI type to DB type if needed, but let's just use what they chose
+ type: form.type === "Percentage" ? "Discount" : form.type,
  discountText: `${form.discountValue}${form.discountType.includes("%") ? "%" : "₹"} OFF`,
  discountDetail: `Up to ₹${form.maxDiscount} on orders above ₹${form.minOrderValue}`,
  usageLimit: Number(form.usageLimit) || 0,
@@ -114,7 +116,7 @@ export default function OffersAdd() {
  validTo: form.noExpiry ? "2099-12-31" : form.validTo,
  status: form.status,
  color: "primary",
- platform: "App" // Default mock
+ platform: "App"
  };
 
  if (isEditing) {
@@ -122,9 +124,9 @@ export default function OffersAdd() {
  } else {
  await createOffer(payload);
  }
- navigate("/offers");
+ navigate(-1);
  } catch (err) {
- setError("Unable to create offer.");
+ setError(err.message || (isEditing ? "Unable to update offer." : "Unable to create offer."));
  } finally {
  setLoading(false);
  }
@@ -169,7 +171,7 @@ export default function OffersAdd() {
  <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
  <button
  type="button"
- onClick={() => navigate("/offers")}
+ onClick={() => navigate(-1)}
  className="mr-1 rounded-md p-1 hover:bg-background transition-colors text-muted hover:text-foreground"
  >
  <ArrowLeft size={18} />
@@ -288,7 +290,7 @@ export default function OffersAdd() {
  <Button
  type="button"
  variant="secondary"
- onClick={() => navigate("/offers")}
+ onClick={() => navigate(-1)}
  className="px-6"
  disabled={loading}
  >

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
+import LoadingState from "../../components/ui/LoadingState";
 import { getSEOSettings, saveSEOSettings } from "../../api/settingsApi";
 import { 
  ExternalLink,
@@ -81,7 +82,7 @@ function SEOSettings() {
  setToggles(prev => ({ ...prev, [key]: !prev[key] }));
  };
 
- if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+ if (loading) return <LoadingState message="Loading SEO settings..." />;
 
  return (
  <>
@@ -118,7 +119,7 @@ function SEOSettings() {
  <h3 className="font-semibold text-foreground text-sm">Global SEO Settings</h3>
  <p className="text-xs text-muted mt-1">Configure the default SEO settings for your website.</p>
  </div>
- <Button variant="outline" className="h-[36px] text-primary border-primary hover:bg-primary-light flex items-center gap-2 text-xs">
+ <Button variant="outline" className="h-9 text-primary border-primary hover:bg-primary-light flex items-center gap-2 text-xs">
  Preview Website <ExternalLink size={14} />
  </Button>
  </div>
@@ -128,12 +129,12 @@ function SEOSettings() {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Site Title</label>
- <input type="text" value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  <p className="text-[10px] text-muted text-right mt-1">{metaTitle.length} / 60</p>
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Site Tagline</label>
- <input type="text" defaultValue="Your favorite food, delivered to your door." className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="Your favorite food, delivered to your door." className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  <p className="text-[10px] text-muted text-right mt-1">41 / 80</p>
  </div>
  </div>
@@ -141,12 +142,12 @@ function SEOSettings() {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Meta Description</label>
- <textarea rows="3" value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none resize-none" />
+ <textarea rows="3" value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none resize-none" />
  <p className="text-[10px] text-muted text-right mt-1">{metaDescription.length} / 160</p>
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Meta Keywords</label>
- <textarea rows="3" value={metaKeywords} onChange={(e) => setMetaKeywords(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none resize-none" />
+ <textarea rows="3" value={metaKeywords} onChange={(e) => setMetaKeywords(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none resize-none" />
  <p className="text-[10px] text-muted text-right mt-1">{metaKeywords.length} / 200</p>
  </div>
  </div>
@@ -162,15 +163,15 @@ function SEOSettings() {
  <p className="text-sm font-semibold text-foreground">Upload Image</p>
  <p className="text-[10px] text-muted">Recommended size: 1200x630px</p>
  </div>
- <Button variant="outline" className="h-[32px] px-4 text-primary border-primary text-xs shrink-0">Change Image</Button>
+ <Button variant="outline" className="h-8 px-4 text-primary border-primary text-xs shrink-0">Change Image</Button>
  </div>
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Google Analytics ID</label>
- <input type="text" value={googleAnalyticsId} onChange={(e) => setGoogleAnalyticsId(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none mb-4" />
+ <input type="text" value={googleAnalyticsId} onChange={(e) => setGoogleAnalyticsId(e.target.value)} className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none mb-4" />
  
  <label className="text-xs font-medium text-foreground mb-2 block">Google Site Verification</label>
- <input type="text" defaultValue="GTM-XXXXXXX" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="GTM-XXXXXXX" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  </div>
 
@@ -191,7 +192,7 @@ function SEOSettings() {
  <p className="text-[11px] text-muted mt-0.5">Allow search engines to index your website.</p>
  </div>
  <button type="button" onClick={() => toggleSetting('engineIndexing')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.engineIndexing ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.engineIndexing ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.engineIndexing ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
  <div className="flex items-center justify-between">
@@ -200,7 +201,7 @@ function SEOSettings() {
  <p className="text-[11px] text-muted mt-0.5">Generate and submit XML sitemap to search engines.</p>
  </div>
  <button type="button" onClick={() => toggleSetting('enableSitemap')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.enableSitemap ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.enableSitemap ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.enableSitemap ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
  <div className="flex items-center justify-between pt-2">
@@ -208,7 +209,7 @@ function SEOSettings() {
  <p className="text-sm font-medium text-foreground">Robots.txt</p>
  <p className="text-[11px] text-muted mt-0.5">Manage your robots.txt file</p>
  </div>
- <Button variant="outline" className="h-[32px] px-3 text-primary border-primary text-xs flex items-center gap-1.5">
+ <Button variant="outline" className="h-8 px-3 text-primary border-primary text-xs flex items-center gap-1.5">
  <FileEdit size={12} /> Edit Robots.txt
  </Button>
  </div>
@@ -218,19 +219,19 @@ function SEOSettings() {
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Canonical URL</label>
  <div className="relative flex items-center">
- <input type="text" defaultValue="https://vayzo.com" className="w-full rounded-md border border-border bg-surface px-3 pr-10 py-2 text-sm focus:border-primary outline-none text-muted" />
+ <input type="text" defaultValue="https://vayzo.com" className="w-full rounded-md border border-border bg-surface px-3 pr-10 py-2 text-sm focus:ring-1 focus:ring-primary outline-none text-muted" />
  <Globe size={14} className="absolute right-3 text-muted" />
  </div>
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Sitemap URL</label>
  <div className="relative flex items-center">
- <input type="text" defaultValue="https://vayzo.com/sitemap.xml" className="w-full rounded-md border border-border bg-surface px-3 pr-10 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="https://vayzo.com/sitemap.xml" className="w-full rounded-md border border-border bg-surface px-3 pr-10 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  <Copy size={14} className="absolute right-3 text-muted cursor-pointer hover:text-primary" />
  </div>
  <div className="flex items-center justify-between mt-3">
  <p className="text-[10px] text-muted">Last generated: 12 May 2024, 10:30 AM</p>
- <Button variant="outline" className="h-[30px] px-3 text-primary border-primary text-[10px] flex items-center gap-1.5">
+ <Button variant="outline" className="h-7.5 px-3 text-primary border-primary text-[10px] flex items-center gap-1.5">
  <RefreshCw size={12} /> Regenerate Sitemap
  </Button>
  </div>
@@ -248,11 +249,11 @@ function SEOSettings() {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Business Name</label>
- <input type="text" defaultValue="Vayzo Delivery" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="Vayzo Delivery" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Default Language</label>
- <Select defaultValue="English (en)" className="h-[38px] text-sm">
+ <Select defaultValue="English (en)" className="h-9.5 text-sm">
  <option>English (en)</option>
  <option>Tamil (ta)</option>
  <option>Hindi (hi)</option>
@@ -260,11 +261,11 @@ function SEOSettings() {
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Business Address</label>
- <input type="text" defaultValue="123, Food Street, T Nagar, Chennai - 600017, Tamil Nadu, India" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="123, Food Street, T Nagar, Chennai - 600017, Tamil Nadu, India" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Business Phone</label>
- <input type="text" defaultValue="+91 98765 43210" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="+91 98765 43210" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  </div>
 

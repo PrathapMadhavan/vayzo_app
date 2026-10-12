@@ -10,8 +10,10 @@ import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Modal from "../components/ui/Modal";
 import Input from "../components/ui/Input";
-import Select from "../components/ui/Select";
 import ActionMenu from "../components/ui/ActionMenu";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import NotFoundState from "../components/ui/NotFoundState";
 import { getCategoryById, updateCategory, getCategories } from "../api/categoriesApi";
 import { getParentItemsByCategory, getParentItemById, addParentItem, updateParentItem, deleteParentItem } from "../api/parentItemsApi";
 import { getChildItemsByParentItem, getChildItemById, addChildItem, updateChildItem, deleteChildItem } from "../api/childItemsApi";
@@ -118,8 +120,8 @@ function CategoriesDetails() {
  setParentItems(parentItemsData || []);
  }
  }
- } catch {
- if (isMounted) setError("Unable to load category details.");
+ } catch (err) {
+ if (isMounted) setError(err);
  } finally {
  if (isMounted) setLoading(false);
  }
@@ -227,26 +229,29 @@ function CategoriesDetails() {
  }
  };
 
-  if (loading) {
+ if (loading) {
+ return <LoadingState message="Loading category details..." />;
+ }
+
+ const isNotFoundError =
+ (error && (error.status === 404 || error.response?.status === 404)) ||
+ (!loading && !category && !error);
+
+ if (isNotFoundError) {
  return (
- <section className="min-h-full bg-background p-4 sm:p-6 flex items-center justify-center">
- <div className="animate-pulse flex flex-col items-center">
- <div className="h-12 w-12 rounded-full bg-primary/20 mb-4"></div>
- <p className="text-sm text-muted font-medium">Loading premium details...</p>
- </div>
- </section>
+ <NotFoundState
+ title="Category Not Found"
+ message="We couldn't locate the category details. It may have been deleted or doesn't exist."
+ backAction={() => navigate("/categories")}
+ backLabel="Back to Categories"
+ />
  );
  }
 
- if (error || !category) {
+ if (error) {
  return (
  <section className="min-h-full bg-background p-4 sm:p-6">
- <div className="rounded-xl border border-border bg-surface p-6 flex flex-col items-center justify-center h-48">
- <p className="text-sm text-danger mb-4 font-medium">{error || "Category not found."}</p>
- <Button variant="secondary" size="sm" onClick={() => navigate("/categories")}>
- <ArrowLeft size={16} /> Back to Categories
- </Button>
- </div>
+ <ErrorState onRetry={() => loadData(true)} />
  </section>
  );
  }

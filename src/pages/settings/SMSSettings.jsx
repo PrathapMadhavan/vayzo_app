@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
+import LoadingState from "../../components/ui/LoadingState";
 import { getSMSSettings, saveSMSSettings } from "../../api/settingsApi";
 import { 
  MessageSquare,
@@ -72,7 +73,7 @@ function SMSSettings() {
  setToggles(prev => ({ ...prev, [key]: !prev[key] }));
  };
 
- if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+ if (loading) return <LoadingState message="Loading SMS settings..." />;
 
  return (
  <>
@@ -121,7 +122,7 @@ function SMSSettings() {
  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">SMS Gateway</label>
- <Select value={provider} onChange={(e) => setProvider(e.target.value)} className="h-[38px] text-sm">
+ <Select value={provider} onChange={(e) => setProvider(e.target.value)} className="h-9.5 text-sm">
  <option>Twilio</option>
  <option>MessageBird</option>
  <option>Nexmo</option>
@@ -129,20 +130,20 @@ function SMSSettings() {
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">SMS Sender ID (Optional)</label>
- <input type="text" defaultValue="VAYZO" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="VAYZO" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Account SID</label>
- <input type="text" defaultValue="AC7b8f2d9c6e8a5b4f3e2d1c0b9a8f7e" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="AC7b8f2d9c6e8a5b4f3e2d1c0b9a8f7e" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Status Callback URL (Optional)</label>
- <input type="text" defaultValue="https://admin.vayzo.com/sms/callback" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="https://admin.vayzo.com/sms/callback" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Auth Token (API Key)</label>
  <div className="relative">
- <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} className="w-full rounded-md border border-border bg-surface pl-3 pr-10 py-2 text-sm focus:border-primary outline-none" />
+ <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} className="w-full rounded-md border border-border bg-surface pl-3 pr-10 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  <Eye size={16} className="absolute right-3 top-2.5 text-muted cursor-pointer hover:text-foreground" />
  </div>
  </div>
@@ -152,23 +153,23 @@ function SMSSettings() {
  <p className="text-[11px] text-muted">Receive delivery status for sent SMS</p>
  </div>
  <button type="button" onClick={() => toggleSetting('deliveryReport')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.deliveryReport ? "bg-success" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.deliveryReport ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.deliveryReport ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">From Phone Number</label>
- <input type="text" defaultValue="+1 202 555 0147" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" defaultValue="+1 202 555 0147" className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Test Recipient Number</label>
  <div className="flex items-center gap-2">
- <div className="flex items-center border border-border rounded-md px-2 h-[38px] bg-surface w-24">
+ <div className="flex items-center border border-border rounded-md px-2 h-9.5 bg-surface w-24">
  <span className="text-sm mr-1">🇮🇳</span>
  <span className="text-sm">+91</span>
  <ChevronRight size={14} className="text-muted ml-1 rotate-90" />
  </div>
- <input type="text" defaultValue="98765 43210" className="flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none" />
- <Button variant="outline" className="h-[38px] px-4 text-xs">Send Test SMS</Button>
+ <input type="text" defaultValue="98765 43210" className="flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
+ <Button variant="outline" className="h-9.5 px-4 text-xs">Send Test SMS</Button>
  </div>
  </div>
  </div>
@@ -192,7 +193,7 @@ function SMSSettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('enableSms')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.enableSms ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.enableSms ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.enableSms ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -205,12 +206,12 @@ function SMSSettings() {
  </div>
  </div>
  <div className="flex items-center gap-3">
- <Select defaultValue="08:00 AM" className="h-[38px] text-xs w-28">
+ <Select defaultValue="08:00 AM" className="h-9.5 text-xs w-28">
  <option>08:00 AM</option>
  <option>09:00 AM</option>
  </Select>
  <span className="text-xs text-muted">To</span>
- <Select defaultValue="09:00 PM" className="h-[38px] text-xs w-28">
+ <Select defaultValue="09:00 PM" className="h-9.5 text-xs w-28">
  <option>08:00 PM</option>
  <option>09:00 PM</option>
  </Select>
@@ -226,12 +227,12 @@ function SMSSettings() {
  </div>
  </div>
  <div className="flex items-center gap-3">
- <Select defaultValue="Normal (Recommended)" className="h-[38px] text-xs w-48">
+ <Select defaultValue="Normal (Recommended)" className="h-9.5 text-xs w-48">
  <option>Normal (Recommended)</option>
  <option>Fast</option>
  <option>Custom</option>
  </Select>
- <input type="text" defaultValue="2" className="w-16 h-[38px] rounded-md border border-border bg-surface px-3 text-sm focus:border-primary outline-none text-center" />
+ <input type="text" defaultValue="2" className="w-16 h-9.5 rounded-md border border-border bg-surface px-3 text-sm focus:ring-1 focus:ring-primary outline-none text-center" />
  <span className="text-xs text-muted">Seconds</span>
  </div>
  </div>
@@ -246,12 +247,12 @@ function SMSSettings() {
  </div>
  <div className="flex items-center gap-6">
  <button type="button" onClick={() => toggleSetting('retryFailed')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.retryFailed ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.retryFailed ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.retryFailed ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  {toggles.retryFailed && (
  <div>
  <span className="text-[10px] text-muted font-medium block mb-1">Max Retry Attempts</span>
- <Select defaultValue="3 Attempts" className="h-[32px] text-xs w-32">
+ <Select defaultValue="3 Attempts" className="h-8 text-xs w-32">
  <option>1 Attempt</option>
  <option>2 Attempts</option>
  <option>3 Attempts</option>
@@ -270,7 +271,7 @@ function SMSSettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('unicode')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.unicode ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.unicode ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.unicode ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 
@@ -283,7 +284,7 @@ function SMSSettings() {
  </div>
  </div>
  <button type="button" onClick={() => toggleSetting('urlShorten')} className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.urlShorten ? "bg-primary" : "bg-muted"}`}>
- <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.urlShorten ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+ <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.urlShorten ? "translate-x-4.5" : "translate-x-0.5"}`} />
  </button>
  </div>
 

@@ -4,6 +4,7 @@ import Select from "../../components/ui/Select";
 import Toggle from "../../components/ui/Toggle";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
+import LoadingState from "../../components/ui/LoadingState";
 import { getCommissionSettings, saveCommissionSettings } from "../../api/settingsApi";
 import { 
  Info, 
@@ -121,7 +122,7 @@ function CommissionSettings() {
  }
  };
 
- if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+ if (loading) return <LoadingState message="Loading commission settings..." />;
 
  return (
  <>
@@ -164,7 +165,7 @@ function CommissionSettings() {
  </div>
  
  <div className="p-5 overflow-x-auto">
- <table className="w-full min-w-[700px] text-left text-sm">
+ <table className="w-full min-w-175 text-left text-sm">
  <thead>
  <tr className="border-b border-border pb-2 text-xs font-semibold text-foreground">
  <th className="pb-3 w-48">Service</th>
@@ -203,7 +204,7 @@ function CommissionSettings() {
  type="text" 
  value={svc.comm} 
  onChange={(e) => handleServiceChange(idx, 'comm', e.target.value)}
- className="!py-1.5 !px-3 !text-xs text-right"
+ className="py-1.5! px-3! text-xs! text-right"
  suffix={<span className="text-xs text-muted">%</span>}
  />
  </div>
@@ -214,7 +215,7 @@ function CommissionSettings() {
  type="text" 
  value={svc.gst} 
  onChange={(e) => handleServiceChange(idx, 'gst', e.target.value)}
- className="!py-1.5 !px-3 !text-xs text-right"
+ className="py-1.5! px-3! text-xs! text-right"
  suffix={<span className="text-xs text-muted">%</span>}
  />
  </div>
@@ -258,7 +259,7 @@ function CommissionSettings() {
  type="number" 
  value={rules.minCommission} 
  onChange={(e) => setRules(p => ({ ...p, minCommission: e.target.value }))}
- className="!py-1.5 !px-3 !text-sm text-right font-medium" 
+ className="py-1.5! px-3! text-sm! text-right font-medium" 
  />
  </div>
  </div>
@@ -276,7 +277,7 @@ function CommissionSettings() {
  type="number" 
  value={rules.maxCommission} 
  onChange={(e) => setRules(p => ({ ...p, maxCommission: e.target.value }))}
- className="!py-1.5 !px-3 !text-sm text-right font-medium" 
+ className="py-1.5! px-3! text-sm! text-right font-medium" 
  />
  </div>
  </div>

@@ -17,9 +17,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
-import StatCard from "../components/ui/StatCard";
 import Toggle from "../components/ui/Toggle";
 import MockMap from "../components/ui/MockMap";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import NotFoundState from "../components/ui/NotFoundState";
 import { getLocationById, updateLocation } from "../api/locationsApi";
 
 function LocationsDetails() {
@@ -38,8 +40,8 @@ function LocationsDetails() {
  if (isMounted) {
  setLocation(locData);
  }
- } catch {
- if (isMounted) setError("Unable to load location details.");
+ } catch (err) {
+ if (isMounted) setError(err);
  } finally {
  if (isMounted) setLoading(false);
  }
@@ -73,25 +75,28 @@ function LocationsDetails() {
  };
 
  if (loading) {
+ return <LoadingState message="Loading location details..." />;
+ }
+
+ const isNotFoundError =
+ (error && (error.status === 404 || error.response?.status === 404)) ||
+ (!loading && !location && !error);
+
+ if (isNotFoundError) {
  return (
- <section className="min-h-full bg-background p-4 sm:p-6 flex items-center justify-center">
- <div className="animate-pulse flex flex-col items-center">
- <div className="h-12 w-12 rounded-full bg-primary/20 mb-4"></div>
- <p className="text-sm text-muted font-medium">Loading location details...</p>
- </div>
- </section>
+ <NotFoundState
+ title="Location Not Found"
+ message="We couldn't locate the location details. It may have been deleted or doesn't exist."
+ backAction={() => navigate("/locations")}
+ backLabel="Back to Locations"
+ />
  );
  }
 
- if (error || !location) {
+ if (error) {
  return (
  <section className="min-h-full bg-background p-4 sm:p-6">
- <div className="rounded-xl border border-border bg-surface p-6 flex flex-col items-center justify-center h-48">
- <p className="text-sm text-danger mb-4 font-medium">{error || "Location not found."}</p>
- <Button variant="secondary" size="sm" onClick={() => navigate("/locations")}>
- <ArrowLeft size={16} /> Back to Locations
- </Button>
- </div>
+ <ErrorState onRetry={() => loadData(true)} />
  </section>
  );
  }

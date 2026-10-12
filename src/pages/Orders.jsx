@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import Avatar from "../components/ui/Avatar";
 
 import Badge from "../components/ui/Badge";
+import BadgeCell from "../components/ui/BadgeCell";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import Select from "../components/ui/Select";
@@ -27,7 +28,9 @@ import StatusSelect from "../components/ui/StatusSelect";
 import Modal from "../components/ui/Modal";
 import ActionMenu from "../components/ui/ActionMenu";
 import FilterPanel from "../components/ui/FilterPanel";
-import BadgeCell from "../components/ui/BadgeCell";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import EmptyState from "../components/ui/EmptyState";
 import { getOrders, updateOrderStatus } from "../api/ordersApi";
 import { exportToCSV } from "../utils/exportUtils";
 
@@ -458,6 +461,11 @@ function Orders() {
  {/* =========================
  Table Card
  ========================== */}
+ {error ? (
+ <div className="mt-2">
+ <ErrorState onRetry={loadOrders} />
+ </div>
+ ) : (
  <Card noPadding className="flex flex-col mt-2">
  <Table
  headers={[
@@ -482,8 +490,8 @@ function Orders() {
  >
  {loading ? (
  <tr>
- <td colSpan={9} className="p-10 text-center text-sm text-muted">
- Loading orders...
+ <td colSpan={10}>
+ <LoadingState message="Loading orders..." />
  </td>
  </tr>
  ) : paginatedOrders.length ? (
@@ -602,20 +610,15 @@ function Orders() {
  </tr>
  ))
  ) : (
- <tr>
- <td colSpan={9} className="p-10 text-center">
- <Package size={30} className="mx-auto text-muted" />
- <p className="mt-2 text-sm font-medium text-foreground">
- No orders found
- </p>
- <p className="mt-1 text-xs text-muted">
- Try adjusting your filters or search query.
- </p>
- </td>
- </tr>
+ <EmptyState
+ colSpan={10}
+ message="No orders found."
+ description={hasFilters ? "Try adjusting your filters or search query." : undefined}
+ />
  )}
  </Table>
  </Card>
+ )}
 
  {/* =========================
  Order Details Modal

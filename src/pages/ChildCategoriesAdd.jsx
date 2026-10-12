@@ -5,6 +5,9 @@ import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import NotFoundState from "../components/ui/NotFoundState";
 import { createCategory, getCategoryById, updateCategory, getCategories } from "../api/categoriesApi";
 import { getCategoryItemsByCategory as getProductsByCategory } from "../api/categoryItemsApi";
 
@@ -152,7 +155,7 @@ function ChildCategoriesAdd() {
  }
  }
  } catch (err) {
- setError("Unable to load category details.");
+ setError(err);
  } finally {
  setLoading(false);
  }
@@ -234,6 +237,26 @@ function ChildCategoriesAdd() {
       navigate(`/categories/${form.parentId}`);
     }
   };
+
+  if (isEditing && loading && !form.name) {
+    return <LoadingState message="Loading subcategory details..." />;
+  }
+
+  const isNotFoundError =
+    isEditing &&
+    ((error && (error.status === 404 || error.response?.status === 404)) ||
+      (!loading && !dbId && error));
+
+  if (isNotFoundError) {
+    return (
+      <NotFoundState
+        title="Subcategory Not Found"
+        message="The subcategory you are trying to edit does not exist or has been removed."
+        backAction={() => navigate("/categories")}
+        backLabel="Back to Categories"
+      />
+    );
+  }
 
   return (
     <section className="min-h-full bg-background p-4 sm:p-6 pb-20">
@@ -378,9 +401,10 @@ function ChildCategoriesAdd() {
 
  {/* Error Message */}
  {error && (
- <div className="rounded-xl border border-danger/30 bg-danger/5 p-4 text-center text-sm font-medium text-danger shadow-sm">
- {error}
- </div>
+ <ErrorState
+ message={typeof error === "string" ? error : undefined}
+ onRetry={isEditing ? loadCategoryData : undefined}
+ />
  )}
 
  {/* Read-Only Related Data (only shown on Edit) */}

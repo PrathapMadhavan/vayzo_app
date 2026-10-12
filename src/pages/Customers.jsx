@@ -23,6 +23,9 @@ import Table from "../components/ui/Table";
 import Card from "../components/ui/Card";
 import Modal from "../components/ui/Modal";
 import FilterPanel from "../components/ui/FilterPanel";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import EmptyState from "../components/ui/EmptyState";
 
 import ActionMenu from "../components/ui/ActionMenu";
 
@@ -77,36 +80,22 @@ function Customers() {
  const [currentPage, setCurrentPage] = useState(1);
  const itemsPerPage = 20;
 
- useEffect(() => {
- let isMounted = true;
+  const loadCustomers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getCustomers();
+      setCustomers(data || []);
+    } catch (err) {
+      setError(err.message || "Unable to connect to the server. Please check your connection or server status.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
- const loadCustomers = async () => {
- try {
- setLoading(true);
- setError("");
-
- const data = await getCustomers();
-
- if (isMounted) {
- setCustomers(data);
- }
- } catch (err) {
- if (isMounted) {
- setError("Unable to load customers.");
- }
- } finally {
- if (isMounted) {
- setLoading(false);
- }
- }
- };
-
- loadCustomers();
-
- return () => {
- isMounted = false;
- };
- }, []);
+  useEffect(() => {
+    loadCustomers();
+  }, []);
 
  const filteredCustomers = useMemo(() => {
  const query = searchText.trim().toLowerCase();
@@ -282,11 +271,11 @@ function Customers() {
 
  <Card noPadding className="flex flex-col">
  {/* Table Section */}
- {error ? (
- <div className="m-6 rounded-xl border border-danger/30 bg-danger/5 p-8 text-center text-sm font-medium text-danger">
- {error}
- </div>
- ) : (
+        {loading ? (
+          <LoadingState message="Loading customers..." />
+        ) : error ? (
+          <ErrorState message={error} onRetry={loadCustomers} />
+        ) : (
  <Table
  headers={customerTableHeaders}
  currentCount={paginatedCustomers.length}
@@ -297,16 +286,7 @@ function Customers() {
  minWidth="1000px"
  className="border-0 shadow-none rounded-none border-t border-border"
  >
- {loading ? (
- <tr>
- <td
- colSpan={customerTableHeaders.length}
- className="p-10 text-center text-sm text-muted"
- >
- Loading customers...
- </td>
- </tr>
- ) : paginatedCustomers.length > 0 ? (
+          {paginatedCustomers.length > 0 ? (
  paginatedCustomers.map((customer, index) => (
  <tr
  key={customer.public_id}
@@ -416,14 +396,10 @@ function Customers() {
  </tr>
  ))
  ) : (
- <tr>
- <td
- colSpan={customerTableHeaders.length}
- className="p-10 text-center text-sm text-muted"
- >
- No customers found for the selected search and filters.
- </td>
- </tr>
+            <EmptyState
+              colSpan={customerTableHeaders.length}
+              message={hasFilters ? "No customers found matching your filters." : "No customers found."}
+            />
  )}
  </Table>
  )}

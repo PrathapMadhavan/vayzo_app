@@ -5,8 +5,11 @@ import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import StatCard from "../components/ui/StatCard";
-import { getOfferById, deleteOffer } from "../api/offersApi";
 import Modal from "../components/ui/Modal";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import NotFoundState from "../components/ui/NotFoundState";
+import { getOfferById, deleteOffer } from "../api/offersApi";
 
 const statusBadgeMap = {
  ACTIVE: "success",
@@ -45,7 +48,7 @@ export default function OffersDetails() {
  const data = await getOfferById(offerId);
  setOffer(data);
  } catch (err) {
- setError("Unable to load offer details.");
+ setError(err);
  } finally {
  setLoading(false);
  }
@@ -69,25 +72,38 @@ export default function OffersDetails() {
  };
 
  if (loading) {
+ return <LoadingState message="Loading offer details..." />;
+ }
+
+ const isNotFoundError =
+ (error && (error.status === 404 || error.response?.status === 404)) ||
+ (!loading && !offer && !error);
+
+ if (isNotFoundError) {
  return (
- <div className="flex h-full items-center justify-center p-8 text-muted">
- Loading offer details...
- </div>
+ <NotFoundState
+ title="Offer Not Found"
+ message="We couldn't locate the offer details. It may have been deleted or expired."
+ backAction={() => navigate("/offers")}
+ backLabel="Back to Offers"
+ />
  );
  }
 
- if (error || !offer) {
+ if (error) {
  return (
- <div className="flex h-full flex-col items-center justify-center p-8 text-center">
- <div className="mb-4 text-danger">
- <Tag size={48} />
- </div>
- <h2 className="mb-2 text-xl font-bold text-foreground">Error</h2>
- <p className="text-sm text-danger">{error || "Offer not found."}</p>
- <Button variant="secondary" className="mt-6" onClick={() => navigate("/offers")}>
- Back to Offers
- </Button>
- </div>
+ <section className="min-h-full bg-background p-4 sm:p-6">
+ <ErrorState onRetry={() => {
+ if (offerId) {
+ setLoading(true);
+ setError("");
+ getOfferById(offerId)
+ .then(setOffer)
+ .catch(setError)
+ .finally(() => setLoading(false));
+ }
+ }} />
+ </section>
  );
  }
 
@@ -101,7 +117,7 @@ export default function OffersDetails() {
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
  <div className="flex items-center gap-3">
  <button 
- onClick={() => navigate("/offers")}
+ onClick={() => navigate(-1)}
  className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-surface text-muted hover:bg-background hover:text-foreground transition-colors"
  >
  <ArrowLeft size={18} />

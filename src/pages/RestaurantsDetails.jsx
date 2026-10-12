@@ -29,6 +29,9 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import NotFoundState from "../components/ui/NotFoundState";
 import Card from "../components/ui/Card";
 import Modal from "../components/ui/Modal";
 import Input from "../components/ui/Input";
@@ -324,37 +327,33 @@ function RestaurantsDetails() {
     }
   }, [editingMenuItem?.itemMode, restaurantId]);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchRestaurant = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getRestaurantById(restaurantId);
-
-        if (data && data.menuItems) {
-          data.menuItems = data.menuItems.map((item) => {
-            if (!item.id) {
-              return {
-                ...item,
-                id: `legacy-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-              };
-            }
-            return item;
-          });
-        }
-
-        if (isMounted) setRestaurant(data);
-      } catch (err) {
-        if (isMounted) setError("Failed to load restaurant details.");
-      } finally {
-        if (isMounted) setLoading(false);
+  const loadRestaurant = async () => {
+    if (!restaurantId) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getRestaurantById(restaurantId);
+      if (data && data.menuItems) {
+        data.menuItems = data.menuItems.map((item) => {
+          if (!item.id) {
+            return {
+              ...item,
+              id: "legacy-" + Date.now() + "-" + Math.random().toString(36).substr(2, 9),
+            };
+          }
+          return item;
+        });
       }
-    };
-    fetchRestaurant();
-    return () => {
-      isMounted = false;
-    };
+      setRestaurant(data);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadRestaurant();
   }, [restaurantId]);
 
   useEffect(() => {
@@ -506,25 +505,45 @@ function RestaurantsDetails() {
 
   if (loading) {
     return (
-      <section className="min-h-full bg-background p-4 sm:p-6">
-        <div className="rounded-xl border border-border bg-surface p-6 text-sm text-muted">
-          Loading restaurant details...
-        </div>
+      <section className="min-h-[60vh] bg-background p-4 sm:p-6 flex items-center justify-center">
+        <LoadingState message="Loading restaurant details..." />
       </section>
     );
   }
 
-  if (error || !restaurant) {
+  if (error) {
+    const isNotFound = error?.status === 404 || error?.message?.toLowerCase().includes("not found");
+    if (isNotFound) {
+      return (
+        <section className="min-h-[60vh] bg-background p-4 sm:p-6 flex items-center justify-center">
+          <NotFoundState
+            title="Restaurant Not Found"
+            message="The requested restaurant could not be found or does not exist."
+            backPath="/restaurants"
+            backLabel="Back to Restaurants"
+          />
+        </section>
+      );
+    }
     return (
-      <section className="min-h-full bg-background p-4 sm:p-6">
-        <div className="rounded-xl border border-border bg-surface p-6 flex flex-col items-start gap-4">
-          <p className="text-sm text-danger">
-            {error || "Restaurant not found."}
-          </p>
-          <Button variant="secondary" onClick={() => navigate("/restaurants")}>
-            <ArrowLeft size={16} className="mr-2" /> Back to Restaurants
-          </Button>
-        </div>
+      <section className="p-4 sm:p-6">
+        <ErrorState
+          message={typeof error === "string" ? error : error?.message || "Unable to connect to the server. Please check your connection or server status."}
+          onRetry={loadRestaurant}
+        />
+      </section>
+    );
+  }
+
+  if (!restaurant) {
+    return (
+      <section className="min-h-[60vh] bg-background p-4 sm:p-6 flex items-center justify-center">
+        <NotFoundState
+          title="Restaurant Not Found"
+          message="The requested restaurant could not be found."
+          backPath="/restaurants"
+          backLabel="Back to Restaurants"
+        />
       </section>
     );
   }

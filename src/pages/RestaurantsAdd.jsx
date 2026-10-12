@@ -21,6 +21,9 @@ import {
 import { useNavigate, useParams, Link } from "react-router-dom";
 
 import Button from "../components/ui/Button";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import NotFoundState from "../components/ui/NotFoundState";
 import Input from "../components/ui/Input";
 import StatusSelect from "../components/ui/StatusSelect";
 import Card from "../components/ui/Card";
@@ -336,8 +339,8 @@ function RestaurantsAdd() {
         }));
         if (data.logo) setLogoPreview(data.logo);
         if (data.coverImage) setCoverPreview(data.coverImage);
-      } catch {
-        setError("Failed to load restaurant details.");
+      } catch (err) {
+        setError(err);
       } finally {
         setFetchLoading(false);
       }
@@ -569,13 +572,37 @@ function RestaurantsAdd() {
 
   if (fetchLoading) {
     return (
-      <section className="min-h-full bg-background p-4 sm:p-6">
-        <div className="rounded-xl border border-border bg-surface p-6 text-sm text-muted">
-          Loading...
-        </div>
+      <section className="min-h-[60vh] bg-background p-4 sm:p-6 flex items-center justify-center">
+        <LoadingState message="Loading restaurant details..." />
       </section>
     );
   }
+
+  if (isEditing && error && !form.name) {
+    const errMsg = typeof error === "string" ? error : error?.message || "";
+    const isNotFound = error?.status === 404 || errMsg.toLowerCase().includes("not found");
+    if (isNotFound) {
+      return (
+        <section className="min-h-[60vh] bg-background p-4 sm:p-6 flex items-center justify-center">
+          <NotFoundState
+            title="Restaurant Not Found"
+            message="The requested restaurant could not be found or does not exist."
+            backPath="/restaurants"
+            backLabel="Back to Restaurants"
+          />
+        </section>
+      );
+    }
+    return (
+      <section className="p-4 sm:p-6">
+        <ErrorState
+          message={errMsg || "Unable to connect to the server. Please check your connection or server status."}
+          onRetry={() => window.location.reload()}
+        />
+      </section>
+    );
+  }
+
 
   return (
     <section className="min-h-full bg-background p-4 sm:p-6 lg:p-8">

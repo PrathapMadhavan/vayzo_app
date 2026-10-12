@@ -20,6 +20,9 @@ import Badge from "../components/ui/Badge";
 import Card from "../components/ui/Card";
 import Select from "../components/ui/Select";
 import Table from "../components/ui/Table";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import NotFoundState from "../components/ui/NotFoundState";
 import { getOrderById, updateOrder, updateOrderStatus } from "../api/ordersApi";
 import { getRestaurantById } from "../api/restaurantsApi";
 import { getCustomerById } from "../api/usersApi";
@@ -112,7 +115,7 @@ export default function OrderDetails() {
  console.error("Failed to load partners", err);
  }
  } catch (err) {
- setError(err.message || "Something went wrong");
+ setError(err);
  } finally {
  setLoading(false);
  }
@@ -167,29 +170,28 @@ export default function OrderDetails() {
  };
 
  if (loading) {
+ return <LoadingState message="Loading order details..." />;
+ }
+
+ const isNotFoundError =
+ (error && (error.status === 404 || error.response?.status === 404)) ||
+ (!loading && !order && !error);
+
+ if (isNotFoundError) {
  return (
- <div className="flex items-center justify-center min-h-125">
- <div className="flex flex-col items-center gap-3">
- <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
- <p className="text-sm text-muted font-medium">Loading order details...</p>
- </div>
- </div>
+ <NotFoundState
+ title="Order Not Found"
+ message="We couldn't locate the order details. It may have been deleted or doesn't exist."
+ backAction={() => navigate("/orders")}
+ backLabel="Return to Orders"
+ />
  );
  }
 
- if (error || !order) {
+ if (error) {
  return (
- <div className="flex flex-col items-center justify-center min-h-125 p-6 text-center">
- <div className="bg-danger/10 text-danger p-4 rounded-full mb-4">
- <CheckCircle size={32} />
- </div>
- <h2 className="text-xl font-bold text-foreground mb-2">Order Not Found</h2>
- <p className="text-sm text-muted mb-6 max-w-sm">
- {error || "We couldn't locate the order details. It may have been deleted or doesn't exist."}
- </p>
- <Button variant="primary" onClick={() => navigate("/orders")}>
- Return to Orders
- </Button>
+ <div className="p-6">
+ <ErrorState onRetry={fetchOrder} />
  </div>
  );
  }

@@ -32,6 +32,9 @@ import StatCard from "../components/ui/StatCard";
 import Card from "../components/ui/Card";
 import Table from "../components/ui/Table";
 import FilterPanel from "../components/ui/FilterPanel";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import EmptyState from "../components/ui/EmptyState";
 
 import { getEarnings } from "../api/earningsApi";
 import { exportToCSV } from "../utils/exportUtils";
@@ -117,9 +120,18 @@ export default function Earnings() {
  loadEarnings();
  }, [compareWith, fromDate, toDate, earningsType]);
 
- if (loading) return <div className="p-6 text-muted">Loading earnings...</div>;
- if (error || !data)
- return <div className="p-6 text-danger">{error || "No data"}</div>;
+ if (loading) return <LoadingState message="Loading earnings..." />;
+ if (error || !data) {
+ return (
+ <div className="p-6">
+ <ErrorState onRetry={() => {
+ setLoading(true);
+ setError("");
+ getEarnings().then(setData).catch((e) => setError("Failed to load earnings data")).finally(() => setLoading(false));
+ }} />
+ </div>
+ );
+ }
 
  const { stats, chartData, summary, topPartners } = data;
 
@@ -606,7 +618,10 @@ export default function Earnings() {
  minWidth="auto"
  className="border-0 shadow-none rounded-none border-t-0"
  >
- {paginatedPartners.map((dp, index) => (
+ {paginatedPartners.length === 0 ? (
+ <EmptyState colSpan={4} message="No earning partners found." />
+ ) : (
+ paginatedPartners.map((dp, index) => (
  <tr 
  key={index} 
  onClick={() => navigate(`/delivery/${dp.id}`)} 
@@ -644,7 +659,8 @@ export default function Earnings() {
  {formatAmount(dp.earnings)}
  </td>
  </tr>
- ))}
+ ))
+ )}
  </Table>
  </div>
  </Card>

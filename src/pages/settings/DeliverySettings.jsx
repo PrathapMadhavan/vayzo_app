@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Button from "../../components/ui/Button";
 import Select from "../../components/ui/Select";
+import LoadingState from "../../components/ui/LoadingState";
 import { getDeliverySettings, saveDeliverySettings } from "../../api/settingsApi";
 import { 
  Info, 
@@ -77,7 +78,7 @@ function DeliverySettings() {
  }
  };
 
- if (loading) return <div className="p-6 text-muted">Loading settings...</div>;
+ if (loading) return <LoadingState message="Loading delivery settings..." />;
 
  return (
  <>
@@ -127,7 +128,7 @@ function DeliverySettings() {
  <input
  type="text"
  defaultValue="100.00"
- className="w-full rounded-md border border-border bg-surface pl-7 pr-3 py-2 text-sm focus:border-primary outline-none"
+ className="w-full rounded-md border border-border bg-surface pl-7 pr-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none"
  />
  </div>
  </div>
@@ -137,7 +138,7 @@ function DeliverySettings() {
  </label>
  <div className="relative">
  <span className="absolute left-3 top-2 text-sm text-muted">₹</span>
- <input type="text" value={baseFee} onChange={(e) => setBaseFee(e.target.value)} className="w-full rounded-md border border-border bg-surface pl-7 pr-3 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" value={baseFee} onChange={(e) => setBaseFee(e.target.value)} className="w-full rounded-md border border-border bg-surface pl-7 pr-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  </div>
  </div>
  <div>
@@ -151,7 +152,7 @@ function DeliverySettings() {
  <input
  type="text"
  defaultValue="500.00"
- className="w-full rounded-md border border-border bg-surface pl-7 pr-3 py-2 text-sm focus:border-primary outline-none"
+ className="w-full rounded-md border border-border bg-surface pl-7 pr-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none"
  />
  </div>
  </div>
@@ -165,7 +166,7 @@ function DeliverySettings() {
  </label>
  <Select
  defaultValue="30-45 Minutes"
- className="h-[38px] text-sm"
+ className="h-9.5 text-sm"
  >
  <option>15-30 Minutes</option>
  <option>30-45 Minutes</option>
@@ -175,7 +176,7 @@ function DeliverySettings() {
  <div>
  <label className="text-xs font-medium text-foreground mb-2 block">Max Delivery Distance</label>
  <div className="relative">
- <input type="text" value={deliveryRadius} onChange={(e) => setDeliveryRadius(e.target.value)} className="w-full rounded-md border border-border bg-surface pl-3 pr-8 py-2 text-sm focus:border-primary outline-none" />
+ <input type="text" value={deliveryRadius} onChange={(e) => setDeliveryRadius(e.target.value)} className="w-full rounded-md border border-border bg-surface pl-3 pr-8 py-2 text-sm focus:ring-1 focus:ring-primary outline-none" />
  <span className="absolute right-3 top-2 text-sm text-muted">km</span>
  </div>
  </div>
@@ -192,7 +193,7 @@ function DeliverySettings() {
  className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.autoAssign ? "bg-success" : "bg-muted"}`}
  >
  <span
- className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.autoAssign ? "translate-x-[18px]" : "translate-x-0.5"}`}
+ className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.autoAssign ? "translate-x-4.5" : "translate-x-0.5"}`}
  />
  </button>
  </div>
@@ -215,7 +216,7 @@ function DeliverySettings() {
  className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.scheduleOrder ? "bg-success" : "bg-muted"}`}
  >
  <span
- className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.scheduleOrder ? "translate-x-[18px]" : "translate-x-0.5"}`}
+ className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.scheduleOrder ? "translate-x-4.5" : "translate-x-0.5"}`}
  />
  </button>
  </div>
@@ -234,7 +235,7 @@ function DeliverySettings() {
  className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.codAvailable ? "bg-success" : "bg-muted"}`}
  >
  <span
- className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.codAvailable ? "translate-x-[18px]" : "translate-x-0.5"}`}
+ className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.codAvailable ? "translate-x-4.5" : "translate-x-0.5"}`}
  />
  </button>
  </div>
@@ -256,7 +257,7 @@ function DeliverySettings() {
  className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${toggles.multiStop ? "bg-success" : "bg-muted"}`}
  >
  <span
- className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.multiStop ? "translate-x-[18px]" : "translate-x-0.5"}`}
+ className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${toggles.multiStop ? "translate-x-4.5" : "translate-x-0.5"}`}
  />
  </button>
  </div>
@@ -277,7 +278,7 @@ function DeliverySettings() {
  <label className="text-xs font-medium text-foreground mb-2 block">
  Delivery Partner Commission
  </label>
- <Select defaultValue="10%" className="h-[38px] text-sm">
+ <Select defaultValue="10%" className="h-9.5 text-sm">
  <option>5%</option>
  <option>10%</option>
  <option>15%</option>
@@ -290,7 +291,7 @@ function DeliverySettings() {
  <input
  type="number"
  defaultValue="5"
- className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none"
+ className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none"
  />
  </div>
  <div>
@@ -300,7 +301,7 @@ function DeliverySettings() {
  <input
  type="text"
  defaultValue="0.00"
- className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:border-primary outline-none"
+ className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none"
  />
  </div>
  </div>
@@ -321,7 +322,7 @@ function DeliverySettings() {
  </p>
 
  {/* Multi Select Fake Input */}
- <div className="flex min-h-[42px] w-full flex-wrap items-center justify-between rounded-md border border-border bg-surface px-3 py-1.5 cursor-pointer">
+ <div className="flex min-h-10.5 w-full flex-wrap items-center justify-between rounded-md border border-border bg-surface px-3 py-1.5 cursor-pointer">
  <div className="flex flex-wrap gap-2">
  {deliveryAreas.map((area) => (
  <div

@@ -119,29 +119,142 @@ server.post("/api/v1/auth/logout", (req, res) => {
   res.json({ success: true, message: "Logged out successfully" });
 });
 
-// 1.5 ADMIN AUTHENTICATION ENDPOINTS
+// 1.5 ADMIN AUTHENTICATION & AUDIT INFRASTRUCTURE
+const adminSessions = new Map();
+
+function getAuthenticatedAdmin(req) {
+  const auth = req.headers && req.headers.authorization;
+  if (!auth) return null;
+  const token = auth.replace("Bearer ", "").trim();
+  if (adminSessions.has(token)) {
+    return adminSessions.get(token);
+  }
+  const db = router.db.getState();
+  return (db.adminUsers && db.adminUsers[0]) || null;
+}
+
+function logAdminActivity({ req, admin, action, module, details, targetId, status = "Success" }) {
+  const currentAdmin = admin || (req ? req.admin : null) || (req ? getAuthenticatedAdmin(req) : null);
+  const user = currentAdmin ? (currentAdmin.name || currentAdmin.email || "Admin") : "Admin";
+  const adminId = currentAdmin ? (currentAdmin.id || currentAdmin.userId || null) : null;
+  const logEntry = {
+    id: "ACT" + Date.now() + Math.floor(Math.random() * 1000).toString().padStart(3, "0"),
+    adminId,
+    user,
+    action: action || "UPDATE",
+    module: module || "System",
+    details: details || "Admin action executed",
+    targetId: targetId || null,
+    timestamp: new Date().toISOString(),
+    ipAddress: (req && (req.ip || req.socket?.remoteAddress)) || "127.0.0.1",
+    status
+  };
+
+  try {
+    const db = router.db;
+    const logs = db.get("activityLogs");
+    if (logs) {
+      logs.push(logEntry).write();
+    } else {
+      db.set("activityLogs", [logEntry]).write();
+    }
+  } catch (err) {
+    console.error("Error writing activity log:", err);
+  }
+  return logEntry;
+}
+
+function createNotification({ title, message, type = "ORDER", linkPath = "/orders", targetId = null }) {
+  const db = router.db;
+  const notifications = db.get("notifications");
+  const notifList = notifications ? notifications.value() : [];
+
+  // Prevent duplicate notifications for same targetId and type
+  if (targetId && notifList.some(n => n.targetId === targetId && n.type === type)) {
+    return null;
+  }
+
+  const notifId = "NOT" + Date.now() + Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+  const notifEntry = {
+    id: notifId,
+    notificationId: notifId,
+    title,
+    message,
+    type,
+    isRead: false,
+    linkPath,
+    targetId,
+    createdAt: new Date().toISOString()
+  };
+
+  try {
+    if (notifications) {
+      notifications.unshift(notifEntry).write();
+    } else {
+      db.set("notifications", [notifEntry]).write();
+    }
+  } catch (err) {
+    console.error("Error writing notification:", err);
+  }
+  return notifEntry;
+}
+
 server.post("/api/v1/admin/auth/login", (req, res) => {
   const { email, password } = req.body;
   const db = router.db.getState();
 
   const admin = db.adminUsers.find((u) => u.email === email);
   if (!admin) {
+    logAdminActivity({
+      req,
+      admin: { name: email || "Unknown", email },
+      action: "LOGIN",
+      module: "System",
+      details: `Failed login attempt for email: ${email || "unknown"} (User not found)`,
+      status: "Failed"
+    });
     return res
       .status(404)
       .json({ success: false, message: "Invalid email or password" });
   }
   if (admin.password !== password) {
+    logAdminActivity({
+      req,
+      admin,
+      action: "LOGIN",
+      module: "System",
+      details: `Failed login attempt for admin: ${admin.name || admin.email} (Incorrect password)`,
+      status: "Failed"
+    });
     return res
       .status(401)
       .json({ success: false, message: "Invalid email or password" });
   }
   if (admin.status !== "Active" && admin.status !== "ACTIVE") {
+    logAdminActivity({
+      req,
+      admin,
+      action: "LOGIN",
+      module: "System",
+      details: `Failed login attempt for admin: ${admin.name || admin.email} (Account not active)`,
+      status: "Failed"
+    });
     return res
       .status(403)
       .json({ success: false, message: "Admin account is not active." });
   }
 
   const token = `vayzo_admin_${Math.random().toString(36).substr(2, 9)}`;
+  adminSessions.set(token, admin);
+
+  logAdminActivity({
+    req,
+    admin,
+    action: "LOGIN",
+    module: "System",
+    details: `Admin ${admin.name || admin.email} logged into the system successfully.`,
+    status: "Success"
+  });
 
   res.json({
     success: true,
@@ -186,6 +299,14 @@ server.post("/api/v1/admin/auth/verify-otp", (req, res) => {
   const { mobileNumber, otp } = req.body;
 
   if (otp !== "123456") {
+    logAdminActivity({
+      req,
+      admin: { name: mobileNumber || "Unknown" },
+      action: "LOGIN",
+      module: "System",
+      details: `Failed OTP verification attempt for mobile: ${mobileNumber}`,
+      status: "Failed"
+    });
     return res
       .status(400)
       .json({ success: false, message: "Invalid OTP. Please try again." });
@@ -203,6 +324,16 @@ server.post("/api/v1/admin/auth/verify-otp", (req, res) => {
   }
 
   const token = `vayzo_admin_${Math.random().toString(36).substr(2, 9)}`;
+  adminSessions.set(token, admin);
+
+  logAdminActivity({
+    req,
+    admin,
+    action: "LOGIN",
+    module: "System",
+    details: `Admin ${admin.name || admin.email} logged into the system successfully via OTP.`,
+    status: "Success"
+  });
 
   res.json({
     success: true,
@@ -213,6 +344,26 @@ server.post("/api/v1/admin/auth/verify-otp", (req, res) => {
       user: admin,
     },
   });
+});
+
+server.post("/api/v1/admin/auth/logout", (req, res) => {
+  const admin = getAuthenticatedAdmin(req);
+  if (admin) {
+    logAdminActivity({
+      req,
+      admin,
+      action: "LOGOUT",
+      module: "System",
+      details: `Admin ${admin.name || admin.email} logged out successfully.`,
+      status: "Success"
+    });
+  }
+  const auth = req.headers && req.headers.authorization;
+  if (auth) {
+    const token = auth.replace("Bearer ", "").trim();
+    adminSessions.delete(token);
+  }
+  res.json({ success: true, message: "Logged out successfully" });
 });
 
 server.post("/api/v1/admin/auth/forgot-password", (req, res) => {
@@ -242,9 +393,8 @@ server.post("/api/v1/admin/auth/forgot-password", (req, res) => {
   });
 });
 
-// ADMIN AUTH MIDDLEWARE
+// ADMIN AUTH & AUDIT MIDDLEWARE
 server.use((req, res, next) => {
-  // If request is for an admin endpoint and not auth, require token
   const isAdminEndpoint =
     req.path.startsWith("/adminUsers") ||
     (req.path.startsWith("/api/v1/admin") && !req.path.includes("/auth"));
@@ -254,9 +404,182 @@ server.use((req, res, next) => {
     if (!auth || !auth.startsWith("Bearer vayzo_admin_")) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
+    req.admin = getAuthenticatedAdmin(req);
+  }
+
+  // Intercept backend-level admin mutations to record audit logs automatically
+  const method = req.method;
+  const isMutation = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
+  const isAdminPath = req.path.startsWith("/api/v1/admin") || req.path.startsWith("/adminUsers");
+  const isExcluded =
+    req.path.includes("/auth/") ||
+    req.path.includes("/activity-logs") ||
+    req.path.includes("/notifications");
+
+  if (isMutation && isAdminPath && !isExcluded) {
+    res.on("finish", () => {
+      if (res.statusCode >= 200 && res.statusCode < 400) {
+        let moduleName = "System";
+        const p = req.path;
+        if (p.includes("/admin-users") || p.includes("/adminUsers")) moduleName = "Admin Users";
+        else if (p.includes("/customers") || p.includes("/users")) moduleName = "Customers";
+        else if (p.includes("/partners") || p.includes("/delivery")) moduleName = "Delivery Partners";
+        else if (p.includes("/restaurants")) moduleName = "Restaurants";
+        else if (p.includes("/requests") || p.includes("/orders")) moduleName = "Orders";
+        else if (p.includes("/categories") || p.includes("/category_items") || p.includes("/parent-items") || p.includes("/child-items")) moduleName = "Categories";
+        else if (p.includes("/offers")) moduleName = "Offers";
+        else if (p.includes("/complaints") || p.includes("/support")) moduleName = "Complaints";
+        else if (p.includes("/settings")) moduleName = "Settings";
+        else if (p.includes("/finance") || p.includes("/payments") || p.includes("/wallets")) moduleName = "Transactions";
+
+        let actionName = "UPDATE";
+        if (method === "POST") actionName = "CREATE";
+        else if (method === "DELETE") actionName = "DELETE";
+        else if (method === "PATCH" || (req.body && req.body.status !== undefined)) actionName = "STATUS_CHANGE";
+
+        const parts = req.path.split("/").filter(Boolean);
+        const lastPart = parts[parts.length - 1];
+        const targetId = lastPart && !["add", "status", "edit"].includes(lastPart) ? lastPart : null;
+
+        let details = `${actionName} operation performed on ${moduleName}`;
+        if (targetId) details += ` (ID: ${targetId})`;
+        if (req.body && req.body.name) details += `: ${req.body.name}`;
+        else if (req.body && req.body.status) details += ` (New Status: ${req.body.status})`;
+
+        logAdminActivity({
+          req,
+          admin: req.admin,
+          action: actionName,
+          module: moduleName,
+          details,
+          targetId,
+          status: "Success"
+        });
+      }
+    });
   }
 
   next();
+});
+
+// NOTIFICATIONS API ENDPOINTS
+server.get("/api/v1/admin/notifications", (req, res) => {
+  const db = router.db;
+  const notifications = db.get("notifications").value() || [];
+  let result = [...notifications];
+
+  if (req.query.type && req.query.type !== "All Types") {
+    result = result.filter(n => n.type === req.query.type);
+  }
+  if (req.query.isRead !== undefined) {
+    const isReadBool = req.query.isRead === "true";
+    result = result.filter(n => n.isRead === isReadBool);
+  }
+  if (req.query.search) {
+    const q = req.query.search.toLowerCase();
+    result = result.filter(n =>
+      (n.title && n.title.toLowerCase().includes(q)) ||
+      (n.message && n.message.toLowerCase().includes(q))
+    );
+  }
+
+  result.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  res.json(result);
+});
+
+server.get("/api/v1/admin/notifications/unread-count", (req, res) => {
+  const db = router.db;
+  const notifications = db.get("notifications").value() || [];
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+  res.json({ success: true, count: unreadCount });
+});
+
+server.patch("/api/v1/admin/notifications/mark-all-read", (req, res) => {
+  const db = router.db;
+  const notifications = db.get("notifications");
+  if (notifications) {
+    notifications.each(n => { n.isRead = true; }).write();
+  }
+  res.json({ success: true, message: "All notifications marked as read" });
+});
+
+server.delete("/api/v1/admin/notifications/clear-all", (req, res) => {
+  const db = router.db;
+  db.set("notifications", []).write();
+  res.json({ success: true, message: "All notifications cleared" });
+});
+
+server.patch("/api/v1/admin/notifications/:id", (req, res) => {
+  const db = router.db;
+  const notif = db.get("notifications").find(n => n.id === req.params.id || n.notificationId === req.params.id);
+  if (!notif.value()) {
+    return res.status(404).json({ success: false, message: "Notification not found" });
+  }
+  const updated = notif.assign(req.body).write();
+  res.json(updated);
+});
+
+server.delete("/api/v1/admin/notifications/:id", (req, res) => {
+  const db = router.db;
+  db.get("notifications").remove(n => n.id === req.params.id || n.notificationId === req.params.id).write();
+  res.json({ success: true, message: "Notification deleted" });
+});
+
+// ACTIVITY LOGS API ENDPOINTS
+server.get("/api/v1/admin/activity-logs", (req, res) => {
+  const db = router.db;
+  const logs = db.get("activityLogs").value() || [];
+  let result = [...logs];
+
+  if (req.query.action && req.query.action !== "All Actions") {
+    result = result.filter(l => l.action === req.query.action);
+  }
+  if (req.query.module && req.query.module !== "All Modules") {
+    result = result.filter(l => l.module === req.query.module);
+  }
+  if (req.query.user && req.query.user !== "All Users") {
+    result = result.filter(l => l.user === req.query.user);
+  }
+  if (req.query.searchQuery) {
+    const q = req.query.searchQuery.toLowerCase();
+    result = result.filter(l =>
+      (l.user && l.user.toLowerCase().includes(q)) ||
+      (l.action && l.action.toLowerCase().includes(q)) ||
+      (l.module && l.module.toLowerCase().includes(q)) ||
+      (l.details && l.details.toLowerCase().includes(q))
+    );
+  }
+  if (req.query.startDate || req.query.endDate) {
+    const start = req.query.startDate ? new Date(req.query.startDate) : new Date(0);
+    const end = req.query.endDate ? new Date(req.query.endDate) : new Date(8640000000000000);
+    result = result.filter(l => {
+      const d = new Date(l.timestamp);
+      return d >= start && d <= end;
+    });
+  }
+
+  result.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  res.json(result);
+});
+
+server.post("/api/v1/admin/activity-logs", (req, res) => {
+  const admin = req.admin || getAuthenticatedAdmin(req);
+  const logEntry = logAdminActivity({
+    req,
+    admin,
+    action: req.body.action || "UPDATE",
+    module: req.body.module || "System",
+    details: req.body.details || "Activity performed",
+    targetId: req.body.targetId || null,
+    status: req.body.status || "Success"
+  });
+  res.status(201).json(logEntry);
+});
+
+server.delete("/api/v1/admin/activity-logs/:id", (req, res) => {
+  const db = router.db;
+  db.get("activityLogs").remove(l => l.id === req.params.id).write();
+  res.json({ success: true, message: "Activity log deleted" });
 });
 
 // 2. PROFILE ENDPOINT
@@ -1130,6 +1453,8 @@ server.use(
     "/api/v1/admin/categories": "/categories",
     "/api/v1/admin/activity-logs/*": "/activityLogs/$1",
     "/api/v1/admin/activity-logs": "/activityLogs",
+    "/api/v1/admin/notifications/*": "/notifications/$1",
+    "/api/v1/admin/notifications": "/notifications",
     "/api/v1/admin/partner-documents/*": "/partner_documents/$1",
     "/api/v1/admin/partner-documents": "/partner_documents",
     "/api/v1/admin/partner-vehicles/*": "/partner_vehicles/$1",

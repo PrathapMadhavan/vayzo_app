@@ -90,8 +90,8 @@ export const navigationItems = [
  icon: Settings,
  },
  {
- label: "Admin Customers",
- path: "/admin-customers",
+ label: "Admin Users",
+ path: "/admin-users",
  icon: ShieldAlert,
  },
  {

@@ -23,6 +23,9 @@ import Modal from "../components/ui/Modal";
 import ActionMenu from "../components/ui/ActionMenu";
 import BadgeCell from "../components/ui/BadgeCell";
 import FilterPanel from "../components/ui/FilterPanel";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import EmptyState from "../components/ui/EmptyState";
 
 import { getDeliveryPartners, deleteDeliveryPartner } from "../api/deliveryPartnersApi";
 import { exportToCSV } from "../utils/exportUtils";
@@ -68,35 +71,22 @@ function DeliveryPartners() {
  const [currentPage, setCurrentPage] = useState(1);
  const itemsPerPage = 20;
 
- useEffect(() => {
- let isMounted = true;
+  const loadPartners = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getDeliveryPartners();
+      setPartners(data || []);
+    } catch (err) {
+      setError(err.message || "Unable to connect to the server. Please check your connection or server status.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
- const loadPartners = async () => {
- try {
- setLoading(true);
- setError("");
- const data = await getDeliveryPartners();
-
- if (isMounted) {
- setPartners(data);
- }
- } catch (err) {
- if (isMounted) {
- setError(err.message || "Failed to load delivery partners");
- }
- } finally {
- if (isMounted) {
- setLoading(false);
- }
- }
- };
-
- loadPartners();
-
- return () => {
- isMounted = false;
- };
- }, []);
+  useEffect(() => {
+    loadPartners();
+  }, []);
 
  const filteredPartners = useMemo(() => {
  const searchValue = search.trim().toLowerCase();
@@ -298,11 +288,11 @@ function DeliveryPartners() {
  </Card>
 
  <Card noPadding className="flex flex-col relative overflow-hidden">
- {error ? (
- <div className="m-6 rounded-xl border border-danger/30 bg-danger/5 p-8 text-center text-sm font-medium text-danger">
- {error}
- </div>
- ) : (
+        {loading ? (
+          <LoadingState message="Loading delivery partners..." />
+        ) : error ? (
+          <ErrorState message={error} onRetry={loadPartners} />
+        ) : (
  <Table
  headers={deliveryPartnerTableHeaders}
  currentCount={paginatedPartners.length}
@@ -313,16 +303,7 @@ function DeliveryPartners() {
  minWidth="1000px"
  className="border-0 shadow-none rounded-none border-t border-border"
  >
- {loading ? (
- <tr>
- <td
- colSpan={deliveryPartnerTableHeaders.length}
- className="p-10 text-center text-sm text-muted"
- >
- Loading delivery partners...
- </td>
- </tr>
- ) : paginatedPartners.length ? (
+          {paginatedPartners.length ? (
  paginatedPartners.map((partner, index) => (
  <tr
  key={partner.id}
@@ -461,15 +442,10 @@ function DeliveryPartners() {
  </tr>
  ))
  ) : (
- <tr>
- <td
- colSpan={deliveryPartnerTableHeaders.length}
- className="p-10 text-center text-sm text-muted"
- >
- No delivery partners found for the selected search and
- filters.
- </td>
- </tr>
+            <EmptyState
+              colSpan={deliveryPartnerTableHeaders.length}
+              message={hasFilters ? "No delivery partners found matching your filters." : "No delivery partners found."}
+            />
  )}
  </Table>
  )}

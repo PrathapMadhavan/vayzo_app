@@ -14,6 +14,9 @@ import Modal from "../components/ui/Modal";
 import ActionMenu from "../components/ui/ActionMenu";
 import DateRangeInput from "../components/ui/DateRangeInput";
 import FilterPanel from "../components/ui/FilterPanel";
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import EmptyState from "../components/ui/EmptyState";
 
 import { getComplaints, updateComplaint, deleteComplaint } from "../api/complaintsApi";
 import { exportToCSV } from "../utils/exportUtils";
@@ -92,26 +95,22 @@ function Complaints() {
  setUpdateError("");
  };
 
- useEffect(() => {
- let isMounted = true;
- const loadComplaints = async () => {
- try {
- setLoading(true);
- setError(null);
- const data = await getComplaints();
- if (isMounted) {
- setComplaints(data);
- // Do NOT auto-open the drawer — user must click View Details
- }
- } catch (err) {
- if (isMounted) setError("Failed to load complaints");
- } finally {
- if (isMounted) setLoading(false);
- }
- };
- loadComplaints();
- return () => { isMounted = false; };
- }, []);
+  const loadComplaints = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getComplaints();
+      setComplaints(data);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadComplaints();
+  }, []);
 
  const handleUpdateComplaint = async () => {
  if (!selectedComplaint) return;
@@ -280,7 +279,7 @@ function Complaints() {
  value={userType}
  options={typeOptions}
  onChange={(e) => setUserType(e.target.value)}
- className="w-full lg:w-[160px]"
+ className="w-full lg:w-40"
  />
  <DateRangeInput
  id="complaints-date"
@@ -288,7 +287,7 @@ function Complaints() {
  toValue={toDate}
  onFromChange={(e) => setFromDate(e.target.value)}
  onToChange={(e) => setToDate(e.target.value)}
- className="w-full lg:w-[250px]"
+ className="w-full lg:w-62.5"
  />
  </>
  }
@@ -299,8 +298,8 @@ function Complaints() {
 
  <Card noPadding className="flex flex-col overflow-x-auto min-w-0">
  {error ? (
- <div className="m-6 rounded-xl border border-danger/30 bg-danger/5 p-8 text-center text-sm font-medium text-danger">
- {error}
+ <div className="p-6">
+ <ErrorState onRetry={loadComplaints} />
  </div>
  ) : (
  <Table
@@ -315,8 +314,8 @@ function Complaints() {
  >
  {loading ? (
  <tr>
- <td colSpan={tableHeaders.length} className="p-10 text-center text-sm text-muted">
- Loading complaints...
+ <td colSpan={tableHeaders.length}>
+ <LoadingState message="Loading complaints..." />
  </td>
  </tr>
  ) : paginatedComplaints.length ? (
@@ -395,11 +394,11 @@ function Complaints() {
  </tr>
  ))
  ) : (
- <tr>
- <td colSpan={tableHeaders.length} className="p-10 text-center text-sm text-muted">
- No complaints found.
- </td>
- </tr>
+ <EmptyState
+ colSpan={tableHeaders.length}
+ message="No complaints found."
+ description={hasFilters ? "Try adjusting your filters or search query." : undefined}
+ />
  )}
  </Table>
  )}
@@ -416,7 +415,7 @@ function Complaints() {
 
  {/* Right-Side Drawer */}
  <div 
- className={`fixed inset-y-0 right-0 z-50 w-full sm:w-[450px] bg-surface border-l border-border shadow-2xl transform transition-transform duration-300 flex flex-col ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
+ className={`fixed inset-y-0 right-0 z-50 w-full sm:w-112.5 bg-surface border-l border-border shadow-2xl transform transition-transform duration-300 flex flex-col ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
  >
  {drawerOpen && selectedComplaint && (
  <>

@@ -20,7 +20,9 @@ import BadgeCell from "../components/ui/BadgeCell";
 import ActionMenu from "../components/ui/ActionMenu";
 import FilterPanel from "../components/ui/FilterPanel";
 import Toggle from "../components/ui/Toggle";
-
+import LoadingState from "../components/ui/LoadingState";
+import ErrorState from "../components/ui/ErrorState";
+import EmptyState from "../components/ui/EmptyState";
 import { getCategories, deleteCategory, updateCategory } from "../api/categoriesApi";
 import { getAllParentItems } from "../api/parentItemsApi";
 import { getAllChildItems } from "../api/childItemsApi";
@@ -308,9 +310,7 @@ export default function Categories() {
  {/* Categories table */}
  <div className="flex flex-col gap-6 mt-2">
  {error ? (
- <div className="p-8 text-center text-sm font-medium text-danger">
- {error}
- </div>
+ <ErrorState onRetry={loadCategories} />
  ) : (
  <Table
  headers={categoryTableHeaders}
@@ -324,11 +324,8 @@ export default function Categories() {
  >
  {loading ? (
  <tr>
- <td
- colSpan={categoryTableHeaders.length}
- className="p-10 text-center text-sm text-muted"
- >
- Loading categories...
+ <td colSpan={categoryTableHeaders.length}>
+ <LoadingState message="Loading categories..." />
  </td>
  </tr>
  ) : paginatedCategories.length ? (
@@ -433,14 +430,11 @@ export default function Categories() {
  </tr>
  ))
  ) : (
- <tr>
- <td
+ <EmptyState
  colSpan={categoryTableHeaders.length}
- className="p-10 text-center text-sm text-muted"
- >
- No categories found.
- </td>
- </tr>
+ message="No categories found."
+ description={hasFilters ? "Try adjusting your filters or search query." : undefined}
+ />
  )}
  </Table>
  )}
