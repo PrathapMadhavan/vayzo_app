@@ -728,7 +728,8 @@ export default function CustomerDetails() {
  {requests.map((req) => (
  <tr
  key={req.public_id || req.id}
- className="border-b border-border last:border-0 hover:bg-muted/5 transition-colors"
+ onClick={() => navigate(`/orders/${req.id || req.public_id}`)}
+ className="border-b border-border last:border-0 hover:bg-muted/5 transition-colors cursor-pointer"
  >
  <td className="px-4 py-3 font-medium text-foreground">
  {req.public_id || req.id}
@@ -737,7 +738,7 @@ export default function CustomerDetails() {
  {req.service_type || req.type || "—"}
  </td>
  <td className="px-4 py-3 font-medium">
- ₹{req.amount?.toFixed(2) ?? "0.00"}
+ ₹{Number(req.total_amount || req.total_estimated_amount || req.amount || 0).toFixed(2)}
  </td>
  <td className="px-4 py-3">
  <Badge>{req.status}</Badge>

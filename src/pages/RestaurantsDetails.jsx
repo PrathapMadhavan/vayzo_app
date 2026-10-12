@@ -51,6 +51,7 @@ import { getParentItemsByCategory } from "../api/parentItemsApi";
 import { getChildItemsByParentItem } from "../api/childItemsApi";
 import { getProductById, getProducts, addProduct } from "../api/productsApi";
 import { fileToBase64 } from "../utils/fileUtils";
+import { apiRequest } from "../api/apiClient";
 
 function CustomToggle({ checked, onChange }) {
   return (
@@ -190,6 +191,8 @@ function RestaurantsDetails() {
   };
 
   const [activeTab, setActiveTab] = useState("Menu Items");
+  const [restaurantOrders, setRestaurantOrders] = useState([]);
+  const [restaurantReviews, setRestaurantReviews] = useState([]);
   const [categoryParentItems, setCategoryParentItems] = useState([]);
   const [parentChildItems, setParentChildItems] = useState([]);
 
@@ -345,6 +348,24 @@ function RestaurantsDetails() {
         });
       }
       setRestaurant(data);
+
+      try {
+        const [ordersRes, reviewsRes] = await Promise.all([
+          apiRequest(`/api/v1/admin/requests?restaurant_id=${restaurantId}`).catch(() => []),
+          apiRequest(`/ratings_reviews?restaurant_id=${restaurantId}`).catch(() => [])
+        ]);
+        const ordersList = Array.isArray(ordersRes) ? ordersRes : (ordersRes?.data || []);
+        const reviewsList = Array.isArray(reviewsRes) ? reviewsRes : (reviewsRes?.data || []);
+        setRestaurantOrders(ordersList);
+        setRestaurantReviews(reviewsList);
+
+        if (reviewsList.length > 0) {
+          const avg = Number((reviewsList.reduce((s, r) => s + Number(r.rating || 0), 0) / reviewsList.length).toFixed(1));
+          setRestaurant(prev => prev ? ({ ...prev, rating: avg, reviewsCount: reviewsList.length }) : prev);
+        }
+      } catch (e) {
+        console.error("Failed to load restaurant orders or reviews", e);
+      }
     } catch (err) {
       setError(err);
     } finally {
@@ -1047,18 +1068,41 @@ function RestaurantsDetails() {
         )}
 
         {activeTab === "Orders" && (
-          <div className="text-center py-20 px-4 bg-surface rounded-xl border border-border border-dashed">
-            <ShoppingBag
-              size={48}
-              strokeWidth={1.5}
-              className="mx-auto text-muted/30 mb-4"
-            />
-            <h3 className="text-base font-semibold text-foreground mb-1">
-              No Orders Available
-            </h3>
-            <p className="text-sm text-muted max-w-sm mx-auto">
-              This restaurant currently has no order history to display.
-            </p>
+          <div>
+            {restaurantOrders && restaurantOrders.length > 0 ? (
+              <div className="space-y-3">
+                {restaurantOrders.map((ord) => (
+                  <Card key={ord.id} className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-primary/50 transition-colors">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-foreground">Order #{ord.id}</span>
+                        <Badge variant="info">{ord.status}</Badge>
+                      </div>
+                      <p className="text-xs text-muted mt-1">
+                        Customer: {ord.customer?.name || ord.customer_id} • Amount: ₹{ord.total_amount || ord.total_estimated_amount || 0} • {ord.created_at ? new Date(ord.created_at).toLocaleString() : ""}
+                      </p>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => navigate(`/orders/${ord.id}`)}>
+                      View Details
+                    </Button>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 px-4 bg-surface rounded-xl border border-border border-dashed">
+                <ShoppingBag
+                  size={48}
+                  strokeWidth={1.5}
+                  className="mx-auto text-muted/30 mb-4"
+                />
+                <h3 className="text-base font-semibold text-foreground mb-1">
+                  No Orders Available
+                </h3>
+                <p className="text-sm text-muted max-w-sm mx-auto">
+                  This restaurant currently has no order history to display.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -1079,18 +1123,48 @@ function RestaurantsDetails() {
         )}
 
         {activeTab === "Reviews" && (
-          <div className="text-center py-20 px-4 bg-surface rounded-xl border border-border border-dashed">
-            <Star
-              size={48}
-              strokeWidth={1.5}
-              className="mx-auto text-muted/30 mb-4"
-            />
-            <h3 className="text-base font-semibold text-foreground mb-1">
-              No Ratings or Complaints Available
-            </h3>
-            <p className="text-sm text-muted max-w-sm mx-auto">
-              This restaurant has not received any reviews or complaints yet.
-            </p>
+          <div>
+            {restaurantReviews && restaurantReviews.length > 0 ? (
+              <div className="space-y-4">
+                {restaurantReviews.map((rev) => (
+                  <Card key={rev.id} className="p-5">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="flex text-warning">
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <Star
+                              key={s}
+                              size={14}
+                              className={s <= Number(rev.rating) ? "fill-warning text-warning" : "text-muted/30"}
+                            />
+                          ))}
+                        </div>
+                        <span className="font-bold text-sm text-foreground">{rev.rating} / 5</span>
+                      </div>
+                      <span className="text-xs text-muted">{rev.created_at ? new Date(rev.created_at).toLocaleDateString() : ""}</span>
+                    </div>
+                    {rev.comment && <p className="text-sm text-foreground mt-1">{rev.comment}</p>}
+                    <p className="text-xs text-muted mt-2">
+                      Order: #{rev.request_id || rev.order_id || "--"} • Customer: {rev.customer_id || "--"}
+                    </p>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 px-4 bg-surface rounded-xl border border-border border-dashed">
+                <Star
+                  size={48}
+                  strokeWidth={1.5}
+                  className="mx-auto text-muted/30 mb-4"
+                />
+                <h3 className="text-base font-semibold text-foreground mb-1">
+                  No Ratings or Complaints Available
+                </h3>
+                <p className="text-sm text-muted max-w-sm mx-auto">
+                  This restaurant has not received any reviews or complaints yet.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

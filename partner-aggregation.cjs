@@ -61,6 +61,13 @@ function getPartnerAggregatedData(db, partnerId) {
   const completionRate = totalOrders > 0 ? ((completedCount / totalOrders) * 100).toFixed(1) : 0;
   const cancellationRate = totalOrders > 0 ? ((partnerCancelledCount / totalOrders) * 100).toFixed(1) : 0;
 
+  // Ratings & Reviews calculation
+  const partnerReviews = (db.ratings_reviews || []).filter(r => r.partner_id === pId || r.partner_id === partnerId || (profile && r.partner_id === profile.id));
+  const reviewCount = partnerReviews.length;
+  const ratingAvg = reviewCount > 0 
+    ? Number((partnerReviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) / reviewCount).toFixed(1))
+    : (profile ? profile.rating_avg || 0 : 0);
+
   // Vehicle
   const vehicle = db.partner_vehicles ? db.partner_vehicles.find(v => v.partner_id === pId) : null;
   
@@ -89,8 +96,8 @@ function getPartnerAggregatedData(db, partnerId) {
       email: user.email,
       joinedAt: user.joinedOn || (profile ? profile.joined_at : ''),
       location: profile ? profile.city : (legacyPartner ? legacyPartner.city : ''),
-      rating: profile ? profile.rating_avg : 0,
-      reviewCount: profile ? profile.rating_count : 0,
+      rating: ratingAvg,
+      reviewCount: reviewCount,
       totalOrders,
       totalEarnings,
       todayEarnings,

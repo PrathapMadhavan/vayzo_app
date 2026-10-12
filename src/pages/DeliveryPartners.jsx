@@ -341,7 +341,7 @@ function DeliveryPartners() {
  {partner.name}
  </span>
  <span className="flex items-center gap-1 text-xs font-medium text-amber-500">
- <span className="text-amber-500 text-sm">★</span>{" "}
+ <span className="text-amber-500 text-sm">★</span> {partner.rating ? Number(partner.rating).toFixed(1) : "-"}
  </span>
  </div>
  </div>

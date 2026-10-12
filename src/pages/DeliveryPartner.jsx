@@ -36,6 +36,7 @@ import Button from "../components/ui/Button";
 
 import { getDeliveryPartnerById, updateDeliveryPartner, deleteDeliveryPartner } from "../api/deliveryPartnersApi";
 import { createActivityLog } from "../api/activityLogsApi";
+import { apiRequest } from "../api/apiClient";
 import Modal from "../components/ui/Modal";
 import Avatar from "../components/ui/Avatar";
 
@@ -84,6 +85,7 @@ export default function DeliveryPartner() {
  const [error, setError] = useState(null);
  
  const [activeTab, setActiveTab] = useState('overview');
+ const [partnerReviews, setPartnerReviews] = useState([]);
  
  const [messagingModalOpen, setMessagingModalOpen] = useState(false);
  const [messageText, setMessageText] = useState("");
@@ -233,6 +235,14 @@ export default function DeliveryPartner() {
  setError(null);
  const data = await getDeliveryPartnerById(id);
  setPartnerData(data);
+ try {
+   const revRes = await apiRequest(`/api/v1/admin/partners/${id}/reviews`).catch(() => null);
+   if (revRes && revRes.data && Array.isArray(revRes.data.reviews)) {
+     setPartnerReviews(revRes.data.reviews);
+   }
+ } catch (e) {
+   console.error("Failed to fetch partner reviews", e);
+ }
  } catch (err) {
       setError(err);
  } finally {
@@ -405,10 +415,10 @@ export default function DeliveryPartner() {
                   partner?.status === "Blocked" ? "cursor-not-allowed opacity-80" : "cursor-pointer hover:opacity-80 transition-opacity"
                 } ${
                   partner?.status?.toLowerCase() === "active"
-                    ? "!bg-success"
+                    ? "bg-success!"
                     : partner?.status?.toLowerCase() === "blocked"
-                    ? "!bg-danger"
-                    : "!bg-warning"
+                    ? "bg-danger!"
+                    : "bg-warning!"
                 }`}
               >
                 {partner?.status || '--'}
@@ -551,7 +561,7 @@ export default function DeliveryPartner() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-border/50 text-xs text-muted uppercase tracking-wider bg-muted/5">
-                      <th className="px-5 py-3 font-medium whitespace-nowrap w-[60px]">Event</th>
+                      <th className="px-5 py-3 font-medium whitespace-nowrap w-15">Event</th>
                       <th className="px-5 py-3 font-medium whitespace-nowrap">Description</th>
                       <th className="px-5 py-3 font-medium whitespace-nowrap text-right">Date & Time</th>
                     </tr>
@@ -771,7 +781,35 @@ export default function DeliveryPartner() {
  <h3 className="font-semibold text-foreground">Ratings & Complaints</h3>
  </div>
  <div className="p-5">
- <EmptyState message="No ratings or complaints available." icon={Star} />
+ {partnerReviews && partnerReviews.length > 0 ? (
+   <div className="space-y-4">
+     {partnerReviews.map((rev) => (
+       <div key={rev.id} className="p-4 rounded-xl border border-border bg-background">
+         <div className="flex items-center justify-between mb-2">
+           <div className="flex items-center gap-2">
+             <div className="flex text-warning">
+               {[1, 2, 3, 4, 5].map((s) => (
+                 <Star
+                   key={s}
+                   size={14}
+                   className={s <= Number(rev.rating) ? "fill-warning text-warning" : "text-muted/30"}
+                 />
+               ))}
+             </div>
+             <span className="font-bold text-sm text-foreground">{rev.rating} / 5</span>
+           </div>
+           <span className="text-xs text-muted">{rev.created_at ? new Date(rev.created_at).toLocaleDateString() : ""}</span>
+         </div>
+         {rev.comment && <p className="text-sm text-foreground mt-1">{rev.comment}</p>}
+         <p className="text-xs text-muted mt-2">
+           Order: #{rev.request_id || rev.order_id || "--"} • Customer: {rev.customer_id || "--"}
+         </p>
+       </div>
+     ))}
+   </div>
+ ) : (
+   <EmptyState message="No ratings or complaints available." icon={Star} />
+ )}
  </div>
  </div>
  )}

@@ -65,6 +65,10 @@ function getAuthenticatedUserId(req) {
   const token = auth.split(" ")[1];
   if (token === "TOKEN_CUSTA") return "UFt__KjoFIQ"; // Deepa's internal ID
   if (token === "TOKEN_CUSTB") return "xwLm2deEz3g"; // Meera's internal ID
+  if (token === "TOKEN_CUST_HARI" || token === "TOKEN_01M3S23F7MCVJKWH9A5CZ5XH3G") return "01M3S23F7MCVJKWH9A5CZ5XH3G";
+  const db = router.db.getState();
+  const cust = (db.users || []).find(u => u.role === "Customer" && (u.id === token || u.public_id === token));
+  if (cust) return cust.id;
   return null;
 }
 
@@ -92,9 +96,16 @@ server.post("/api/v1/auth/verify-otp", (req, res) => {
     token = "TOKEN_CUSTB";
     user = db.users.find((u) => u.id === "xwLm2deEz3g");
   } else {
-    return res
-      .status(401)
-      .json({ success: false, message: "Invalid OTP or User" });
+    // Check by mobileNumber in database
+    const cleanMobile = mobileNumber ? mobileNumber.replace("+91", "").trim() : "";
+    user = db.users.find(u => u.role === "Customer" && (u.mobileNumber === cleanMobile || u.mobileNumber === mobileNumber));
+    if (user) {
+      token = "TOKEN_CUST_HARI";
+    } else {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid OTP or User" });
+    }
   }
 
   res.json({
@@ -641,13 +652,16 @@ server.get("/api/v1/requests", (req, res) => {
     return res.status(401).json({ success: false, message: "Unauthorized" });
 
   const db = router.db.getState();
-  const userRequests = db.requests.filter((r) => r.user_id === userId);
+  const user = db.users.find((u) => u.id === userId);
+  const userRequests = db.requests.filter(
+    (r) => r.user_id === userId || r.customer_id === userId || (user && r.customer_id === user.public_id)
+  );
 
   // Embed relationships manually
   const result = userRequests.map((r) => ({
     ...r,
-    request_items: db.request_items.filter((i) => i.request_id === r.id),
-    assignments: db.assignments.filter((a) => a.request_id === r.id),
+    request_items: (db.request_items || []).filter((i) => i.request_id === r.id),
+    assignments: (db.request_assignments || db.assignments || []).filter((a) => a.request_id === r.id),
   }));
 
   res.json(result);
@@ -659,16 +673,661 @@ server.get("/api/v1/requests/:id", (req, res) => {
     return res.status(401).json({ success: false, message: "Unauthorized" });
 
   const db = router.db.getState();
+  const user = db.users.find((u) => u.id === userId);
   const r = db.requests.find(
-    (r) => r.public_id === req.params.id || r.id === req.params.id,
+    (r) => r.public_id === req.params.id || r.id === req.params.id
   );
-  if (!r || r.user_id !== userId) return res.status(404).json({});
+  if (!r) return res.status(404).json({ success: false, message: "Request not found" });
+  if (r.user_id !== userId && r.customer_id !== userId && (!user || r.customer_id !== user.public_id)) {
+    return res.status(403).json({ success: false, message: "Forbidden" });
+  }
 
   res.json({
     ...r,
-    request_items: db.request_items.filter((i) => i.request_id === r.id),
-    assignments: db.assignments.filter((a) => a.request_id === r.id),
+    request_items: (db.request_items || []).filter((i) => i.request_id === r.id),
+    assignments: (db.request_assignments || db.assignments || []).filter((a) => a.request_id === r.id),
+    status_history: (db.request_status_history || []).filter((h) => h.request_id === r.id),
   });
+});
+
+// POST /api/v1/requests - Customer Places a FOOD Order with server-side validation
+server.post("/api/v1/requests", (req, res) => {
+  const userId = getAuthenticatedUserId(req);
+  if (!userId) {
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  const db = router.db.getState();
+  const customer = db.users.find((u) => u.id === userId && u.role === "Customer");
+  if (!customer) {
+    return res.status(404).json({ success: false, message: "Customer not found" });
+  }
+
+  const { restaurant_id, items, payment_method, dropoff_address } = req.body;
+  if (!restaurant_id) {
+    return res.status(400).json({ success: false, message: "restaurant_id is required" });
+  }
+
+  const restaurant = (db.restaurants || []).find(
+    (r) => String(r.id) === String(restaurant_id)
+  );
+  if (!restaurant) {
+    return res.status(404).json({ success: false, message: "Restaurant not found" });
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ success: false, message: "At least one item is required" });
+  }
+
+  // Validate items belong to restaurant and calculate subtotal authoritatively from server
+  const restaurantMenu = restaurant.menuItems || [];
+  const dbProducts = (db.restaurant_products || []).filter(
+    (p) => String(p.restaurant_id) === String(restaurant.id)
+  );
+
+  let calculatedSubtotal = 0;
+  const validatedItems = [];
+
+  for (const requestedItem of items) {
+    const itemId = requestedItem.id || requestedItem.product_id;
+    const qty = Number(requestedItem.quantity || 1);
+    if (qty <= 0) {
+      return res.status(400).json({ success: false, message: `Invalid quantity for item ${itemId}` });
+    }
+
+    // Lookup in restaurant-owned menu
+    const menuItem = restaurantMenu.find((m) => String(m.id) === String(itemId)) ||
+                     dbProducts.find((p) => String(p.id) === String(itemId));
+
+    if (!menuItem) {
+      return res.status(400).json({
+        success: false,
+        message: `Item ${itemId} not found in restaurant menu or does not belong to selected restaurant`,
+      });
+    }
+
+    const itemPrice = Number(menuItem.price || 0);
+    const lineTotal = itemPrice * qty;
+    calculatedSubtotal += lineTotal;
+
+    validatedItems.push({
+      id: menuItem.id,
+      product_id: menuItem.id,
+      name: menuItem.name,
+      variant: menuItem.variant || menuItem.category || "Regular",
+      quantity: qty,
+      price: itemPrice,
+      total: lineTotal,
+    });
+  }
+
+  // Verify COD payment method setting
+  const paymentSettings = Array.isArray(db.settings)
+    ? db.settings.find((s) => s.id === "payment")
+    : (db.settings?.payment || {});
+  const codEnabled = paymentSettings.codEnabled !== false;
+
+  if (payment_method === "COD" && !codEnabled) {
+    return res.status(400).json({ success: false, message: "Cash on Delivery is currently disabled" });
+  }
+
+  // Calculate pricing rules: taxes, delivery fee, commission
+  const deliverySettings = Array.isArray(db.settings)
+    ? db.settings.find((s) => s.id === "delivery")
+    : (db.settings?.delivery || {});
+  const baseDeliveryFee = Number(deliverySettings.baseFee || deliverySettings.baseFare || 20);
+
+  const commissionSettings = Array.isArray(db.settings)
+    ? db.settings.find((s) => s.id === "commission")
+    : (db.settings?.commission || {});
+  const gstRate = Number(commissionSettings.restaurantGst || 0) / 100;
+  const taxAmount = Math.round(calculatedSubtotal * gstRate);
+  const finalPayable = calculatedSubtotal + baseDeliveryFee + taxAmount;
+
+  const now = new Date().toISOString();
+  const dateStr = now.slice(0, 10).replace(/-/g, "");
+  const randSeq = Math.floor(1000 + Math.random() * 9000);
+  const requestId = `ORD-${dateStr}-${randSeq}`;
+
+  const newRequest = {
+    id: requestId,
+    customer_id: customer.public_id || customer.id,
+    user_id: customer.id,
+    restaurant_id: restaurant.id,
+    service_type: "FOOD",
+    status: "requested",
+    subtotal: calculatedSubtotal,
+    delivery_fee: baseDeliveryFee,
+    tax_amount: taxAmount,
+    total_estimated_amount: finalPayable,
+    total_amount: finalPayable,
+    payment_method: payment_method || "COD",
+    payment_status: "UNPAID",
+    created_at: now,
+    dropoff_address_snapshot: dropoff_address || customer.address || "Customer Delivery Location",
+    pickup_address_snapshot: restaurant.address || "Restaurant Address",
+    customer: {
+      id: customer.public_id || customer.id,
+      name: customer.name,
+      email: customer.email,
+      phone: customer.mobileNumber,
+    },
+    restaurant: {
+      id: restaurant.id,
+      name: restaurant.name,
+      phone: restaurant.phone,
+      address: restaurant.address,
+    },
+    items: validatedItems,
+    assignments: [],
+    status_history: [
+      {
+        status: "requested",
+        timestamp: now,
+        actor: "customer",
+      },
+    ],
+  };
+
+  // Persist canonical requests and request_items
+  if (!db.requests) db.requests = [];
+  db.requests.unshift(newRequest);
+
+  if (!db.request_items) db.request_items = [];
+  validatedItems.forEach((vi) => {
+    db.request_items.push({
+      id: "RQI-" + Date.now() + Math.floor(Math.random() * 1000),
+      request_id: requestId,
+      product_id: vi.id,
+      name: vi.name,
+      quantity: vi.quantity,
+      price: vi.price,
+      created_at: now,
+    });
+  });
+
+  // Persist initial status history
+  if (!db.request_status_history) db.request_status_history = [];
+  db.request_status_history.push({
+    id: "RSH-" + Date.now() + Math.floor(Math.random() * 1000),
+    request_id: requestId,
+    status: "requested",
+    changed_by: "customer",
+    timestamp: now,
+  });
+
+  // Generate Notification
+  createNotification({
+    title: "New FOOD Request",
+    message: `Order #${requestId} placed by ${customer.name} (Amount: ₹${finalPayable})`,
+    type: "ORDER",
+    linkPath: `/orders/${requestId}`,
+    targetId: requestId,
+  });
+
+  router.db.write();
+  return res.status(201).json({ success: true, data: newRequest });
+});
+
+// POST /api/v1/admin/requests/:id/assign - Assign delivery partner
+server.post("/api/v1/admin/requests/:id/assign", (req, res) => {
+  const db = router.db.getState();
+  const requestId = req.params.id;
+  const request = (db.requests || []).find((r) => r.id === requestId);
+  if (!request) {
+    return res.status(404).json({ success: false, message: "Request not found" });
+  }
+
+  const { partner_id } = req.body;
+  if (!partner_id) {
+    return res.status(400).json({ success: false, message: "partner_id is required" });
+  }
+
+  // Verify partner exists and is eligible
+  const partnerUser = (db.users || []).find(
+    (u) => (u.id === partner_id || u.public_id === partner_id) && u.role === "Delivery Partner"
+  );
+  const partnerProfile = (db.partner_profiles || []).find(
+    (p) => p.id === partner_id || p.partner_code === partner_id || (partnerUser && p.user_id === partnerUser.id)
+  );
+  const legacyPartner = (db.partners || []).find((p) => p.id === partner_id);
+
+  if (!partnerUser && !partnerProfile && !legacyPartner) {
+    return res.status(404).json({ success: false, message: "Eligible delivery partner not found" });
+  }
+
+  const resolvedPartnerId = partnerUser ? partnerUser.id : (partnerProfile ? partnerProfile.id : legacyPartner.id);
+  const now = new Date().toISOString();
+
+  // Create canonical assignment
+  const assignmentEntry = {
+    id: "ASN-" + Date.now() + Math.floor(Math.random() * 1000),
+    request_id: requestId,
+    partner_id: resolvedPartnerId,
+    assignment_status: "active",
+    created_at: now,
+    updated_at: now,
+  };
+
+  if (!db.request_assignments) db.request_assignments = [];
+  // Ensure no duplicate active assignments
+  db.request_assignments = db.request_assignments.filter((a) => a.request_id !== requestId);
+  db.request_assignments.push(assignmentEntry);
+
+  if (!db.assignments) db.assignments = [];
+  db.assignments = db.assignments.filter((a) => a.request_id !== requestId);
+  db.assignments.push(assignmentEntry);
+
+  // Update request
+  request.partner_id = resolvedPartnerId;
+  request.status = "partner_assigned";
+  request.assignment = {
+    partner_id: resolvedPartnerId,
+    assignment_status: "active",
+  };
+  if (!Array.isArray(request.assignments)) request.assignments = [];
+  request.assignments = [assignmentEntry];
+
+  // Append status history
+  request.status_history = request.status_history || [];
+  request.status_history.push({
+    status: "searching_partner",
+    timestamp: now,
+    actor: "system",
+  });
+  request.status_history.push({
+    status: "partner_assigned",
+    timestamp: now,
+    actor: "admin",
+  });
+
+  if (!db.request_status_history) db.request_status_history = [];
+  db.request_status_history.push({
+    id: "RSH-" + Date.now() + "1",
+    request_id: requestId,
+    status: "searching_partner",
+    changed_by: "system",
+    timestamp: now,
+  });
+  db.request_status_history.push({
+    id: "RSH-" + Date.now() + "2",
+    request_id: requestId,
+    status: "partner_assigned",
+    changed_by: "admin",
+    timestamp: now,
+  });
+
+  createNotification({
+    title: "Partner Assigned",
+    message: `Delivery partner ${partnerUser?.name || resolvedPartnerId} assigned to order #${requestId}`,
+    type: "ORDER",
+    linkPath: `/orders/${requestId}`,
+    targetId: requestId,
+  });
+
+  logAdminActivity({
+    req,
+    action: "STATUS_CHANGE",
+    module: "Orders",
+    details: `Assigned partner ${partnerUser?.name || resolvedPartnerId} to Order #${requestId}`,
+    targetId: requestId,
+    status: "Success",
+  });
+
+  router.db.write();
+  return res.json({ success: true, data: request });
+});
+
+// POST /api/v1/requests/:id/transition - Valid Request Lifecycle transitions
+const VALID_FOOD_TRANSITIONS = {
+  requested: ["searching_partner", "restaurant_accepted", "cancelled"],
+  restaurant_accepted: ["searching_partner", "food_ready", "cancelled"],
+  food_ready: ["searching_partner", "partner_assigned", "cancelled"],
+  searching_partner: ["partner_assigned", "cancelled"],
+  partner_assigned: ["accepted", "going_to_pickup", "cancelled"],
+  accepted: ["going_to_pickup", "cancelled"],
+  going_to_pickup: ["arrived_pickup", "cancelled"],
+  arrived_pickup: ["picked_up", "cancelled"],
+  picked_up: ["going_to_customer", "cancelled"],
+  going_to_customer: ["arrived_customer", "cancelled"],
+  arrived_customer: ["delivered", "cancelled"],
+  delivered: ["completed"],
+  completed: [],
+  cancelled: [],
+};
+
+server.post("/api/v1/requests/:id/transition", (req, res) => {
+  const db = router.db.getState();
+  const requestId = req.params.id;
+  const request = (db.requests || []).find((r) => r.id === requestId);
+  if (!request) {
+    return res.status(404).json({ success: false, message: "Request not found" });
+  }
+
+  const { status, actor = "system", reason } = req.body;
+  if (!status) {
+    return res.status(400).json({ success: false, message: "status is required" });
+  }
+
+  const currentStatus = request.status;
+  const allowed = VALID_FOOD_TRANSITIONS[currentStatus] || [];
+  if (!allowed.includes(status) && status !== currentStatus) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid status transition from '${currentStatus}' to '${status}'. Allowed: ${allowed.join(", ")}`,
+    });
+  }
+
+  if (status === currentStatus) {
+    return res.json({ success: true, message: "Status already set", data: request });
+  }
+
+  const now = new Date().toISOString();
+  request.status = status;
+  if (!Array.isArray(request.status_history)) request.status_history = [];
+  request.status_history.push({
+    status,
+    timestamp: now,
+    actor,
+    reason: reason || undefined,
+  });
+
+  if (!db.request_status_history) db.request_status_history = [];
+  db.request_status_history.push({
+    id: "RSH-" + Date.now() + Math.floor(Math.random() * 1000),
+    request_id: requestId,
+    status,
+    changed_by: actor,
+    reason: reason || undefined,
+    timestamp: now,
+  });
+
+  if (status === "delivered" || status === "completed") {
+    request.delivered_at = now;
+    if (request.assignment) request.assignment.assignment_status = "completed";
+    (db.request_assignments || []).forEach((a) => {
+      if (a.request_id === requestId) a.assignment_status = "completed";
+    });
+  }
+
+  createNotification({
+    title: `Order #${requestId} ${status.toUpperCase()}`,
+    message: `Order #${requestId} changed to ${status.replace(/_/g, " ")}`,
+    type: "ORDER",
+    linkPath: `/orders/${requestId}`,
+    targetId: `${requestId}_${status}`,
+  });
+
+  router.db.write();
+  return res.json({ success: true, data: request });
+});
+
+// POST /api/v1/requests/:id/collect-cod - Cash On Delivery Collection Confirmation
+server.post("/api/v1/requests/:id/collect-cod", (req, res) => {
+  const db = router.db.getState();
+  const requestId = req.params.id;
+  const request = (db.requests || []).find((r) => r.id === requestId);
+  if (!request) {
+    return res.status(404).json({ success: false, message: "Request not found" });
+  }
+
+  if (request.payment_method !== "COD") {
+    return res.status(400).json({ success: false, message: "Order payment method is not Cash on Delivery" });
+  }
+
+  if (request.payment_status === "Paid" || request.payment_status === "SUCCESS") {
+    return res.status(400).json({ success: false, message: "COD payment has already been collected and confirmed" });
+  }
+
+  const { collected_amount, collector_id, notes } = req.body;
+  const payableAmount = Number(request.total_amount || request.total_estimated_amount || 0);
+  const actualCollected = Number(collected_amount || payableAmount);
+
+  if (actualCollected <= 0) {
+    return res.status(400).json({ success: false, message: "Invalid collected amount" });
+  }
+
+  const now = new Date().toISOString();
+  request.payment_status = "Paid";
+  request.cod_collected = true;
+  request.cod_collected_at = now;
+  request.cod_collected_by = collector_id || request.partner_id || "Delivery Partner";
+
+  // Create authoritative payment / transaction record
+  const paymentId = "PAY-" + Date.now() + Math.floor(Math.random() * 1000);
+  const paymentRecord = {
+    id: paymentId,
+    paymentId: paymentId,
+    requestId: requestId,
+    request_id: requestId,
+    customerId: request.customer_id,
+    customer_id: request.customer_id,
+    customerName: request.customer?.name || "Customer",
+    amount: actualCollected,
+    paymentMethod: "COD",
+    payment_method: "COD",
+    status: "SUCCESS",
+    description: `COD Payment for #${requestId} (Collected by Partner)`,
+    city: "Chennai",
+    createdAt: now,
+    created_at: now,
+    notes: notes || undefined,
+  };
+
+  if (!db.payments) db.payments = [];
+  db.payments.unshift(paymentRecord);
+
+  // Generate notification & activity log
+  createNotification({
+    title: "COD Payment Collected",
+    message: `Cash of ₹${actualCollected} collected for Order #${requestId}`,
+    type: "PAYMENT",
+    linkPath: `/transactions`,
+    targetId: paymentId,
+  });
+
+  logAdminActivity({
+    req,
+    action: "STATUS_CHANGE",
+    module: "Transactions",
+    details: `Confirmed COD Cash Collection for Order #${requestId}: ₹${actualCollected}`,
+    targetId: paymentId,
+    status: "Success",
+  });
+
+  router.db.write();
+  return res.json({ success: true, message: "COD collection confirmed successfully", data: paymentRecord });
+});
+
+// POST /api/v1/ratings - Submit Restaurant or Delivery Partner Rating
+server.post("/api/v1/ratings", (req, res) => {
+  const db = router.db.getState();
+  const { request_id, customer_id, target_type, target_id, rating, comment } = req.body;
+
+  if (!request_id || !target_type || !target_id || rating === undefined) {
+    return res.status(400).json({
+      success: false,
+      message: "request_id, target_type ('restaurant' | 'partner'), target_id, and rating (1-5) are required",
+    });
+  }
+
+  const numericRating = Number(rating);
+  if (isNaN(numericRating) || numericRating < 1 || numericRating > 5) {
+    return res.status(400).json({ success: false, message: "Rating must be between 1 and 5 stars" });
+  }
+
+  const request = (db.requests || []).find((r) => r.id === request_id);
+  if (!request) {
+    return res.status(404).json({ success: false, message: "Request not found" });
+  }
+
+  if (request.status !== "completed" && request.status !== "delivered") {
+    return res.status(400).json({
+      success: false,
+      message: "Ratings can only be submitted after the request is delivered or completed",
+    });
+  }
+
+  if (!["restaurant", "partner"].includes(target_type)) {
+    return res.status(400).json({ success: false, message: "target_type must be 'restaurant' or 'partner'" });
+  }
+
+  if (target_type === "restaurant" && String(request.restaurant_id) !== String(target_id)) {
+    return res.status(400).json({ success: false, message: "Target restaurant does not match the request restaurant" });
+  }
+
+  if (target_type === "partner") {
+    const assignedPartnerId = request.partner_id || request.assignment?.partner_id;
+    if (String(assignedPartnerId) !== String(target_id)) {
+      return res.status(400).json({ success: false, message: "Target delivery partner does not match the request delivery partner" });
+    }
+  }
+
+  if (!db.ratings_reviews) db.ratings_reviews = [];
+
+  // Prevent duplicate submission for the same target and request
+  const existing = db.ratings_reviews.find(
+    (rr) => rr.request_id === request_id && rr.target_type === target_type
+  );
+  if (existing) {
+    return res.status(400).json({
+      success: false,
+      message: `A ${target_type} rating has already been submitted for this order`,
+    });
+  }
+
+  const now = new Date().toISOString();
+  const reviewId = "REV-" + Date.now() + Math.floor(Math.random() * 1000);
+  const reviewRecord = {
+    id: reviewId,
+    review_id: reviewId,
+    request_id,
+    order_id: request_id,
+    customer_id: customer_id || request.customer_id,
+    target_type,
+    target_id: String(target_id),
+    restaurant_id: target_type === "restaurant" ? target_id : undefined,
+    partner_id: target_type === "partner" ? target_id : undefined,
+    rating: numericRating,
+    comment: comment || "",
+    created_at: now,
+  };
+
+  db.ratings_reviews.push(reviewRecord);
+
+  // Update aggregate ratings on target entity
+  if (target_type === "restaurant") {
+    const rest = (db.restaurants || []).find((r) => String(r.id) === String(target_id));
+    if (rest) {
+      const restReviews = db.ratings_reviews.filter((r) => r.restaurant_id === target_id);
+      const avg = Number((restReviews.reduce((sum, r) => sum + r.rating, 0) / restReviews.length).toFixed(1));
+      rest.rating = avg;
+      rest.rating_avg = avg;
+      rest.reviewsCount = restReviews.length;
+      rest.rating_count = restReviews.length;
+    }
+  } else if (target_type === "partner") {
+    const profile = (db.partner_profiles || []).find(
+      (p) => p.id === target_id || p.user_id === target_id || p.partner_code === target_id
+    );
+    const partnerReviews = db.ratings_reviews.filter((r) => r.partner_id === target_id);
+    const avg = Number((partnerReviews.reduce((sum, r) => sum + r.rating, 0) / partnerReviews.length).toFixed(1));
+    if (profile) {
+      profile.rating_avg = avg;
+      profile.rating_count = partnerReviews.length;
+    }
+  }
+
+  createNotification({
+    title: `New ${target_type === "restaurant" ? "Restaurant" : "Partner"} Rating`,
+    message: `Received ${numericRating} stars for Order #${request_id}`,
+    type: "REVIEW",
+    linkPath: target_type === "restaurant" ? `/restaurants/${target_id}` : `/delivery/${target_id}`,
+    targetId: reviewId,
+  });
+
+  router.db.write();
+  return res.status(201).json({ success: true, data: reviewRecord });
+});
+
+// POST /api/v1/complaints - Submit Customer Complaint (e.g. Late Delivery)
+server.post("/api/v1/complaints", (req, res) => {
+  const db = router.db.getState();
+  const { customer_id, request_id, issue_type = "Late Delivery", description, priority = "High" } = req.body;
+
+  if (!customer_id || !request_id || !description) {
+    return res.status(400).json({
+      success: false,
+      message: "customer_id, request_id, and description are required",
+    });
+  }
+
+  const request = (db.requests || []).find((r) => r.id === request_id);
+  if (!request) {
+    return res.status(404).json({ success: false, message: "Referenced order not found" });
+  }
+
+  // Validate customer owns this request
+  const customer = (db.users || []).find(
+    (u) => (u.id === customer_id || u.public_id === customer_id) && u.role === "Customer"
+  );
+  if (
+    request.customer_id !== customer_id &&
+    request.user_id !== customer_id &&
+    (!customer || (request.customer_id !== customer.public_id && request.customer_id !== customer.id))
+  ) {
+    return res.status(403).json({
+      success: false,
+      message: "Customer cannot submit a complaint against another customer's request",
+    });
+  }
+
+  if (!db.complaints) db.complaints = [];
+
+  // Check for duplicate complaint for the same order and issue type
+  const duplicate = db.complaints.find(
+    (c) => (c.request_id === request_id || c.order_id === request_id) && c.issueType === issue_type && c.status !== "Closed"
+  );
+  if (duplicate) {
+    return res.status(400).json({
+      success: false,
+      message: `An active complaint for '${issue_type}' is already registered for this order (Ticket #${duplicate.id})`,
+    });
+  }
+
+  const now = new Date().toISOString();
+  const complaintId = "CMP" + (2000 + db.complaints.length + 1);
+  const complaintRecord = {
+    id: complaintId,
+    complaintId: complaintId,
+    date: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+    created_at: now,
+    userType: "Customer",
+    userId: customer ? customer.id : customer_id,
+    customer_id: customer ? customer.public_id || customer.id : customer_id,
+    userName: customer?.name || request.customer?.name || "Customer",
+    issueType: issue_type,
+    status: "Open",
+    priority: priority || "High",
+    request_id: request_id,
+    order_id: request_id,
+    description: description.trim(),
+    resolution: "",
+    assignTo: "Unassigned",
+  };
+
+  db.complaints.unshift(complaintRecord);
+
+  createNotification({
+    title: "New Late Delivery Complaint",
+    message: `Ticket #${complaintId} opened for Order #${request_id} by ${complaintRecord.userName}`,
+    type: "COMPLAINT",
+    linkPath: `/complaints`,
+    targetId: complaintId,
+  });
+
+  router.db.write();
+  return res.status(201).json({ success: true, data: complaintRecord });
 });
 
 server.get("/api/v1/wallet", (req, res) => {
@@ -867,7 +1526,9 @@ server.get("/api/v1/admin/customers/:id/requests", (req, res, next) => {
     (u) => u.role === "Customer" && (u.public_id === id || u.id === id),
   );
   if (user) {
-    const requests = db.requests.filter((r) => r.customer_id === user.id);
+    const requests = (db.requests || []).filter(
+      (r) => r.customer_id === user.id || r.customer_id === user.public_id || r.user_id === user.id
+    );
     res.json(requests);
   } else next();
 });
@@ -879,7 +1540,7 @@ server.get("/api/v1/admin/customers/:id/wallet", (req, res, next) => {
     (u) => u.role === "Customer" && (u.public_id === id || u.id === id),
   );
   if (user) {
-    const wallet = db.wallets.find((w) => w.user_id === user.id);
+    const wallet = db.wallets.find((w) => w.user_id === user.id || w.user_id === user.public_id);
     if (!wallet) {
       return res.json({ balance: 0, status: "Inactive" });
     }
@@ -896,7 +1557,7 @@ server.get(
       (u) => u.role === "Customer" && (u.public_id === id || u.id === id),
     );
     if (user) {
-      const wallet = db.wallets.find((w) => w.user_id === user.id);
+      const wallet = db.wallets.find((w) => w.user_id === user.id || w.user_id === user.public_id);
       if (!wallet) return res.json([]);
       const tx = db.wallet_transactions.filter(
         (t) => t.wallet_id === wallet.id,
@@ -913,7 +1574,9 @@ server.get("/api/v1/admin/customers/:id/complaints", (req, res, next) => {
     (u) => u.role === "Customer" && (u.public_id === id || u.id === id),
   );
   if (user) {
-    const complaints = db.complaints.filter((c) => c.customer_id === user.id);
+    const complaints = (db.complaints || []).filter(
+      (c) => c.customer_id === user.id || c.customer_id === user.public_id || c.userId === user.id || c.userName === user.name
+    );
     res.json(complaints);
   } else next();
 });
@@ -936,6 +1599,12 @@ server.get("/api/v1/admin/partners", (req, res) => {
       ? vehicles.find((v) => v.partner_id === profile.id)
       : null;
 
+    const partnerReviews = (db.ratings_reviews || []).filter(r => r.partner_id === user.id || (profile && r.partner_id === profile.id));
+    const reviewCount = partnerReviews.length;
+    const rating = reviewCount > 0
+      ? Number((partnerReviews.reduce((sum, r) => sum + Number(r.rating || 0), 0) / reviewCount).toFixed(1))
+      : (profile ? profile.rating_avg || 0 : 0);
+
     partners.push({
       id: user.id,
       name: user.name,
@@ -946,6 +1615,8 @@ server.get("/api/v1/admin/partners", (req, res) => {
         user.status || (profile ? profile.verification_status : "Pending"),
       onlineStatus: profile ? profile.online_status : "Offline",
       profileImage: user.profileImage || user.profile_image || null,
+      rating,
+      reviewCount,
     });
   }
 
