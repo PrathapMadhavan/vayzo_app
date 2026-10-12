@@ -1,0 +1,423 @@
+{
+  "info": {
+    "name": "VAYZO Admin - Categories API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "adminToken",
+      "value": "vayzo_admin_mock_token_123"
+    },
+    {
+      "key": "categoryId",
+      "value": "CAT1790151636590588"
+    },
+    {
+      "key": "parentItemId",
+      "value": "M1791393367780"
+    },
+    {
+      "key": "childItemId",
+      "value": "M1791445948731"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{adminToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Get Category By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "categories", "{{categoryId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Category",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var data = pm.response.json();",
+                  "    if (data.id) pm.collectionVariables.set('categoryId', data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"South Indian Foods\",\n  \"categoryId\": \"CAT2045\",\n  \"type\": \"Food\",\n  \"status\": \"Active\",\n  \"description\": \"Delicious south indian delicacies\",\n  \"parentId\": \"Food Delivery\",\n  \"scope\": \"Global\",\n  \"image\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"South Indian Foods Updated\",\n  \"type\": \"Food\",\n  \"status\": \"Inactive\",\n  \"description\": \"Updated description\",\n  \"parentId\": \"Food Delivery\",\n  \"scope\": \"Global\",\n  \"image\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "categories", "{{categoryId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/categories/{{categoryId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "categories", "{{categoryId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Parent Items",
+      "item": [
+        {
+          "name": "Get Parent Items By Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/categories/{{categoryId}}/parent-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "categories", "{{categoryId}}", "parent-items"]
+            }
+          }
+        },
+        {
+          "name": "Get All Parent Items",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/parent-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "parent-items"]
+            }
+          }
+        },
+        {
+          "name": "Get Parent Item By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/parent-items/{{parentItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "parent-items", "{{parentItemId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Parent Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var data = pm.response.json();",
+                  "    if (data.id) pm.collectionVariables.set('parentItemId', data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"name\": \"Idly\",\n  \"status\": \"Active\",\n  \"image\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/parent-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "parent-items"]
+            }
+          }
+        },
+        {
+          "name": "Update Parent Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"name\": \"Idly Updated\",\n  \"status\": \"Inactive\",\n  \"image\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/parent-items/{{parentItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "parent-items", "{{parentItemId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Parent Item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/parent-items/{{parentItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "parent-items", "{{parentItemId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Child Items",
+      "item": [
+        {
+          "name": "Get Child Items By Parent Item",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/parent-items/{{parentItemId}}/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "parent-items", "{{parentItemId}}", "items"]
+            }
+          }
+        },
+        {
+          "name": "Get All Child Items",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/child-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "child-items"]
+            }
+          }
+        },
+        {
+          "name": "Get Child Item By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/child-items/{{childItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "child-items", "{{childItemId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Child Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    var data = pm.response.json();",
+                  "    if (data.id) pm.collectionVariables.set('childItemId', data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"parentItemId\": \"{{parentItemId}}\",\n  \"name\": \"Rawa Idly\",\n  \"status\": \"Available\",\n  \"image\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/child-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "child-items"]
+            }
+          }
+        },
+        {
+          "name": "Update Child Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"parentItemId\": \"{{parentItemId}}\",\n  \"name\": \"Rawa Idly Updated\",\n  \"status\": \"Out of Stock\",\n  \"image\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/child-items/{{childItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "child-items", "{{childItemId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Child Item",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/child-items/{{childItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "child-items", "{{childItemId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validation / Error Cases",
+      "item": [
+        {
+          "name": "Create Parent Item - Invalid Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"INVALID_CAT_ID_123\",\n  \"name\": \"Idly\",\n  \"status\": \"Active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/parent-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "parent-items"]
+            }
+          }
+        },
+        {
+          "name": "Create Child Item - Invalid Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"INVALID_CAT_ID\",\n  \"parentItemId\": \"{{parentItemId}}\",\n  \"name\": \"Rawa Idly\",\n  \"status\": \"Available\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/child-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "child-items"]
+            }
+          }
+        },
+        {
+          "name": "Create Child Item - Invalid Parent Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"parentItemId\": \"INVALID_PARENT_ID\",\n  \"name\": \"Rawa Idly\",\n  \"status\": \"Available\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/child-items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "child-items"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

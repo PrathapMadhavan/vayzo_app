@@ -1,69 +1,140 @@
-import { createContext, useContext, useMemo, useState } from "react";
-import { notifications as notificationData } from "../mock/notifications";
+import { createContext, useContext, useMemo, useState, useEffect, useCallback } from "react";
+import {
+  getNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteNotification as apiDeleteNotification,
+  clearAllNotifications as apiClearAllNotifications,
+} from "../api/notificationsApi";
 
 const NotificationContext = createContext(null);
 
-const STORAGE_KEY = "vayzo_notifications";
-
-function getInitialNotifications() {
-  const stored = localStorage.getItem(STORAGE_KEY);
-
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      return notificationData;
-    }
-  }
-
-  return notificationData;
-}
-
 export function NotificationProvider({ children }) {
-  const [notifications, setNotifications] = useState(getInitialNotifications);
+  const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [messageCount, setMessageCount] = useState(0);
 
-  const updateNotifications = (updater) => {
-    setNotifications((current) => {
-      const updated =
-        typeof updater === "function" ? updater(current) : updater;
+  const fetchNotifications = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await getNotifications();
+      setNotifications(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to fetch notifications from API:", err);
+      setError(err.message || "Failed to load notifications");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
-      return updated;
-    });
+  const markAsRead = async (notificationId) => {
+    const previous = [...notifications];
+    setNotifications((curr) =>
+      curr.map((n) =>
+        (n.id === notificationId || n.notificationId === notificationId)
+          ? { ...n, isRead: true }
+          : n
+      )
+    );
+
+    try {
+      await markNotificationAsRead(notificationId);
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+      setNotifications(previous);
+    }
   };
 
-  const markAsRead = (notificationId) => {
-    updateNotifications((current) =>
-      current.map((notification) =>
-        notification.notificationId === notificationId
-          ? { ...notification, isRead: true }
-          : notification,
-      ),
-    );
+  const markAllAsRead = async () => {
+    const previous = [...notifications];
+    setNotifications((curr) => curr.map((n) => ({ ...n, isRead: true })));
+
+    try {
+      await markAllNotificationsAsRead();
+    } catch (err) {
+      console.error("Failed to mark all notifications as read:", err);
+      setNotifications(previous);
+    }
   };
 
-  const markAllAsRead = () => {
-    updateNotifications((current) =>
-      current.map((notification) => ({
-        ...notification,
-        isRead: true,
-      })),
+  const deleteNotification = async (notificationId) => {
+    const previous = [...notifications];
+    setNotifications((curr) =>
+      curr.filter(
+        (n) => n.id !== notificationId && n.notificationId !== notificationId
+      )
     );
+
+    try {
+      await apiDeleteNotification(notificationId);
+    } catch (err) {
+      console.error("Failed to delete notification:", err);
+      setNotifications(previous);
+    }
+  };
+
+  const clearAllNotifications = async () => {
+    const previous = [...notifications];
+    setNotifications([]);
+
+    try {
+      await apiClearAllNotifications();
+    } catch (err) {
+      console.error("Failed to clear all notifications:", err);
+      setNotifications(previous);
+    }
   };
 
   const unreadCount = useMemo(
     () => notifications.filter((notification) => !notification.isRead).length,
-    [notifications],
+    [notifications]
   );
+
+  // Centralized polling for complaints to avoid duplicate calls on route changes
+  useEffect(() => {
+    let isMounted = true;
+    const fetchComplaints = async () => {
+      try {
+        const { getComplaints } = await import("../api/complaintsApi.js");
+        const complaints = await getComplaints();
+        if (isMounted) {
+          const activeComplaints = complaints.filter(
+            (c) => c.status === "Open" || c.status === "In Progress"
+          );
+          setMessageCount(activeComplaints.length);
+        }
+      } catch (err) {
+        console.error("Failed to fetch complaints for centralized notification badge", err);
+      }
+    };
+
+    fetchComplaints();
+    const intervalId = setInterval(fetchComplaints, 60000); // 60s
+    return () => {
+      isMounted = false;
+      clearInterval(intervalId);
+    };
+  }, []);
 
   return (
     <NotificationContext.Provider
       value={{
         notifications,
+        isLoading,
+        error,
         unreadCount,
+        refreshNotifications: fetchNotifications,
         markAsRead,
         markAllAsRead,
+        deleteNotification,
+        clearAllNotifications,
+        messageCount,
       }}
     >
       {children}

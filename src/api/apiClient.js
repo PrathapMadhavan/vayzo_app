@@ -16,13 +16,18 @@ export async function apiRequest(endpoint, options = {}, customErrorMessage = "A
   const requestPromise = (async () => {
     try {
       const fetchHeaders = new Headers();
-      fetchHeaders.append("Content-Type", "application/json");
 
       // Attach any custom headers passed in options
       if (options && options.headers) {
         Object.entries(options.headers).forEach(([key, value]) => {
           fetchHeaders.set(key, value);
         });
+      }
+
+      if (options && options.body instanceof FormData) {
+        // Let browser generate multipart/form-data boundary
+      } else if (!fetchHeaders.has("Content-Type")) {
+        fetchHeaders.append("Content-Type", "application/json");
       }
 
       // Do not attach token for authentication endpoints (e.g. login, otp, forgot-password)
@@ -47,7 +52,9 @@ export async function apiRequest(endpoint, options = {}, customErrorMessage = "A
         response = await fetch(url, fetchOptions);
       } catch (networkError) {
         console.error("Network or CORS error when fetching from:", url, networkError);
-        throw new Error("Unable to connect to the server. Please check your connection or server status.");
+        const netErr = new Error("Unable to connect to the server. Please check your connection or server status.");
+        netErr.isNetworkError = true;
+        throw netErr;
       }
 
       if (!response.ok) {
@@ -70,7 +77,9 @@ export async function apiRequest(endpoint, options = {}, customErrorMessage = "A
             window.location.href = "/";
           }
         }
-        throw new Error(errorMessage);
+        const error = new Error(errorMessage);
+        error.status = response.status;
+        throw error;
       }
 
       const text = await response.text();

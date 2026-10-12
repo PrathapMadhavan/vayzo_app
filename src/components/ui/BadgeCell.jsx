@@ -7,25 +7,25 @@ import Badge from "./Badge";
  * perfectly standardizing widths without hardcoding magic numbers.
  */
 function BadgeCell({ content, maxContent, variant = "default", className = "" }) {
-  return (
-    <div className="grid place-items-center w-full">
-      {/* Invisible element sets the exact width based on the longest badge content */}
-      <div 
-        className="invisible col-start-1 row-start-1 px-2.5 py-1 text-xs font-medium whitespace-nowrap border border-transparent"
-        aria-hidden="true"
-      >
-        {maxContent}
-      </div>
-      
-      {/* Actual visible badge spans the full width of the cell defined above */}
-      <Badge 
-        variant={variant} 
-        className={`col-start-1 row-start-1 w-full text-center ${className}`}
-      >
-        {content}
-      </Badge>
-    </div>
-  );
+ return (
+ <div className="grid place-items-center w-full">
+ {/* Invisible element sets the exact width based on the longest badge content */}
+ <div 
+ className="invisible col-start-1 row-start-1 px-2.5 py-1 text-xs font-medium whitespace-nowrap border border-transparent"
+ aria-hidden="true"
+ >
+ {maxContent}
+ </div>
+ 
+ {/* Actual visible badge spans the full width of the cell defined above */}
+ <Badge 
+ variant={variant} 
+ className={`col-start-1 row-start-1 w-full text-center ${className}`}
+ >
+ {content}
+ </Badge>
+ </div>
+ );
 }
 
 export default BadgeCell;
